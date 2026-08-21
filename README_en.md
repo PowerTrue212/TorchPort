@@ -187,25 +187,18 @@ npm test
 
 ## Status
 
-Implemented:
+- [x] Repository scanning and model-entry recovery
+- [x] PyTorch-to-native-Jittor migration skeleton
+- [x] PyTorch/Jittor dual execution, tensor traces, and numerical certificates
+- [x] First-divergence localization and structured failure codes
+- [x] DSH plugin with a repair/verification loop
+- [x] Experiment figures and model visualizations
+- [ ] Freeze the unified benchmark against the official converter, JTorch, pure Codex, pure DSH, and DSH + TorchPort
+- [ ] Expand the unseen real PyTorch repository test set
+- [ ] Complete end-to-end validation on Ascend-class domestic accelerators
+- [ ] Stabilize the public API, documentation, and release flow
 
-- repository scanning and model-entry recovery;
-- PyTorch-to-native-Jittor migration skeleton;
-- controlled PyTorch/Jittor execution;
-- weight-transfer checks;
-- tensor-trace collection;
-- FP32 and strict numerical comparison;
-- first-divergence localization;
-- structured failure codes;
-- DSH plugin with a repair/verification loop;
-- experiment scripts and paper-style figures.
-
-Evidence boundary:
-
-- The formal DSH end-to-end sample is PyTorch examples SuperRes.
-- Earlier dual-runtime certificates and visualizations cover several model families.
-- A unified comparison against the official converter, JTorch, pure Codex, pure DSH, and DSH + TorchPort is still in the benchmark-freeze stage.
-- Ascend-class domestic accelerators are part of the backend interface design, while the current public evidence is centered on PyTorch/Jittor migration and numerical verification.
+Note: current public evidence focuses on PyTorch/Jittor migration and numerical verification. Ascend-class accelerator support is already part of the backend design, but full end-to-end validation remains a TODO item.
 
 ## Figures
 
