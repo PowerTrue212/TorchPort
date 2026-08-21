@@ -1,12 +1,12 @@
 <div align="center">
-  <img src="docs/assets/torchport-showcase.png" alt="TorchPort evidence-guided migration" width="100%">
+  <img src="docs/assets/torchport-showcase.png" alt="TorchPort 证据驱动迁移" width="100%">
 
   <h1>TorchPort</h1>
 
   <p>
-    <strong>DeepSeek-powered, evidence-guided, fully domestic AI migration platform.</strong><br>
-    Convert PyTorch research repositories to Jittor with verified execution, numerical evidence,
-    repair loops, and native readiness for Ascend-class domestic accelerators.
+    <strong>基于 DeepSeek 的证据驱动全国产化 AI 框架迁移平台。</strong><br>
+    面向 PyTorch 研究仓库，自动迁移到 Jittor，并通过真实执行、数值证据、修复闭环和
+    昇腾等国产算力天然适配接口完成验证。
   </p>
 
   <p>
@@ -19,66 +19,75 @@
   </p>
 
   <p>
-    <a href="#quick-start">Quick Start</a> ·
-    <a href="#workflow">Workflow</a> ·
-    <a href="#dsh-integration">DSH</a> ·
-    <a href="#figures">Figures</a> ·
-    <a href="#status">Status</a> ·
-    <a href="README_zh.md">中文 README</a>
+    <a href="#快速开始">快速开始</a> ·
+    <a href="#工作流">工作流</a> ·
+    <a href="#dsh-集成">DSH 集成</a> ·
+    <a href="#实验图表">实验图表</a> ·
+    <a href="#当前状态">当前状态</a> ·
+    <a href="README_en.md">English README</a>
   </p>
 </div>
 
-## Architecture
+## 系统架构
 
 <div align="center">
-  <img src="docs/assets/torchport-architecture.png" alt="TorchPort architecture" width="100%">
+  <img src="docs/assets/torchport-architecture.png" alt="TorchPort 系统架构" width="100%">
 </div>
 
-TorchPort is designed as a fully domestic conversion stack: DeepSeek provides repository-level
-reasoning, DSH orchestrates tool calls and repair loops, Jittor is the domestic target framework, and
-Ascend-class accelerators are a natural deployment target. The platform is built around numerical
-evidence rather than blind source rewriting.
+TorchPort 的定位是全国产化转换平台：DeepSeek 负责仓库级理解和决策，DSH 负责任务调度与
+修复闭环，Jittor 是当前核心国产目标框架，昇腾等国产算力是天然适配的部署目标。系统不是
+盲目改代码，而是用双端执行、数值轨迹和首次数值分歧定位来约束迁移质量。
 
-## Overview
+## 项目定位
 
-TorchPort is a DeepSeek/DSH-based migration platform for domestic AI infrastructure. Its first
-target path is PyTorch to Jittor, with the system architecture designed for domestic compute backends
-such as Ascend. The project goal is not just source-code conversion. TorchPort treats migration as a
-verified loop:
+TorchPort 是一个基于 DeepSeek/DSH 的全国产化 AI 迁移平台。当前第一条主线是
+PyTorch 到 Jittor，架构上面向昇腾等国产算力后端扩展。项目不是简单的代码替换器，也不是
+按模型名堆出来的适配器集合，而是把迁移定义成一个可验证、可定位、可修复的闭环：
 
 ```text
-Unknown PyTorch repo
-        -> DeepSeek/DSH analyzes the repository
-        -> TorchPort migrates and runs PyTorch/Jittor
-        -> tensor traces are compared
-        -> the first divergence is localized
-        -> DSH repairs with evidence
-        -> a verified Jittor repo is produced
+未知 PyTorch 仓库
+        -> DeepSeek/DSH 理解仓库
+        -> TorchPort 迁移并双端执行 PyTorch/Jittor
+        -> 比较中间张量轨迹
+        -> 定位首次数值分歧点
+        -> DSH 根据证据修复
+        -> 生成经过验证的 Jittor 仓库
 ```
 
-TorchPort separates responsibilities clearly:
+职责边界：
 
-- DeepSeek/DSH makes repository-specific decisions.
-- TorchPort provides deterministic tools and evidence.
-- Jittor is the domestic target framework.
-- Ascend-class accelerator support is a first-class direction in the platform design.
+- DeepSeek/DSH 负责面对未知仓库做动态决策。
+- TorchPort 负责提供确定性工具和可复验证据。
+- Jittor 是当前主要国产目标框架。
+- 昇腾等国产算力适配是平台级一等目标，不是后期外挂。
 
-## Why TorchPort
+## 为什么需要 TorchPort
 
-Most framework converters answer: "Can the code be rewritten?"
+普通转换器主要回答：
 
-TorchPort asks a stricter question: "Does the migrated project really run, load the same weights,
-receive the same inputs, and preserve numerical behavior?"
+```text
+代码能不能改过去？
+```
 
-The core signals are:
+TorchPort 要回答更严格的问题：
 
-- `RN`: migrated Jittor project runs.
-- `NA`: final PyTorch/Jittor outputs are numerically aligned.
-- `SA`: stricter intermediate-layer alignment passes.
-- `First divergence`: the first layer or operator where a meaningful mismatch appears.
-- `Certificate`: a reproducible report with inputs, weights, traces, errors, and failure attribution.
+```text
+迁移后的项目是否真的能运行？
+是否加载了相同权重？
+是否使用了相同输入？
+PyTorch 和 Jittor 的数值行为是否一致？
+如果不一致，第一次从哪里开始不一致？
+```
 
-## Quick Start
+核心指标：
+
+- `RN`：迁移后的 Jittor 项目是否真正运行。
+- `NA`：PyTorch/Jittor 最终输出是否数值对齐。
+- `SA`：更严格的中间层对齐是否通过。
+- `First divergence`：首次出现明显数值分歧的层或算子。
+- `Certificate`：包含输入、权重、轨迹、误差和失败归因的可复验证书。
+
+## 快速开始
 
 ```bash
 python -m venv .venv
@@ -86,7 +95,7 @@ python -m venv .venv
 python -m pip install -e ".[dev]"
 ```
 
-Run checks:
+运行测试：
 
 ```bash
 pytest tests -q
@@ -94,14 +103,14 @@ ruff check .
 python -m build
 ```
 
-Scan and plan a PyTorch repository:
+扫描并规划 PyTorch 仓库：
 
 ```bash
 PYTHONPATH=src python -m torchport scan /path/to/pytorch-repo
 PYTHONPATH=src python -m torchport plan /path/to/pytorch-repo --target jittor-native
 ```
 
-Run an automatic migration attempt:
+执行自动迁移和验证：
 
 ```bash
 PYTHONPATH=src python -m torchport auto /path/to/pytorch-repo \
@@ -113,34 +122,34 @@ PYTHONPATH=src python -m torchport auto /path/to/pytorch-repo \
   --check-run
 ```
 
-The main report is written to:
+主报告位置：
 
 ```text
 /path/to/migrated-jittor/.torchport/auto.json
 ```
 
-## Workflow
+## 工作流
 
 ```text
-Repository scan
-      -> entry recovery
-      -> migration
-      -> source/target execution
-      -> weight and input checks
-      -> tensor trace comparison
-      -> first-divergence localization
-      -> repair proposal
-      -> re-verification
-      -> certificate
+仓库扫描
+      -> 模型入口恢复
+      -> 代码迁移
+      -> 源端/目标端执行
+      -> 权重与输入检查
+      -> 张量轨迹比较
+      -> 首次数值分歧定位
+      -> 修复建议
+      -> 再验证
+      -> 数值证书
 ```
 
-This loop is what makes TorchPort different from a static conversion script. The model-specific
-knowledge is not hard-coded as adapter files. DSH reads the repository and uses TorchPort evidence to
-decide the next action.
+这条闭环是 TorchPort 和静态转换脚本的核心区别。模型知识不写死在
+`resnet_adapter.py`、`vit_adapter.py` 这类文件里，而是由 DSH 阅读仓库、结合 TorchPort
+证据决定下一步动作。
 
-## DSH Integration
+## DSH 集成
 
-The DSH plugin lives in `integrations/dsh` and exposes eight structured tools:
+DSH 插件位于 `integrations/dsh`，提供 8 个结构化工具：
 
 ```text
 scan_repository
@@ -153,7 +162,7 @@ apply_verified_repair
 generate_certification_report
 ```
 
-Run plugin tests:
+运行插件测试：
 
 ```bash
 cd integrations/dsh
@@ -161,85 +170,83 @@ npm install
 npm test
 ```
 
-## Status
+## 当前状态
 
-Implemented:
+已经实现：
 
-- repository scanning and model-entry recovery;
-- PyTorch-to-native-Jittor migration skeleton;
-- controlled PyTorch/Jittor execution;
-- weight transfer checks;
-- tensor trace collection;
-- FP32 and strict numerical comparison;
-- first-divergence localization;
-- structured failure codes;
-- DSH plugin with repair/verify loop;
-- experiment scripts and publication-style figures.
+- 仓库扫描和模型入口恢复；
+- PyTorch 到原生 Jittor 的迁移骨架；
+- PyTorch/Jittor 双端受控执行；
+- 权重迁移完整性检查；
+- 中间张量轨迹采集；
+- FP32 与 strict 两档数值比较；
+- 首次数值分歧定位；
+- 结构化失败分类；
+- DSH 插件和修复/验证循环；
+- 实验脚本和论文风格图表。
 
-Evidence boundary:
+证据边界：
 
-- The formal DSH end-to-end run is PyTorch examples SuperRes.
-- Historical certificates and visualizations cover multiple model families.
-- Full multi-repository comparison against official converter, JTorch, pure Codex, and pure DSH is
-  still a benchmark-stage task.
-- Ascend-class support is a platform direction and interface target; the current public evidence is
-  centered on PyTorch/Jittor migration and numerical verification.
+- 当前正式 DSH 端到端样本是 PyTorch examples SuperRes。
+- 历史双端证书和可视化覆盖了多类模型。
+- 官方转换器、JTorch、纯 Codex、纯 DSH、DSH + TorchPort 的大规模统一对比仍需要冻结实验。
+- 昇腾等国产算力是平台接口和适配方向；当前公开证据主要集中在 PyTorch/Jittor 迁移与数值验证。
 
-## Figures
+## 实验图表
 
-### Main Experimental Figures
+### 主实验图
 
-| End-to-end comparison | DSH repair trajectory |
+| 端到端对比 | DSH 修复轨迹 |
 | --- | --- |
 | <img src="experiments/figures/fig_e2e/plot.png" width="430"> | <img src="experiments/figures/fig_rounds/plot.png" width="430"> |
 
-| Method summary | Model coverage snapshot |
+| 方法概览 | 模型覆盖快照 |
 | --- | --- |
 | <img src="experiments/figures/fig_methods/plot.png" width="430"> | <img src="experiments/figures/fig_models/plot.png" width="430"> |
 
-| Tensor evidence | Failure/status view |
+| 张量证据 | 状态分布 |
 | --- | --- |
 | <img src="experiments/figures/fig_tensors/plot.png" width="430"> | <img src="experiments/figures/fig_status/plot.png" width="430"> |
 
-| Strict alignment | Failure attribution |
+| Strict 对齐 | 失败归因 |
 | --- | --- |
 | <img src="experiments/figures/fig_strict/plot.png" width="430"> | <img src="experiments/figures/fig_fail/plot.png" width="430"> |
 
-### Model Visualizations
+### 模型可视化
 
-| ViT attention/features | MAE reconstruction |
+| ViT 注意力/特征 | MAE 重建 |
 | --- | --- |
 | <img src="experiments/figures/fig_vit/plot.png" width="430"> | <img src="experiments/figures/fig_mae/plot.png" width="430"> |
 
-| ViT/MAE overview | ViT alignment |
+| ViT/MAE 总览 | ViT 对齐 |
 | --- | --- |
 | <img src="experiments/figures/fig_vit_mae/plot.png" width="430"> | <img src="experiments/figures/fig_vit_align/plot.png" width="430"> |
 
-| MAE alignment | Swin attention/features |
+| MAE 对齐 | Swin 注意力/特征 |
 | --- | --- |
 | <img src="experiments/figures/fig_mae_align/plot.png" width="430"> | <img src="experiments/figures/fig_swin/plot.png" width="430"> |
 
-| ResNet feature maps | SENet channel response |
+| ResNet 特征图 | SENet 通道响应 |
 | --- | --- |
 | <img src="experiments/figures/fig_resnet/plot.png" width="430"> | <img src="experiments/figures/fig_senet/plot.png" width="430"> |
 
-| U-Net segmentation evidence | Super-resolution output |
+| U-Net 分割证据 | 超分输出 |
 | --- | --- |
 | <img src="experiments/figures/fig_unet/plot.png" width="430"> | <img src="experiments/figures/fig_superres/plot.png" width="430"> |
 
-| VAE latent/reconstruction | Visual summary |
+| VAE 潜变量/重建 | 可视化总览 |
 | --- | --- |
 | <img src="experiments/figures/fig_vae/plot.png" width="430"> | <img src="experiments/figures/fig_visual/plot.png" width="430"> |
 
-## SuperRes DSH Result
+## SuperRes DSH 结果
 
 ```text
-Official converter:
+官方转换器：
   CV=true
   RN=false
   failure=jittor.init.orthogonal_ is missing
 
-DSH + TorchPort:
+DSH + TorchPort：
   CV=true
   RN=true
   NA=true
@@ -247,23 +254,22 @@ DSH + TorchPort:
   first strict divergence=conv3
 ```
 
-The migrated Jittor project runs and final FP32 output alignment passes. The stricter intermediate
-check reports a trace-level divergence at `conv3`; TorchPort keeps this in the certificate instead of
-hiding it.
+这说明迁移后的 Jittor 项目能够运行，最终 FP32 输出对齐通过。更严格的中间层检查仍在
+`conv3` 留下轨迹级分歧，TorchPort 会把它记录到证书中，而不是隐藏掉。
 
-## Layout
+## 目录结构
 
 ```text
-src/torchport/       Python core and CLI
-integrations/dsh/    DSH plugin
-benchmarks/          entry-pattern and repository benchmarks
-compatibility/       compatibility notes and repair rules
-experiments/         experiment data, figures, prompts, and reports
-docs/                design notes and assets
-tests/               unit and integration tests
+src/torchport/       Python 核心与命令行
+integrations/dsh/    DSH 插件
+benchmarks/          入口模式与仓库基准
+compatibility/       兼容性说明与修复规则
+experiments/         实验数据、图表、提示词和报告
+docs/                设计文档和图片资源
+tests/               单元测试与集成测试
 ```
 
-## Reproduce Figures
+## 复现实验图
 
 ```bash
 python experiments/scripts/build.py
@@ -271,12 +277,12 @@ python experiments/figures/fig_e2e/plot.py
 python experiments/figures/fig_rounds/plot.py
 ```
 
-Method-figure prompt:
+方法图生成提示词：
 
 ```text
 experiments/prompts/architecture.md
 ```
 
-## License
+## 开源协议
 
-Apache-2.0. See `LICENSE`.
+Apache-2.0，见 `LICENSE`。
