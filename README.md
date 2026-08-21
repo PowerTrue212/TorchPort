@@ -4,9 +4,9 @@
   <h1>TorchPort</h1>
 
   <p>
-    <strong>面向全国产化 AI 软件栈的 PyTorch → Jittor 迁移与验证系统。</strong><br>
-    TorchPort 以 DeepSeek/DSH 作为仓库级分析与修复入口，以 Jittor 作为当前主要目标框架，
-    并在设计上天然面向昇腾等国产算力后端。
+    <strong>面向全国产化 AI 软件栈的 PyTorch → Jittor 自动迁移与验证 Agent。</strong><br>
+    TorchPort 以 DeepSeek/DSH 作为源代码分析与操作平台，支持 Pytorch、TensorFlow、Caffe 等框架到 Jittor 的迁移，
+    并天然支持昇腾等国产算力硬件。
   </p>
 
   <p>
@@ -39,13 +39,13 @@
   <img src="docs/assets/torchport-architecture.png" alt="TorchPort 系统架构" width="100%">
 </div>
 
-TorchPort 的核心假设很简单：模型迁移不能只看代码是否被替换，还要看迁移后的程序是否在目标框架中保持相同的数值行为。
+TorchPort 的核心假设很简单：模型迁移不能只看代码是否被替换，更要看迁移后的模型能否保持数值行为与性能对齐。
 
-系统由两层组成。DeepSeek/DSH 面向未知 PyTorch 仓库做阅读、决策和修复调度；TorchPort 提供确定性的扫描、迁移、双端执行、数值对齐和首次数值分歧定位工具。Jittor 是当前主目标，昇腾等国产算力作为后续后端接入的约束进入设计，而不是在迁移完成后再临时补适配。长期目标是一条从 DeepSeek/DSH、Jittor 到国产算力后端的可验证迁移链路。
+该智能体由两层组成。首先基于 DeepSeek/DSH 对未知 PyTorch 仓库做阅读、决策和修复调度，然后 TorchPort 提供确定性的扫描、迁移、双端执行、数值对齐和首次数值分歧定位工具。核心目标是构建一条从 DeepSeek、Jittor 到国产算力后端的全国产化模型迁移平台。
 
 ## 项目定位
 
-TorchPort 不是模型适配器集合，也不是一次性的文本替换脚本。它关注的是一个可复验的问题：
+TorchPort 关注的是一个可复验的问题：
 
 ```text
 给定一个未知 PyTorch 仓库，
@@ -56,16 +56,8 @@ TorchPort 不是模型适配器集合，也不是一次性的文本替换脚本�
 并把修复过程记录下来。
 ```
 
-这个定位决定了项目分工：
-
-- DeepSeek/DSH 负责理解具体仓库，包括入口、配置、权重和推理路径。
-- TorchPort 负责产生可复查的工程证据，包括扫描结果、运行日志、张量轨迹和数值证书。
-- Jittor 是当前验证最完整的国产目标框架。
-- 昇腾等国产算力是后端设计目标，后续适配应沿着同一套证据链推进。
-
 ## 国产化路径
 
-TorchPort 的国产化不是只在 README 中声明一个目标，而是把全国产化转换平台拆成可以逐步替换和验证的迁移链路：
 
 | 层次 | 当前选择 | 作用 |
 | --- | --- | --- |
@@ -145,11 +137,11 @@ PYTHONPATH=src python -m torchport auto /path/to/pytorch-repo \
 /path/to/migrated-jittor/.torchport/auto.json
 ```
 
-## 工作流
+## Workflow
 
 ```text
 仓库扫描
-      -> 模型入口恢复
+      -> 模型入口
       -> 代码迁移
       -> PyTorch/Jittor 双端执行
       -> 权重与输入检查
@@ -157,10 +149,9 @@ PYTHONPATH=src python -m torchport auto /path/to/pytorch-repo \
       -> 首次数值分歧定位
       -> 修复建议
       -> 再验证
-      -> 数值证书
 ```
 
-TorchPort 不把模型知识写死在 `resnet_adapter.py`、`vit_adapter.py` 这类文件里。面对新仓库时，DSH 先读取仓库并调用 TorchPort 工具；TorchPort 返回结构化证据；DSH 再基于证据选择迁移或修复动作。
+TorchPort 在面对新仓库时，DSH 先读取仓库并调用 TorchPort 工具；TorchPort 返回结构化证据；DSH 再基于证据选择迁移或修复动作。
 
 ## DSH 集成
 
