@@ -1,12 +1,12 @@
 <div align="center">
-  <img src="docs/assets/torchport-showcase.png" alt="TorchPort 证据驱动迁移" width="100%">
+  <img src="docs/assets/torchport-showcase.png" alt="TorchPort 迁移与验证" width="100%">
 
   <h1>TorchPort</h1>
 
   <p>
-    <strong>基于 DeepSeek 的证据驱动全国产化 AI 框架迁移平台。</strong><br>
-    面向 PyTorch 研究仓库，自动迁移到 Jittor，并通过真实执行、数值证据、修复闭环和
-    昇腾等国产算力天然适配接口完成验证。
+    <strong>面向全国产化 AI 软件栈的 PyTorch → Jittor 迁移与验证系统。</strong><br>
+    TorchPort 以 DeepSeek/DSH 作为仓库级分析与修复入口，以 Jittor 作为当前主要目标框架，
+    并在设计上天然面向昇腾等国产算力后端。
   </p>
 
   <p>
@@ -15,16 +15,21 @@
     <img alt="Jittor" src="https://img.shields.io/badge/target-Jittor-2F6BFF">
     <img alt="Ascend" src="https://img.shields.io/badge/accelerator-Ascend-E6242E">
     <img alt="DSH" src="https://img.shields.io/badge/agent-DSH-7A5AF8">
-    <img alt="evidence" src="https://img.shields.io/badge/method-evidence--guided-F27CA5">
+    <img alt="evidence" src="https://img.shields.io/badge/method-verification-F27CA5">
   </p>
 
   <p>
+    中文 ·
+    <a href="README_en.md">English</a>
+  </p>
+
+  <p>
+    <a href="#系统架构">系统架构</a> ·
+    <a href="#项目定位">项目定位</a> ·
     <a href="#快速开始">快速开始</a> ·
-    <a href="#工作流">工作流</a> ·
     <a href="#dsh-集成">DSH 集成</a> ·
     <a href="#实验图表">实验图表</a> ·
-    <a href="#当前状态">当前状态</a> ·
-    <a href="README_en.md">English README</a>
+    <a href="#当前状态">当前状态</a>
   </p>
 </div>
 
@@ -34,58 +39,70 @@
   <img src="docs/assets/torchport-architecture.png" alt="TorchPort 系统架构" width="100%">
 </div>
 
-TorchPort 的定位是全国产化转换平台：DeepSeek 负责仓库级理解和决策，DSH 负责任务调度与
-修复闭环，Jittor 是当前核心国产目标框架，昇腾等国产算力是天然适配的部署目标。系统不是
-盲目改代码，而是用双端执行、数值轨迹和首次数值分歧定位来约束迁移质量。
+TorchPort 的核心假设很简单：模型迁移不能只看代码是否被替换，还要看迁移后的程序是否在目标框架中保持相同的数值行为。
+
+系统由两层组成。DeepSeek/DSH 面向未知 PyTorch 仓库做阅读、决策和修复调度；TorchPort 提供确定性的扫描、迁移、双端执行、数值对齐和首次数值分歧定位工具。Jittor 是当前主目标，昇腾等国产算力作为后续后端接入的约束进入设计，而不是在迁移完成后再临时补适配。长期目标是一条从 DeepSeek/DSH、Jittor 到国产算力后端的可验证迁移链路。
 
 ## 项目定位
 
-TorchPort 是一个基于 DeepSeek/DSH 的全国产化 AI 迁移平台。当前第一条主线是
-PyTorch 到 Jittor，架构上面向昇腾等国产算力后端扩展。项目不是简单的代码替换器，也不是
-按模型名堆出来的适配器集合，而是把迁移定义成一个可验证、可定位、可修复的闭环：
+TorchPort 不是模型适配器集合，也不是一次性的文本替换脚本。它关注的是一个可复验的问题：
 
 ```text
-未知 PyTorch 仓库
-        -> DeepSeek/DSH 理解仓库
-        -> TorchPort 迁移并双端执行 PyTorch/Jittor
-        -> 比较中间张量轨迹
-        -> 定位首次数值分歧点
-        -> DSH 根据证据修复
-        -> 生成经过验证的 Jittor 仓库
+给定一个未知 PyTorch 仓库，
+系统能否迁移到 Jittor，
+实际运行 PyTorch 与 Jittor 两端，
+比较同一输入和同一权重下的数值结果，
+在不一致时定位首个分歧位置，
+并把修复过程记录下来。
 ```
 
-职责边界：
+这个定位决定了项目分工：
 
-- DeepSeek/DSH 负责面对未知仓库做动态决策。
-- TorchPort 负责提供确定性工具和可复验证据。
-- Jittor 是当前主要国产目标框架。
-- 昇腾等国产算力适配是平台级一等目标，不是后期外挂。
+- DeepSeek/DSH 负责理解具体仓库，包括入口、配置、权重和推理路径。
+- TorchPort 负责产生可复查的工程证据，包括扫描结果、运行日志、张量轨迹和数值证书。
+- Jittor 是当前验证最完整的国产目标框架。
+- 昇腾等国产算力是后端设计目标，后续适配应沿着同一套证据链推进。
+
+## 国产化路径
+
+TorchPort 的国产化不是只在 README 中声明一个目标，而是把全国产化转换平台拆成可以逐步替换和验证的迁移链路：
+
+| 层次 | 当前选择 | 作用 |
+| --- | --- | --- |
+| 智能体入口 | DeepSeek/DSH | 读取未知仓库，决定迁移和修复动作 |
+| 目标框架 | Jittor | 承接 PyTorch 代码与权重迁移 |
+| 验证机制 | 双端执行 + 数值轨迹 | 判断迁移结果是否可信 |
+| 后端方向 | 昇腾等国产算力 | 作为目标部署环境纳入接口设计 |
+
+当前公开实验主要验证 PyTorch 到 Jittor 的迁移和数值一致性。昇腾等国产算力的完整端到端实验会在后续后端适配中补齐。
 
 ## 为什么需要 TorchPort
 
-普通转换器主要回答：
+普通转换器主要回答一个问题：
 
 ```text
-代码能不能改过去？
+代码能不能转过去？
 ```
 
-TorchPort 要回答更严格的问题：
+TorchPort 进一步回答：
 
 ```text
-迁移后的项目是否真的能运行？
+迁移后的项目能不能真正运行？
 是否加载了相同权重？
 是否使用了相同输入？
-PyTorch 和 Jittor 的数值行为是否一致？
-如果不一致，第一次从哪里开始不一致？
+最终输出是否数值对齐？
+如果不对齐，第一次从哪一层或哪一个算子开始偏离？
 ```
 
-核心指标：
+README 中使用的核心指标如下：
 
-- `RN`：迁移后的 Jittor 项目是否真正运行。
-- `NA`：PyTorch/Jittor 最终输出是否数值对齐。
-- `SA`：更严格的中间层对齐是否通过。
-- `First divergence`：首次出现明显数值分歧的层或算子。
-- `Certificate`：包含输入、权重、轨迹、误差和失败归因的可复验证书。
+| 指标 | 含义 |
+| --- | --- |
+| `RN` | 迁移后的 Jittor 项目可以实际运行 |
+| `NA` | PyTorch/Jittor 最终输出通过数值对齐 |
+| `SA` | 中间层轨迹通过更严格的对齐检查 |
+| `FD` | 首次数值分歧点 |
+| `Cert` | 包含输入、权重、轨迹、误差和失败归因的数值证书 |
 
 ## 快速开始
 
@@ -95,7 +112,7 @@ python -m venv .venv
 python -m pip install -e ".[dev]"
 ```
 
-运行测试：
+运行基础检查：
 
 ```bash
 pytest tests -q
@@ -110,7 +127,7 @@ PYTHONPATH=src python -m torchport scan /path/to/pytorch-repo
 PYTHONPATH=src python -m torchport plan /path/to/pytorch-repo --target jittor-native
 ```
 
-执行自动迁移和验证：
+执行一次自动迁移和验证：
 
 ```bash
 PYTHONPATH=src python -m torchport auto /path/to/pytorch-repo \
@@ -122,7 +139,7 @@ PYTHONPATH=src python -m torchport auto /path/to/pytorch-repo \
   --check-run
 ```
 
-主报告位置：
+主报告写入：
 
 ```text
 /path/to/migrated-jittor/.torchport/auto.json
@@ -134,7 +151,7 @@ PYTHONPATH=src python -m torchport auto /path/to/pytorch-repo \
 仓库扫描
       -> 模型入口恢复
       -> 代码迁移
-      -> 源端/目标端执行
+      -> PyTorch/Jittor 双端执行
       -> 权重与输入检查
       -> 张量轨迹比较
       -> 首次数值分歧定位
@@ -143,13 +160,11 @@ PYTHONPATH=src python -m torchport auto /path/to/pytorch-repo \
       -> 数值证书
 ```
 
-这条闭环是 TorchPort 和静态转换脚本的核心区别。模型知识不写死在
-`resnet_adapter.py`、`vit_adapter.py` 这类文件里，而是由 DSH 阅读仓库、结合 TorchPort
-证据决定下一步动作。
+TorchPort 不把模型知识写死在 `resnet_adapter.py`、`vit_adapter.py` 这类文件里。面对新仓库时，DSH 先读取仓库并调用 TorchPort 工具；TorchPort 返回结构化证据；DSH 再基于证据选择迁移或修复动作。
 
 ## DSH 集成
 
-DSH 插件位于 `integrations/dsh`，提供 8 个结构化工具：
+DSH 插件位于 `integrations/dsh`，目前提供 8 个工具：
 
 ```text
 scan_repository
@@ -189,8 +204,8 @@ npm test
 
 - 当前正式 DSH 端到端样本是 PyTorch examples SuperRes。
 - 历史双端证书和可视化覆盖了多类模型。
-- 官方转换器、JTorch、纯 Codex、纯 DSH、DSH + TorchPort 的大规模统一对比仍需要冻结实验。
-- 昇腾等国产算力是平台接口和适配方向；当前公开证据主要集中在 PyTorch/Jittor 迁移与数值验证。
+- 官方转换器、JTorch、纯 Codex、纯 DSH、DSH + TorchPort 的统一对比仍处在实验冻结阶段。
+- 昇腾等国产算力已进入后端接口设计，但当前公开证据主要集中在 PyTorch/Jittor 迁移与数值验证。
 
 ## 实验图表
 
@@ -251,11 +266,10 @@ DSH + TorchPort：
   RN=true
   NA=true
   SA=false
-  first strict divergence=conv3
+  FD=conv3
 ```
 
-这说明迁移后的 Jittor 项目能够运行，最终 FP32 输出对齐通过。更严格的中间层检查仍在
-`conv3` 留下轨迹级分歧，TorchPort 会把它记录到证书中，而不是隐藏掉。
+这个样本说明两点。第一，迁移后的 Jittor 项目可以运行，最终 FP32 输出通过数值对齐。第二，更严格的中间层检查仍在 `conv3` 记录到轨迹级分歧。TorchPort 不把这类分歧隐藏掉，而是写入证书，供后续修复或人工审查。
 
 ## 目录结构
 
@@ -277,7 +291,7 @@ python experiments/figures/fig_e2e/plot.py
 python experiments/figures/fig_rounds/plot.py
 ```
 
-方法图生成提示词：
+架构图提示词：
 
 ```text
 experiments/prompts/architecture.md
