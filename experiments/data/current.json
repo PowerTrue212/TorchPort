@@ -1,0 +1,289 @@
+{
+  "schema_version": 1,
+  "version": "0.38.3",
+  "source_report": "/data/L202500448/torchport/artifacts/real-runs/0407-lab-verified.json",
+  "rows": [
+    {
+      "case": "mae",
+      "method": "official_jittor",
+      "status": "failed",
+      "fp32": false,
+      "strict": false,
+      "weights_loaded": 0,
+      "weights_total": 0,
+      "tensors": 0,
+      "first": null,
+      "decision": "syntax-error-parameter-requires-grad"
+    },
+    {
+      "case": "pytorch_unet",
+      "method": "official_jittor",
+      "status": "converted",
+      "fp32": false,
+      "strict": false,
+      "weights_loaded": 0,
+      "weights_total": 0,
+      "tensors": 0,
+      "first": null,
+      "decision": "syntax-only"
+    },
+    {
+      "case": "resnet_cifar10",
+      "method": "official_jittor",
+      "status": "failed",
+      "fp32": false,
+      "strict": false,
+      "weights_loaded": 0,
+      "weights_total": 0,
+      "tensors": 0,
+      "first": null,
+      "decision": "syntax-error-line-35"
+    },
+    {
+      "case": "senet",
+      "method": "official_jittor",
+      "status": "converted",
+      "fp32": false,
+      "strict": false,
+      "weights_loaded": 0,
+      "weights_total": 0,
+      "tensors": 0,
+      "first": null,
+      "decision": "syntax-only"
+    },
+    {
+      "case": "superres",
+      "method": "official_jittor",
+      "status": "converted",
+      "fp32": false,
+      "strict": false,
+      "weights_loaded": 0,
+      "weights_total": 0,
+      "tensors": 0,
+      "first": null,
+      "decision": "syntax-only"
+    },
+    {
+      "case": "swin",
+      "method": "official_jittor",
+      "status": "failed",
+      "fp32": false,
+      "strict": false,
+      "weights_loaded": 0,
+      "weights_total": 0,
+      "tensors": 0,
+      "first": null,
+      "decision": "syntax-error-line-64"
+    },
+    {
+      "case": "vae",
+      "method": "official_jittor",
+      "status": "converted",
+      "fp32": false,
+      "strict": false,
+      "weights_loaded": 0,
+      "weights_total": 0,
+      "tensors": 0,
+      "first": null,
+      "decision": "syntax-only"
+    },
+    {
+      "case": "vit_pytorch",
+      "method": "official_jittor",
+      "status": "failed",
+      "fp32": false,
+      "strict": false,
+      "weights_loaded": 0,
+      "weights_total": 0,
+      "tensors": 0,
+      "first": null,
+      "decision": "syntax-error-line-90"
+    },
+    {
+      "case": "pytorch_unet",
+      "method": "dsh_torchport",
+      "status": "verified",
+      "fp32": true,
+      "strict": false,
+      "weights_loaded": 100,
+      "weights_total": 100,
+      "tensors": 100,
+      "first": "inc.double_conv.1",
+      "decision": null
+    },
+    {
+      "case": "resnet_cifar10",
+      "method": "dsh_torchport",
+      "status": "verified",
+      "fp32": true,
+      "strict": false,
+      "weights_loaded": 97,
+      "weights_total": 97,
+      "tensors": 84,
+      "first": "layer1.0.conv2",
+      "decision": null
+    },
+    {
+      "case": "senet",
+      "method": "dsh_torchport",
+      "status": "verified",
+      "fp32": true,
+      "strict": false,
+      "weights_loaded": 125,
+      "weights_total": 125,
+      "tensors": 142,
+      "first": "bn1",
+      "decision": null
+    },
+    {
+      "case": "mae",
+      "method": "dsh_torchport",
+      "status": "verified",
+      "fp32": true,
+      "strict": false,
+      "weights_loaded": 254,
+      "weights_total": 254,
+      "tensors": 332,
+      "first": "blocks.0.attn.qkv",
+      "decision": "fix-random-replay"
+    },
+    {
+      "case": "superres",
+      "method": "dsh_torchport",
+      "status": "verified",
+      "fp32": true,
+      "strict": false,
+      "weights_loaded": 8,
+      "weights_total": 8,
+      "tensors": 10,
+      "first": "conv3",
+      "decision": "fix-explicit-entry"
+    },
+    {
+      "case": "swin",
+      "method": "dsh_torchport",
+      "status": "verified",
+      "fp32": true,
+      "strict": true,
+      "weights_loaded": 39,
+      "weights_total": 39,
+      "tensors": 48,
+      "first": null,
+      "decision": "fix-adaptive-pool"
+    },
+    {
+      "case": "vit_pytorch",
+      "method": "dsh_torchport",
+      "status": "verified",
+      "fp32": true,
+      "strict": true,
+      "weights_loaded": 23,
+      "weights_total": 23,
+      "tensors": 28,
+      "first": null,
+      "decision": "fix-einops-backend"
+    },
+    {
+      "case": "vae",
+      "method": "dsh_torchport",
+      "status": "verified",
+      "fp32": true,
+      "strict": false,
+      "weights_loaded": 10,
+      "weights_total": 10,
+      "tensors": 12,
+      "first": "fc3",
+      "decision": "fix-source-scope"
+    }
+  ],
+  "errors": [
+    {
+      "case": "vit_pytorch",
+      "round": 0,
+      "code": "CONVERT_FAILED",
+      "stage": "official_jittor",
+      "symptom": "官方转换器生成 `x[(:, 0)]`，入口文件语法检查失败",
+      "repair": "none"
+    },
+    {
+      "case": "resnet_cifar10",
+      "round": 0,
+      "code": "CONVERT_FAILED",
+      "stage": "official_jittor",
+      "symptom": "官方转换器生成的 resnet.py 第 35 行语法检查失败",
+      "repair": "none"
+    },
+    {
+      "case": "mae",
+      "round": 0,
+      "code": "CONVERT_FAILED",
+      "stage": "official_jittor",
+      "symptom": "官方转换器不支持 nn.Parameter(..., requires_grad=False)，生成无效代码",
+      "repair": "none"
+    },
+    {
+      "case": "swin",
+      "round": 0,
+      "code": "CONVERT_FAILED",
+      "stage": "official_jittor",
+      "symptom": "官方转换器不支持多参数 reshape 和 AdaptiveAvgPool1d，生成文件语法失败",
+      "repair": "none"
+    },
+    {
+      "case": "swin",
+      "round": 3,
+      "code": "JITTOR_RUN_FAILED",
+      "stage": "align",
+      "symptom": "jittor.nn 缺少 AdaptiveAvgPool1d",
+      "repair": "compat.adaptive-pool"
+    },
+    {
+      "case": "vit_pytorch",
+      "round": 1,
+      "code": "TORCH_RUN_FAILED",
+      "stage": "align",
+      "symptom": "from torch.nn import Module 导致 forward 未改为 execute",
+      "repair": "module.forward-to-execute"
+    },
+    {
+      "case": "vit_pytorch",
+      "round": 2,
+      "code": "TORCH_RUN_FAILED",
+      "stage": "align",
+      "symptom": "einops 不识别 jittor.Var",
+      "repair": "compat.einops"
+    },
+    {
+      "case": "vae",
+      "round": 1,
+      "code": "JITTOR_CONVERT_FAILED",
+      "stage": "migration",
+      "symptom": "模型级验证被无关 train() 中的 loss.backward 阻塞",
+      "repair": "scope.prune-code"
+    },
+    {
+      "case": "vae",
+      "round": 2,
+      "code": "JITTOR_RUN_FAILED",
+      "stage": "check",
+      "symptom": "模型切片裁掉 args 后仍保留 jt.set_global_seed(args.seed)",
+      "repair": "scope.prune-code"
+    },
+    {
+      "case": "vae",
+      "round": 4,
+      "code": "TORCH_RUN_FAILED",
+      "stage": "align",
+      "symptom": "源端 argparse.parse_args 读取 TorchPort capture 参数",
+      "repair": "probe.argv-isolation"
+    },
+    {
+      "case": "vae",
+      "round": 5,
+      "code": "SOURCE_SIDE_EFFECT",
+      "stage": "align",
+      "symptom": "源端加载原始训练脚本触发数据集和 DataLoader 顶层副作用",
+      "repair": "source.model-scope"
+    }
+  ]
+}

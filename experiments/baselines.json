@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "methods": [
+    {
+      "id": "official_jittor",
+      "name": "Jittor 官方转换器",
+      "agent": false,
+      "uses_torchport": false,
+      "uses_parity": false,
+      "protocol": "逐文件调用 jittor.utils.pytorch_converter.convert，随后手动执行目标端导入和 forward 检查。"
+    },
+    {
+      "id": "codex",
+      "name": "纯 Codex",
+      "agent": true,
+      "uses_torchport": false,
+      "uses_parity": false,
+      "protocol": "Codex 直接阅读仓库、修改代码、运行命令；不允许调用 torchport scan/migrate/verify/compare。"
+    },
+    {
+      "id": "pure_dsh",
+      "name": "纯 DSH",
+      "agent": true,
+      "uses_torchport": false,
+      "uses_parity": false,
+      "protocol": "DSH 直接分析和修改仓库；不允许调用 TorchPort 工具，只能使用普通 shell 和日志。"
+    },
+    {
+      "id": "dsh_torchport",
+      "name": "DSH + TorchPort",
+      "agent": true,
+      "uses_torchport": true,
+      "uses_parity": true,
+      "protocol": "DSH 根据 TorchPort 的入口证书、迁移报告、双端执行和数值证书选择下一轮动作。"
+    }
+  ]
+}

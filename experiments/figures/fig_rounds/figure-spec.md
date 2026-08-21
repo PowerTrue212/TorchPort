@@ -1,0 +1,28 @@
+# Figure Spec
+
+- chart_type: line
+- data_sources: experiments/figures/fig_rounds/data.csv
+- rows_in_scope: all eight recorded DSH SuperRes repair rounds
+- data_columns: round, stage, code
+- x_axis:
+  - field: round
+  - label: Repair round
+  - unit: iteration
+  - scale: linear
+  - range: 1 to 8
+- y_axis:
+  - field: stage
+  - label: Highest stage reached
+  - unit: validation stage
+  - scale: linear
+  - range: CV to SA
+- additional_axes: none
+- series_or_categories: one DSH + TorchPort trajectory
+- category_order: round 1 through round 8
+- color_mapping: trajectory = blue, verified endpoint = green
+- legend: none
+- required_annotations: verified endpoint and metric key
+- forbidden_elements: interpolated rounds, fabricated success, SA pass claim
+- layout_constraints: compact single panel
+- source_note: experiments/stage3_method/trajectory.md
+- assumptions: a failed parity round has already reached RN; a target execution failure reaches CV only

@@ -1,0 +1,29 @@
+# Figure Spec
+
+- chart_type: paired_model_visuals
+- data_sources: experiments/data/tensors/model_maps.npz
+- rows_in_scope: Super-resolution captured PyTorch and Jittor tensors
+- data_columns: paired source and target arrays for out, edge
+- x_axis:
+  - field: spatial column or channel index
+  - label: visual type
+  - unit: model coordinate
+  - scale: linear
+- y_axis:
+  - field: spatial row or activation value
+  - label: none for image maps
+  - unit: model coordinate or activation
+  - scale: linear
+- additional_axes: none
+- panels:
+  - PyTorch and Jittor SR output
+  - PyTorch and Jittor High-frequency detail
+- series_or_categories: PyTorch, Jittor
+- category_order: PyTorch, Jittor
+- legend: none except VAE latent mean and standard deviation
+- required_annotations: framework name above every panel; visual type below every panel
+- layout_constraints: framework name above each image; visual type below each image
+- color_mapping: identical scale for each PyTorch/Jittor pair
+- forbidden_elements: PT-JT difference panel, synthetic tensors, independently normalized pairs
+- source_note: TorchPort source.npz and target.npz alignment certificates
+- assumptions: tensors come from the same TorchPort alignment certificate and shared input

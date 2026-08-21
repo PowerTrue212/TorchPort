@@ -1,0 +1,37 @@
+schema_version: 1
+
+models:
+  - id: cnn-resnet18
+    family: CNN
+    source_framework: pytorch
+    repository: timm/resnet18.a1_in1k
+    revision: 491b427b45c94c7fb0e78b5474cc919aff584bbf
+    license: Apache-2.0
+    files:
+      - config.json
+      - model.safetensors
+    input:
+      shape: [1, 3, 224, 224]
+      dtype: float32
+    purpose:
+      - 权重名称与卷积层迁移
+      - BatchNorm 运行状态迁移
+      - 基础分层数值对齐
+
+  - id: vit-tiny-patch16
+    family: ViT
+    source_framework: pytorch
+    repository: timm/vit_tiny_patch16_224.augreg_in21k_ft_in1k
+    revision: 20ea349d1a6fc5fa69a3ae25add5ffae05f228de
+    license: Apache-2.0
+    files:
+      - config.json
+      - model.safetensors
+    input:
+      shape: [1, 3, 224, 224]
+      dtype: float32
+    purpose:
+      - 图像分块和位置编码迁移
+      - 注意力与 LayerNorm 数值对齐
+      - 首次数值分歧点定位
+

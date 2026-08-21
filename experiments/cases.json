@@ -1,0 +1,54 @@
+{
+  "schema_version": 1,
+  "cases": [
+    {
+      "id": "pytorch_unet",
+      "type": "segmentation",
+      "source": "/data/L202500448/torchport/artifacts/real-runs/0350-entry2-1787203101/sources/pytorch_unet",
+      "entry": "unet/unet_model.py"
+    },
+    {
+      "id": "resnet_cifar10",
+      "type": "cnn",
+      "source": "/data/L202500448/torchport/artifacts/real-runs/0350-entry2-1787203101/sources/resnet_cifar10",
+      "entry": "resnet.py"
+    },
+    {
+      "id": "senet",
+      "type": "cnn_attention",
+      "source": "/data/L202500448/torchport/artifacts/real-runs/0350-entry2-1787203101/sources/senet",
+      "entry": "senet/se_resnet.py"
+    },
+    {
+      "id": "mae",
+      "type": "masked_transformer",
+      "source": "/data/L202500448/torchport/artifacts/real-runs/0350-entry-1787202833/sources/mae",
+      "entry": "models_mae.py"
+    },
+    {
+      "id": "superres",
+      "type": "super_resolution",
+      "source": "/data/L202500448/torchport/artifacts/real-runs/0350-entry-1787202833/sources/pytorch_examples_superres",
+      "entry": "super_resolution/model.py"
+    },
+    {
+      "id": "swin",
+      "type": "hierarchical_transformer",
+      "source": "/data/L202500448/torchport/artifacts/real-runs/0350-entry-1787202833/sources/swin_transformer",
+      "entry": "models/swin_transformer.py"
+    },
+    {
+      "id": "vit_pytorch",
+      "type": "third_party_transformer",
+      "source": "/data/L202500448/torchport/artifacts/real-runs/0350-entry-1787202833/sources/vit_pytorch",
+      "entry": "vit_pytorch/vit.py"
+    },
+    {
+      "id": "vae",
+      "type": "generative",
+      "source": "/data/L202500448/torchport/artifacts/real-runs/0350-entry-1787202833/sources/pytorch_examples_superres",
+      "entry": "vae/main.py",
+      "status": "verified_dsh_torchport"
+    }
+  ]
+}

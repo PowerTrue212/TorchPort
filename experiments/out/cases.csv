@@ -1,0 +1,17 @@
+case,decision,first,fp32,method,status,strict,tensors,weights_loaded,weights_total
+mae,syntax-error-parameter-requires-grad,,False,official_jittor,failed,False,0,0,0
+pytorch_unet,syntax-only,,False,official_jittor,converted,False,0,0,0
+resnet_cifar10,syntax-error-line-35,,False,official_jittor,failed,False,0,0,0
+senet,syntax-only,,False,official_jittor,converted,False,0,0,0
+superres,syntax-only,,False,official_jittor,converted,False,0,0,0
+swin,syntax-error-line-64,,False,official_jittor,failed,False,0,0,0
+vae,syntax-only,,False,official_jittor,converted,False,0,0,0
+vit_pytorch,syntax-error-line-90,,False,official_jittor,failed,False,0,0,0
+pytorch_unet,,inc.double_conv.1,True,dsh_torchport,verified,False,100,100,100
+resnet_cifar10,,layer1.0.conv2,True,dsh_torchport,verified,False,84,97,97
+senet,,bn1,True,dsh_torchport,verified,False,142,125,125
+mae,fix-random-replay,blocks.0.attn.qkv,True,dsh_torchport,verified,False,332,254,254
+superres,fix-explicit-entry,conv3,True,dsh_torchport,verified,False,10,8,8
+swin,fix-adaptive-pool,,True,dsh_torchport,verified,True,48,39,39
+vit_pytorch,fix-einops-backend,,True,dsh_torchport,verified,True,28,23,23
+vae,fix-source-scope,fc3,True,dsh_torchport,verified,False,12,10,10

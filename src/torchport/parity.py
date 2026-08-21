@@ -1,0 +1,158 @@
+from __future__ import annotations
+
+from pathlib import Path
+from typing import Any
+
+import numpy as np
+
+TOLERANCE_PROFILES: dict[str, tuple[float, float]] = {
+    "operator-strict": (1e-5, 1e-6),
+    "fp32-inference": (1e-4, 1e-4),
+}
+
+
+def compare_tensor_archives(
+    reference_path: str | Path,
+    candidate_path: str | Path,
+    *,
+    profile: str = "fp32-inference",
+    rtol: float | None = None,
+    atol: float | None = None,
+) -> dict[str, Any]:
+    """比较两个 NPZ 证据包，并按参考包顺序定位首次分歧。"""
+    reference_path = Path(reference_path).expanduser().resolve()
+    candidate_path = Path(candidate_path).expanduser().resolve()
+    if profile not in TOLERANCE_PROFILES:
+        raise ValueError(f"未知容差配置：{profile}")
+    profile_rtol, profile_atol = TOLERANCE_PROFILES[profile]
+    rtol = profile_rtol if rtol is None else rtol
+    atol = profile_atol if atol is None else atol
+    if rtol < 0 or atol < 0:
+        raise ValueError("rtol 和 atol 必须是非负数。")
+    if not reference_path.is_file():
+        raise ValueError(f"参考证据不存在：{reference_path}")
+    if not candidate_path.is_file():
+        raise ValueError(f"候选证据不存在：{candidate_path}")
+
+    comparisons: list[dict[str, Any]] = []
+    first_divergence: dict[str, Any] | None = None
+    first_gating_divergence: dict[str, Any] | None = None
+    with np.load(reference_path, allow_pickle=False) as reference, np.load(
+        candidate_path,
+        allow_pickle=False,
+    ) as candidate:
+        reference_names = list(reference.files)
+        candidate_names = list(candidate.files)
+        if profile == "fp32-inference" and "output" not in reference_names:
+            raise ValueError("fp32-inference 参考证据必须包含 output。")
+        missing = [name for name in reference_names if name not in candidate]
+        extra = [name for name in candidate_names if name not in reference]
+
+        for position, name in enumerate(reference_names):
+            gating = (
+                profile == "operator-strict"
+                or name == "output"
+                or name.startswith(("output.", "input."))
+                or name == "input"
+            )
+            if name not in candidate:
+                item = {
+                    "name": name,
+                    "position": position,
+                    "passed": False,
+                    "reason": "候选证据缺少该张量",
+                }
+            else:
+                item = compare_arrays(
+                    reference[name],
+                    candidate[name],
+                    rtol=rtol,
+                    atol=atol,
+                )
+                item.update({"name": name, "position": position})
+            item["gating"] = gating
+            comparisons.append(item)
+            if first_divergence is None and not item["passed"]:
+                first_divergence = {
+                    "name": name,
+                    "position": position,
+                    "reason": item.get("reason", "数值超出容差"),
+                }
+            if first_gating_divergence is None and gating and not item["passed"]:
+                first_gating_divergence = {
+                    "name": name,
+                    "position": position,
+                    "reason": item.get("reason", "数值超出容差"),
+                }
+
+    return {
+        "schema_version": 1,
+        "reference": str(reference_path),
+        "candidate": str(candidate_path),
+        "rtol": rtol,
+        "atol": atol,
+        "profile": profile,
+        "passed": first_gating_divergence is None,
+        "first_divergence": first_divergence,
+        "first_gating_divergence": first_gating_divergence,
+        "missing_in_candidate": missing,
+        "extra_in_candidate": extra,
+        "tensors": comparisons,
+    }
+
+
+def compare_arrays(
+    reference: np.ndarray,
+    candidate: np.ndarray,
+    *,
+    rtol: float = 1e-4,
+    atol: float = 1e-5,
+) -> dict[str, Any]:
+    reference = np.asarray(reference)
+    candidate = np.asarray(candidate)
+    base = {
+        "reference_shape": list(reference.shape),
+        "candidate_shape": list(candidate.shape),
+        "reference_dtype": str(reference.dtype),
+        "candidate_dtype": str(candidate.dtype),
+    }
+    if reference.shape != candidate.shape:
+        if reference.size == 1 and candidate.size == 1:
+            reference = reference.reshape((1,))
+            candidate = candidate.reshape((1,))
+            base["shape_normalized"] = "scalar-singleton"
+        else:
+            return {**base, "passed": False, "reason": "张量形状不同"}
+
+    reference64 = reference.astype(np.float64, copy=False)
+    candidate64 = candidate.astype(np.float64, copy=False)
+    finite = np.isfinite(reference64) & np.isfinite(candidate64)
+    if not bool(np.all(finite)):
+        return {**base, "passed": False, "reason": "张量包含 NaN 或无穷值"}
+
+    absolute_error = np.abs(reference64 - candidate64)
+    tolerance = atol + rtol * np.abs(reference64)
+    mismatch_mask = absolute_error > tolerance
+    denominator = np.maximum(np.abs(reference64), np.finfo(np.float64).eps)
+    relative_error = absolute_error / denominator
+    reference_flat = reference64.reshape(-1)
+    candidate_flat = candidate64.reshape(-1)
+    norm_product = float(np.linalg.norm(reference_flat) * np.linalg.norm(candidate_flat))
+    cosine_similarity = (
+        float(np.dot(reference_flat, candidate_flat) / norm_product)
+        if norm_product > 0
+        else (1.0 if np.array_equal(reference64, candidate64) else 0.0)
+    )
+    return {
+        **base,
+        "passed": not bool(np.any(mismatch_mask)),
+        "mismatched_elements": int(np.count_nonzero(mismatch_mask)),
+        "mismatch_ratio": float(np.mean(mismatch_mask)) if mismatch_mask.size else 0.0,
+        "max_absolute_error": float(absolute_error.max(initial=0.0)),
+        "mean_absolute_error": float(absolute_error.mean()) if absolute_error.size else 0.0,
+        "p99_absolute_error": (
+            float(np.quantile(absolute_error, 0.99)) if absolute_error.size else 0.0
+        ),
+        "max_relative_error": float(relative_error.max(initial=0.0)),
+        "cosine_similarity": cosine_similarity,
+    }

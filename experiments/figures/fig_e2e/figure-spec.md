@@ -1,0 +1,28 @@
+# Figure Spec
+
+- chart_type: categorical_line
+- data_sources: experiments/figures/fig_e2e/data.csv
+- rows_in_scope: measured SuperRes official-converter and DSH + TorchPort results
+- data_columns: method, stage, value, note
+- x_axis:
+  - field: stage
+  - label: Validation stage
+  - unit: category
+  - scale: linear
+  - range: CV to SA
+- y_axis:
+  - field: value
+  - label: Outcome
+  - unit: pass/fail
+  - scale: linear
+  - range: 0 to 1
+- additional_axes: none
+- series_or_categories: Official, Ours
+- category_order: CV, RN, NA, SA
+- color_mapping: Official = orange, Ours = blue, not reached = gray
+- legend: direct labels at each series endpoint
+- required_annotations: metric key and official not-reached markers
+- forbidden_elements: treating not-reached as failure, fabricated Codex or pure-DSH values
+- layout_constraints: compact single panel with no legend overlap or empty right margin
+- source_note: PyTorch examples SuperRes, same Jittor 1.3.11 environment
+- assumptions: CV=converted; RN=runnable; NA=numerical alignment; SA=strict alignment

@@ -1,0 +1,8 @@
+- insert:
+    - id: torchport
+      name: '@torchport/dsh-plugin'
+      config:
+        python: !!js process.env.TORCHPORT_PYTHON || 'python'
+        pythonPath: !!js process.env.TORCHPORT_PYTHONPATH || ''
+        traceDir: !!js process.env.TORCHPORT_TRACE_DIR || '.torchport/dsh'
+        timeoutMs: 900000

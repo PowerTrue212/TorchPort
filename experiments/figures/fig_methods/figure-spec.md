@@ -1,0 +1,23 @@
+# Figure Spec
+
+- chart_type: horizontal_grouped_bar
+- data_sources: experiments/figures/fig_methods/methods.csv
+- rows_in_scope: measured baselines with cases > 0
+- x_axis:
+  - field: percent
+  - label: Success rate
+  - unit: percent
+  - scale: linear
+- y_axis:
+  - field: metric
+  - label: Result metric
+  - unit: category
+  - scale: linear
+- series_or_categories: Official, Ours
+- category_order: RN, NA, SA
+- label_map:
+  - Official = Jittor official converter
+  - Ours = DSH + TorchPort
+- legend: upper right
+- forbidden_elements: conversion-only success counted as runnable
+- assumptions: verified means runnable end-to-end; fp32 means numerically aligned

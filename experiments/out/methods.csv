@@ -1,0 +1,5 @@
+cases,converted,fp32,method,name,status,strict,uses_parity,uses_torchport,verified
+8,4,0,official_jittor,Jittor 官方转换器,run,0,False,False,0
+0,0,0,codex,纯 Codex,pending,0,False,False,0
+0,0,0,pure_dsh,纯 DSH,pending,0,False,False,0
+8,8,8,dsh_torchport,DSH + TorchPort,run,2,True,True,8

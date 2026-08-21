@@ -1,0 +1,4 @@
+model:
+  type: Net
+  width: 4
+  hidden: 6

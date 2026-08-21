@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "kind": "torchport.dsh-report",
+  "status": "verified",
+  "passed": true,
+  "fp32": true,
+  "strict": false,
+  "first": "conv3",
+  "actions": [],
+  "agent": {
+    "candidate": "runtime.target-python",
+    "decision": "统一目标解释器与 ABI 环境：运行检查与目标端采集统一使用 targetPython（jittor-env），sourcePython 仅用于源端采集；消除第 7 轮发现的 NumPy 2/1 交替导致 Jittor 缓存重编译问题；退出码 0 但 NPZ 缺失时保留真实日志供审计。",
+    "mode": "dsh",
+    "round": 8
+  },
+  "artifacts": {
+    "report": "/data/L202500448/torchport/artifacts/dsh-runs/e2e-superres/out-r8/.torchport/auto.json",
+    "run_root": "/data/L202500448/torchport/artifacts/dsh-runs/e2e-superres/align-r8"
+  }
+}

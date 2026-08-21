@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "method": "official_jittor",
+  "case": "superres",
+  "source": "pytorch/examples:super_resolution",
+  "entry": "super_resolution/model.py",
+  "status": "run_failed",
+  "stages": {
+    "convert": true,
+    "syntax": true,
+    "runnable": false,
+    "fp32": null,
+    "strict": null
+  },
+  "convert_seconds": 17.995,
+  "error": "AttributeError: module 'jittor.init' has no attribute 'orthogonal_'",
+  "environment": {
+    "jittor": "1.3.11.0",
+    "numpy": "1.26.4"
+  }
+}

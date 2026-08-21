@@ -1,0 +1,33 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.coverage
+build/
+dist/
+.venv/
+.env
+
+# 下载的模型和运行产物不进入 Git。
+artifacts/models/*
+!artifacts/models/.gitkeep
+artifacts/runs/
+artifacts/python-deps/
+artifacts/jittor-deps/
+artifacts/dist/
+artifacts/trash/
+artifacts/dsh-runs/
+
+# 本地 DSH/Node 构建和远端工具链。
+integrations/dsh/node_modules/
+integrations/dsh/lib/
+integrations/dsh/*.tgz
+tools/
+
+# 实验脚本缓存。
+experiments/**/__pycache__/
+
+# 论文参考图原始下载件不进入开源仓库；保留 prompts/ref_images/README.md 中的来源说明。
+experiments/prompts/ref_images/*
+!experiments/prompts/ref_images/README.md

@@ -1,0 +1,118 @@
+{
+  "artifacts": {
+    "report": "/data/L202500448/torchport/artifacts/dsh-runs/e2e-superres/align-r8/report.json",
+    "source": "/data/L202500448/torchport/artifacts/dsh-runs/e2e-superres/align-r8/source.npz",
+    "strict": "/data/L202500448/torchport/artifacts/dsh-runs/e2e-superres/align-r8/strict.json",
+    "target": "/data/L202500448/torchport/artifacts/dsh-runs/e2e-superres/align-r8/target.npz",
+    "weights": "/data/L202500448/torchport/artifacts/dsh-runs/e2e-superres/align-r8/weights.npz"
+  },
+  "checkpoint": {
+    "complete": true,
+    "requested": false
+  },
+  "fp32": {
+    "extra": [],
+    "first": null,
+    "first_any": null,
+    "missing": [],
+    "passed": true
+  },
+  "frameworks": {
+    "source": {
+      "name": "pytorch",
+      "version": "2.6.0+cu124"
+    },
+    "target": {
+      "name": "jittor",
+      "version": "1.3.11.0"
+    }
+  },
+  "kind": "torchport.repository-certificate",
+  "passed": true,
+  "schema_version": 1,
+  "source": "/data/L202500448/torchport/artifacts/dsh-runs/e2e-superres/align-r8/source_scope",
+  "spec": {
+    "args": [
+      2
+    ],
+    "candidates": [
+      {
+        "file": "model.py",
+        "input_specs": [
+          {
+            "dtype": "float32",
+            "shape": [
+              1,
+              1,
+              32,
+              32
+            ]
+          }
+        ],
+        "inputs": [
+          "x"
+        ],
+        "kind": "class",
+        "name": "model.Net",
+        "required": [
+          "upscale_factor"
+        ]
+      }
+    ],
+    "dtype": "float32",
+    "entry": "model.py",
+    "env": {},
+    "inputs": [
+      {
+        "dtype": "float32",
+        "shape": [
+          1,
+          1,
+          16,
+          16
+        ]
+      }
+    ],
+    "kwargs": {},
+    "model": "Net",
+    "required": [],
+    "shape": [
+      1,
+      1,
+      16,
+      16
+    ],
+    "status": "ready",
+    "weights": null
+  },
+  "status": "verified",
+  "strict": {
+    "extra": [],
+    "first": {
+      "name": "conv3",
+      "position": 5,
+      "reason": "数值超出容差"
+    },
+    "first_any": {
+      "name": "conv3",
+      "position": 5,
+      "reason": "数值超出容差"
+    },
+    "missing": [],
+    "passed": false
+  },
+  "target": "/data/L202500448/torchport/artifacts/dsh-runs/e2e-superres/out-r8",
+  "tensors": {
+    "input_identical": true,
+    "source": 10,
+    "source_sha256": "020aa61d59407ff1cc35a1b3e9901d7283121410bd3f5dcb9f01b5ce6a504b17",
+    "target": 10,
+    "target_sha256": "1499856df7cfeb4553188d464586443b4d97c2afe4a81deaf0b483573ea2db17"
+  },
+  "weights": {
+    "complete": true,
+    "loaded": 8,
+    "sha256": "598a95fd38ccac0130cfc5d67ef090a15f849c71003523cba3614f79245adf68",
+    "source": 8
+  }
+}

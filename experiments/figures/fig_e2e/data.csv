@@ -1,0 +1,9 @@
+method,stage,value,note
+Official,CV,1,converted and parsed
+Official,RN,0,init.orthogonal_ unavailable
+Official,NA,,not reached
+Official,SA,,not reached
+Ours,CV,1,converted
+Ours,RN,1,Jittor forward completed
+Ours,NA,1,FP32 output passed
+Ours,SA,0,first divergence at conv3
