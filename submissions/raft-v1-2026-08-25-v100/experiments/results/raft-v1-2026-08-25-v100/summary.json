@@ -1,0 +1,166 @@
+{
+  "alignment": {
+    "atol": 0.0001,
+    "equal_nan": false,
+    "rtol": 0.0001
+  },
+  "protocol_version": "raft-v1-frozen-2026-08-24",
+  "results": [
+    {
+      "atol": 0.0001,
+      "display_name": "Codex",
+      "elapsed_seconds": 3.632447548210621,
+      "failure": null,
+      "gpu_names": [
+        "Tesla V100-SXM2-16GB"
+      ],
+      "jittor_version": "1.3.11.0",
+      "max_error": 0.00012373924255371094,
+      "max_framework_flow_difference": 0.00014728095451779725,
+      "mean_error": 6.725161473560466e-06,
+      "mean_framework_flow_difference": 1.0564476501072816e-05,
+      "method": "codex",
+      "na": true,
+      "numpy_version": "1.26.4",
+      "p99_framework_flow_difference": 4.6562004669613084e-05,
+      "protocol_version": "raft-v1-frozen-2026-08-24",
+      "rn": true,
+      "rounds": 5,
+      "rtol": 0.0001,
+      "shape": [
+        1,
+        2,
+        384,
+        512
+      ],
+      "status": "passed",
+      "success": true
+    },
+    {
+      "agent_metrics": {
+        "accounting_note": "Agent elapsed is a session-wall measurement from session start to stop and includes user pauses or idle intervals. Provider-reported token fields were summed across model calls; cache-read tokens remain separate.",
+        "agent_elapsed_kind": "session_wall",
+        "agent_elapsed_seconds": 14460.223,
+        "agent_turns": 4,
+        "ended_at_utc": "2026-08-25T08:54:14.390000+00:00",
+        "forbidden_torchport_calls": 0,
+        "method": "dsh",
+        "model_calls": 468,
+        "schema_version": 1,
+        "session_id": "session-8d5c1b6d-ad22-44dd-a343-d62c03acf56a",
+        "source_log_sha256": "4eabb8ea43b82e0972b470e461a6ed70381a57d0051323df4a5f57a5421071b1",
+        "started_at_utc": "2026-08-25T04:53:14.167000+00:00",
+        "status": "stopped_failed",
+        "token_usage_raw": {
+          "cache_read_tokens": 165053824,
+          "input_tokens": 207310,
+          "output_tokens": 458455,
+          "reasoning_tokens": 283328
+        },
+        "tool_calls": 510,
+        "tool_calls_by_name": {
+          "create_goal": 1,
+          "edit": 61,
+          "grep": 2,
+          "job_output": 21,
+          "pwsh": 231,
+          "read": 23,
+          "todo_write": 1,
+          "update_goal": 1,
+          "viking_add_resource": 2,
+          "web_search": 2,
+          "write": 165
+        },
+        "wall_elapsed_seconds": 14460.223
+      },
+      "atol": 0.0001,
+      "display_name": "DSH",
+      "elapsed_seconds": 73.62942475406453,
+      "failure": null,
+      "gpu_names": [
+        "Tesla V100-SXM2-16GB"
+      ],
+      "jittor_version": "1.3.11.0",
+      "max_error": 0.0002664327621459961,
+      "max_framework_flow_difference": 0.0002681748297647645,
+      "mean_error": 6.571474921483282e-06,
+      "mean_framework_flow_difference": 1.0335421647018245e-05,
+      "method": "dsh",
+      "na": false,
+      "numpy_version": "1.26.4",
+      "p99_framework_flow_difference": 4.153682754561117e-05,
+      "protocol_version": "raft-v1-frozen-2026-08-24",
+      "rn": true,
+      "rounds": 1,
+      "rtol": 0.0001,
+      "shape": [
+        1,
+        2,
+        384,
+        512
+      ],
+      "status": "stopped_failed",
+      "success": false,
+      "termination": {
+        "final_workspace": {
+          "evaluated": false,
+          "local_submission_sha256": "d6f22b8c62c08c4e07dd64cc59bf9a2d6e5175d67470068728ff1b872f6b3726",
+          "note": "Both workspace copies changed after the last public evaluator and were not accepted as final results.",
+          "remote_submission_sha256": "aef7104f01dc09187f8e8b4ed3d63c991a77007419409d174806b8aa6f033068"
+        },
+        "last_public_evaluator": {
+          "flow_up_sha256": "f069bedf01f3ef17aa3f37965124c451d234e6105476bb2e2fe7f9f65dddda02",
+          "max_error": 0.0002664327621459961,
+          "mean_error": 6.571474921483282e-06,
+          "na": false,
+          "result_sha256": "efa8f352d94577b7a7051767b270764332fcb364e22c25faad88a6b76ce66dc1",
+          "rn": true,
+          "rounds": 1
+        },
+        "method": "dsh",
+        "method_integrity": {
+          "forbidden_torchport_calls_observed": 0,
+          "note": "The recorded DSH session was launched with the ordinary web profile before the isolated launcher was introduced. No TorchPort call occurred, but tool visibility means the run is not a clean isolated baseline.",
+          "runtime_tool_isolation_enforced": false,
+          "torchport_tools_exposed_to_model": true
+        },
+        "reason": "Pure DSH was stopped after Round 1 without achieving stable numerical alignment.",
+        "schema_version": 1,
+        "status": "stopped_failed",
+        "success": false,
+        "terminated_at_utc": "2026-08-25T08:55:49.7928030Z",
+        "terminated_by": "user"
+      }
+    },
+    {
+      "atol": 0.0001,
+      "display_name": "DSH + TorchPort",
+      "elapsed_seconds": 5.296272316947579,
+      "failure": null,
+      "gpu_names": [
+        "Tesla V100-SXM2-16GB"
+      ],
+      "jittor_version": "1.3.11.0",
+      "max_error": 0.00014865398406982422,
+      "max_framework_flow_difference": 0.00014866546719960518,
+      "mean_error": 6.801289369473551e-06,
+      "mean_framework_flow_difference": 1.0713189155148456e-05,
+      "method": "dsh_torchport",
+      "na": true,
+      "numpy_version": "1.26.4",
+      "p99_framework_flow_difference": 4.5636425538032507e-05,
+      "protocol_version": "raft-v1-frozen-2026-08-24",
+      "rn": true,
+      "rounds": 1,
+      "rtol": 0.0001,
+      "shape": [
+        1,
+        2,
+        384,
+        512
+      ],
+      "status": "passed",
+      "success": true
+    }
+  ]
+}

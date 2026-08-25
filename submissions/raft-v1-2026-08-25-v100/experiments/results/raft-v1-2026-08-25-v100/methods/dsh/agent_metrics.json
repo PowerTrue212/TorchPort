@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "method": "dsh",
+  "session_id": "session-8d5c1b6d-ad22-44dd-a343-d62c03acf56a",
+  "status": "stopped_failed",
+  "started_at_utc": "2026-08-25T04:53:14.167000+00:00",
+  "ended_at_utc": "2026-08-25T08:54:14.390000+00:00",
+  "wall_elapsed_seconds": 14460.223,
+  "agent_elapsed_seconds": 14460.223,
+  "agent_elapsed_kind": "session_wall",
+  "agent_turns": 4,
+  "model_calls": 468,
+  "tool_calls": 510,
+  "tool_calls_by_name": {
+    "pwsh": 231,
+    "write": 165,
+    "edit": 61,
+    "read": 23,
+    "job_output": 21,
+    "viking_add_resource": 2,
+    "web_search": 2,
+    "grep": 2,
+    "create_goal": 1,
+    "todo_write": 1,
+    "update_goal": 1
+  },
+  "token_usage_raw": {
+    "input_tokens": 207310,
+    "output_tokens": 458455,
+    "cache_read_tokens": 165053824,
+    "reasoning_tokens": 283328
+  },
+  "forbidden_torchport_calls": 0,
+  "source_log_sha256": "4eabb8ea43b82e0972b470e461a6ed70381a57d0051323df4a5f57a5421071b1",
+  "accounting_note": "Agent elapsed is a session-wall measurement from session start to stop and includes user pauses or idle intervals. Provider-reported token fields were summed across model calls; cache-read tokens remain separate."
+}

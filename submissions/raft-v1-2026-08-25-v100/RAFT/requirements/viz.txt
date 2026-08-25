@@ -1,0 +1,2 @@
+# Reporting runs in the source environment and imports neither framework.
+matplotlib==3.10.0

@@ -1,0 +1,4 @@
+method,display_name,status,success,rn,na,max_error,mean_error,mean_framework_flow_difference,p99_framework_flow_difference,max_framework_flow_difference,rounds,evaluator_seconds,agent_elapsed_seconds,agent_elapsed_kind,input_tokens,output_tokens,reasoning_tokens,cache_read_tokens,non_cache_tokens
+codex,Codex,passed,True,True,True,0.00012373924255371094,6.725161473560466e-06,1.0564476501072816e-05,4.6562004669613084e-05,0.00014728095451779725,5,3.632447548210621,,,,,,,
+dsh,DSH,stopped_failed,False,True,False,0.0002664327621459961,6.571474921483282e-06,1.0335421647018245e-05,4.153682754561117e-05,0.0002681748297647645,1,73.62942475406453,14460.223,session_wall,207310,458455,283328,165053824,949093
+dsh_torchport,DSH + TorchPort,passed,True,True,True,0.00014865398406982422,6.801289369473551e-06,1.0713189155148456e-05,4.5636425538032507e-05,0.00014866546719960518,1,5.296272316947579,,,,,,,

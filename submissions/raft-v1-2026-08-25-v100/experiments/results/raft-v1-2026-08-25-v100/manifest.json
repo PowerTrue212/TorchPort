@@ -1,0 +1,194 @@
+{
+  "schema_version": 1,
+  "run_id": "raft-v1-2026-08-25-v100",
+  "storage_policy": {
+    "git": "compact sanitized evidence and selected figures",
+    "data_fs": "weights, fixtures, references, workspaces, arrays, full traces, and session logs"
+  },
+  "public_files": [
+    {
+      "path": "audit.json",
+      "bytes": 684,
+      "sha256": "1602da786aeeaf1b40b88d6d30cc4e9e009e3471bd5590d21323cd0bf42a8fca"
+    },
+    {
+      "path": "methods/codex/result.json",
+      "bytes": 655,
+      "sha256": "8e95e2aa28811e4425ce8cd40d1a0944f53604b60a377fdd4bf279c6b40f491d"
+    },
+    {
+      "path": "methods/codex/rounds.jsonl",
+      "bytes": 3838,
+      "sha256": "d66b33b9746e418217e02007581e7a5fc841f87a804fca0136c89c6c1db0e5ba"
+    },
+    {
+      "path": "methods/dsh/agent_metrics.json",
+      "bytes": 1227,
+      "sha256": "d4b8f8917968e2306e46cd540075b006561f8f76dd4cf13d2bce53193af13827"
+    },
+    {
+      "path": "methods/dsh/isolation.json",
+      "bytes": 661,
+      "sha256": "99db38a7bb581c1e60d33786e2567ce808a49058c86a470c0f42c6b1387c7b87"
+    },
+    {
+      "path": "methods/dsh/result.json",
+      "bytes": 651,
+      "sha256": "7b9656b05c95cf65cd7e881aba1c3d7b7be86f695872b464386c93763f3e6ebd"
+    },
+    {
+      "path": "methods/dsh/rounds.jsonl",
+      "bytes": 1061,
+      "sha256": "fecc14e9045cdba038260556bb7af3c1892b06bdecf6264381531b0a59dcc9f0"
+    },
+    {
+      "path": "methods/dsh/termination.json",
+      "bytes": 1402,
+      "sha256": "72201d6e2877ce3bffa573773834ae54a3f26b0f391f16f43a60822be59ce48f"
+    },
+    {
+      "path": "methods/dsh_torchport/result.json",
+      "bytes": 663,
+      "sha256": "4adef3ca3361569c5596b3c0ffd2caaf321bde5bf5b8e6462e59848161ae9fbc"
+    },
+    {
+      "path": "methods/dsh_torchport/rounds.jsonl",
+      "bytes": 564,
+      "sha256": "acd89379cb065de06d5b604501e990346712e4f65af61b47c73afdfa4fc2695a"
+    },
+    {
+      "path": "protocol.json",
+      "bytes": 4392,
+      "sha256": "4b4124a9559fb84d87d2b55c9f2f68b520edea6312d82bd9998af4dbc400c67c"
+    },
+    {
+      "path": "README.md",
+      "bytes": 619,
+      "sha256": "cf81825e659fabaa868ee89c3d5621af6e20f81df5e345dd546689e3d51fe847"
+    },
+    {
+      "path": "reports/deepseek_strict_analysis.md",
+      "bytes": 12913,
+      "sha256": "9e0d351d7f5fad09df364431ba3415b837bfbe8d693e6c372e6653d46230c568"
+    },
+    {
+      "path": "summary.json",
+      "bytes": 5789,
+      "sha256": "b0054f70c3852060ac1b059d45fe1de6c885c68bfde4a81f17070cf65447f795"
+    },
+    {
+      "path": "torchport/certificate.json",
+      "bytes": 49791,
+      "sha256": "4efa578b44541128a9b536cadefd640944996f538770af3975905deeeefe29fe"
+    },
+    {
+      "path": "torchport/certification_report.json",
+      "bytes": 966,
+      "sha256": "ac2f6c48c47078b8a20c858309deb9c4d45b625542a91735f28152a04a2142dc"
+    },
+    {
+      "path": "torchport/compare_fp32.json",
+      "bytes": 20780,
+      "sha256": "6646d23546ec13208e6bb1144025b7ddd28a28ee1dbcc458a2c6c28dbdd7d917"
+    },
+    {
+      "path": "torchport/compare_strict.json",
+      "bytes": 21273,
+      "sha256": "7194728b11900c1440f0ae706f5a7719db361019fc24e5ae6038803d56b22798"
+    },
+    {
+      "path": "torchport/plan.json",
+      "bytes": 2067,
+      "sha256": "eb9d641aef84041454643b414e2339cc955f916ba2d3438df6ee3221a3ec5c42"
+    },
+    {
+      "path": "torchport/scan.json",
+      "bytes": 942,
+      "sha256": "297faee853b2b684559c278a3f204229cd083a3a5b2c90dcbc26abe406db028a"
+    },
+    {
+      "path": "torchport/strict_rounds.jsonl",
+      "bytes": 2430,
+      "sha256": "22f4aead47e08a632593fd9c3dfdd8356c0da72e2c595de00cb22189776c2e28"
+    }
+  ],
+  "raw_artifacts": [
+    {
+      "logical_path": "data-fs://RAFT/shared/checkpoints/raft-things.pth",
+      "retention": "V100/data-fs only; do not commit",
+      "present_in_export_source": true,
+      "bytes": 21108000,
+      "sha256": "fcfa4125d6418f4de95d84aec20a3c5f4e205101715a79f193243c186ac9a7e1"
+    },
+    {
+      "logical_path": "data-fs://RAFT/shared/prepared/image1.npy",
+      "retention": "V100/data-fs only; do not commit",
+      "present_in_export_source": true,
+      "bytes": 2359424,
+      "sha256": "2f2caece87caef00b4845e294c73eb812709921c55379eb675ee86593f460099"
+    },
+    {
+      "logical_path": "data-fs://RAFT/shared/prepared/image2.npy",
+      "retention": "V100/data-fs only; do not commit",
+      "present_in_export_source": true,
+      "bytes": 2359424,
+      "sha256": "08e0b85eb094f1607e5b4d971812deb275b443fca901d692bc92c929a27e07b2"
+    },
+    {
+      "logical_path": "data-fs://RAFT/shared/prepared/flow_low_ref.npy",
+      "retention": "V100/data-fs only; do not commit",
+      "present_in_export_source": true,
+      "bytes": 24704,
+      "sha256": "1cc8070e585888683b4ab56aa7dd8f5e423c1b5eb28062ff5589684632102fbb"
+    },
+    {
+      "logical_path": "data-fs://RAFT/shared/prepared/flow_up_ref.npy",
+      "retention": "V100/data-fs only; do not commit",
+      "present_in_export_source": true,
+      "bytes": 1572992,
+      "sha256": "a24e267999938aebebd3c7ec33b1d93710207069db8f0440ef37fb263931b576"
+    },
+    {
+      "logical_path": "data-fs://RAFT/shared/prepared/weights_fp32.npz",
+      "retention": "V100/data-fs only; do not commit",
+      "present_in_export_source": true,
+      "bytes": 21097140,
+      "sha256": "fa48172cd5c441aa49941d7177e4a36e0d43fe38bf8be6eb21ae76e090d936e8"
+    },
+    {
+      "logical_path": "data-fs://RAFT/results/codex/flow_up.npy",
+      "retention": "V100/data-fs only; do not commit",
+      "present_in_export_source": true,
+      "bytes": 1572992,
+      "sha256": "5509b07ec14d21ce48e0f997185732764fe0ce7a87307bcab74291189b7ca1ea"
+    },
+    {
+      "logical_path": "data-fs://RAFT/results/dsh/flow_up.npy",
+      "retention": "V100/data-fs only; do not commit",
+      "present_in_export_source": true,
+      "bytes": 1572992,
+      "sha256": "f069bedf01f3ef17aa3f37965124c451d234e6105476bb2e2fe7f9f65dddda02"
+    },
+    {
+      "logical_path": "data-fs://RAFT/results/dsh_torchport/flow_up.npy",
+      "retention": "V100/data-fs only; do not commit",
+      "present_in_export_source": true,
+      "bytes": 1572992,
+      "sha256": "8992b361ad1462c1fb25d0e5efca0b1ccc95908d61781a43f36f3dfac2c7d52f"
+    },
+    {
+      "logical_path": "data-fs://RAFT/results/dsh_torchport/traces/source.npz",
+      "retention": "V100/data-fs only; do not commit",
+      "present_in_export_source": true,
+      "bytes": 31784456,
+      "sha256": "34f0e152fbeb7436af5625892f5ce67567aa33213a51a2a13ff0bf88d6dc6164"
+    },
+    {
+      "logical_path": "data-fs://RAFT/results/dsh_torchport/traces/target.npz",
+      "retention": "V100/data-fs only; do not commit",
+      "present_in_export_source": true,
+      "bytes": 31784456,
+      "sha256": "ccd5ee702013f8be57d8a22950f87f16b0e825eff595eacf51247238d07b7463"
+    }
+  ]
+}

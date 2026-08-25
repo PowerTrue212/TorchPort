@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "source_capture": {
+    "logical_path": "data-fs://RAFT/results/dsh_torchport/traces/source.npz",
+    "sha256": "34f0e152fbeb7436af5625892f5ce67567aa33213a51a2a13ff0bf88d6dc6164",
+    "bytes": 31784456
+  },
+  "target_capture": {
+    "logical_path": "data-fs://RAFT/results/dsh_torchport/traces/target.npz",
+    "sha256": "ccd5ee702013f8be57d8a22950f87f16b0e825eff595eacf51247238d07b7463",
+    "bytes": 31784456
+  },
+  "feature_reduction": "sqrt(mean(channel_value ** 2)) for each spatial location",
+  "feature_shape": [
+    1,
+    256,
+    48,
+    64
+  ],
+  "flow_difference": "pixelwise endpoint difference between PyTorch and Jittor flow at the same iteration"
+}

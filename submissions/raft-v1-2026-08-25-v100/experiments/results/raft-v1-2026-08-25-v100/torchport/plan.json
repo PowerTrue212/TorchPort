@@ -1,0 +1,68 @@
+{
+  "inspection": {
+    "custom_operator_files": [
+      "alt_cuda_corr/correlation.cpp",
+      "alt_cuda_corr/correlation_kernel.cu"
+    ],
+    "dependency_files": [
+      "alt_cuda_corr/setup.py"
+    ],
+    "entrypoints": [
+      "demo.py",
+      "evaluate.py",
+      "train.py"
+    ],
+    "framework_signals": {
+      "pytorch": 11
+    },
+    "frameworks": [
+      "pytorch"
+    ],
+    "risks": [
+      "检测到 C++、CUDA 或动态库文件，需要自定义算子语义分析。"
+    ],
+    "root": "data-fs://RAFT/source/princeton-vl-raft",
+    "source_files": [
+      "alt_cuda_corr/setup.py",
+      "core/__init__.py",
+      "core/corr.py",
+      "core/datasets.py",
+      "core/extractor.py",
+      "core/raft.py",
+      "core/update.py",
+      "core/utils/__init__.py",
+      "core/utils/augmentor.py",
+      "core/utils/flow_viz.py",
+      "core/utils/frame_utils.py",
+      "core/utils/utils.py",
+      "demo.py",
+      "evaluate.py",
+      "train.py"
+    ],
+    "weight_files": []
+  },
+  "plan": {
+    "blockers": [
+      "检测到 C++、CUDA 或动态库文件，需要自定义算子语义分析。"
+    ],
+    "required_evidence": [
+      "源仓库提交号和依赖锁定信息",
+      "输入、权重和随机种子哈希",
+      "运行环境与硬件信息",
+      "最终输出和分层数值对齐结果",
+      "全部自动修改及其验证记录"
+    ],
+    "route": "PyTorch → 原生 Jittor → 数值验证",
+    "source_framework": "pytorch",
+    "steps": [
+      "固定源仓库版本、依赖和运行入口。",
+      "在源框架采集相同输入下的参考输出和中间结果。",
+      "建立模块、算子、权重和源代码位置映射。",
+      "执行确定性迁移规则并生成可审查修改。",
+      "运行目标项目并定位首次数值分歧点。",
+      "应用经过验证的修复规则，重新执行数值对齐。",
+      "生成环境、数值、性能和依赖残留报告。"
+    ],
+    "target": "jittor-native"
+  }
+}

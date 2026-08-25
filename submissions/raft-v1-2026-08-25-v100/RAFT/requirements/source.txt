@@ -1,0 +1,3 @@
+# RAFT imports scipy.interpolate from core/utils/utils.py even for inference.
+# Install as a binary wheel only; PyTorch, NumPy and Pillow come from the base environment.
+scipy==1.15.1

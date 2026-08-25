@@ -1,0 +1,27 @@
+{
+  "study": "RAFT PyTorch to Jittor three-method comparison",
+  "data": "data.csv",
+  "figures": {
+    "comparison.png": {
+      "panels": [
+        "RN and NA common-evaluator outcome",
+        "Mean, P99, and Max Framework Flow Difference"
+      ],
+      "layout": "two panels; no runtime-error bubble panel"
+    },
+    "method_results.png": "Two repair trajectories with Repair round on x and highest RN/NA evaluator stage on y; both Codex and DSH + TorchPort start at Round 0, while pure DSH is omitted",
+    "flows.png": "Common optical-flow color wheel for PyTorch and all methods",
+    "errors.png": "Shared color scale for per-pixel Framework Flow Difference",
+    "feature_pairs.png": "PyTorch and Jittor feature.0/feature.1 channel-RMS maps with a shared paired scale",
+    "feature_errors.png": "Channel-RMS feature difference maps with one shared scale",
+    "iteration_convergence.png": "RAFT update magnitude and framework endpoint difference over 12 iterations",
+    "strict_profile.png": "Strict mismatch accumulation for iterative flow tensors and encoder features"
+  },
+  "rules": [
+    "Agent time and token values are excluded because the three-method accounting is incomplete.",
+    "No hollow marker or not-recorded placeholder is plotted.",
+    "Pure DSH remains stopped_failed with RN=true and NA=false.",
+    "Framework Flow Difference compares PyTorch and Jittor, not prediction versus optical-flow ground truth.",
+    "Intermediate feature maps are deterministic reductions of the captured tensors, not synthetic data."
+  ]
+}

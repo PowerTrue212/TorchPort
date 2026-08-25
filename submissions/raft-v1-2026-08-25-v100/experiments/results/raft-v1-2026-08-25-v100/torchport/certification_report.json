@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "kind": "torchport.dsh-report",
+  "status": "verified",
+  "passed": true,
+  "fp32": true,
+  "strict": false,
+  "first": null,
+  "actions": [],
+  "agent": {
+    "candidate": "native-Jittor RAFT with deterministic softmax/norms, torch-formula grid_sample (corner-zero semantics), 5-shift 1x1 GRU convs and reciprocal-constant normalization matching PyTorch CUDA division",
+    "decision": "common evaluator failed at round 0 (max_error 1.65e-4); TorchPort dual-side stage capture located the divergence in the correlation lookup and upsample paths",
+    "mode": "dsh",
+    "round": 1
+  },
+  "artifacts": {
+    "fp32_report": "results/dsh_torchport/traces/compare_fp32.json",
+    "source": "results/dsh_torchport/traces/source.npz",
+    "strict_report": "results/dsh_torchport/traces/compare_strict.json",
+    "target": "results/dsh_torchport/traces/target.npz",
+    "weights": "shared/prepared/weights_fp32.npz"
+  }
+}

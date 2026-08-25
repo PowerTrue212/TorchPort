@@ -1,0 +1,8 @@
+# Runtime tool isolation for the pure DSH baseline.
+#
+# This overlay is applied after the normal `web` profile.  The plugin remains
+# installed on the machine, but Cordis does not load it and therefore cannot
+# register TorchPort prompts, schemas, or tools in this DSH process.
+- id: torchport
+  name: '@torchport/dsh-plugin'
+  disabled: true
