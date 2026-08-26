@@ -39,7 +39,7 @@ def main() -> None:
         }
     )
 
-    fig, ax = plt.subplots(figsize=(5.9, 3.0), dpi=300)
+    fig, ax = plt.subplots(figsize=(5.9, 3.45), dpi=300)
     fig.patch.set_facecolor("white")
     ax.set_facecolor("white")
 
