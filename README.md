@@ -198,11 +198,13 @@ npm test
 
 <div align="center">
   <img src="experiments/figures/fig_raft_bubbles/plot.png" width="100%">
-  <br>
-  <br>
-  <p>圆大小代表消耗的 token 数，轮数指中间校验调整的次数。</p>
-  <br>
-  <br>
+</div>
+
+> 注：圆大小代表消耗的 token 数，轮数指中间校验调整的次数。
+
+<br>
+
+<div align="center">
   <img src="experiments/figures/fig_diagnosis/plot.png" width="100%">
 </div>
 
