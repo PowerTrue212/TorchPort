@@ -217,25 +217,21 @@ npm test
 | --- | --- |
 | <img src="experiments/figures/fig_vit/plot.png" width="430"> | <img src="experiments/figures/fig_mae/plot.png" width="430"> |
 
-| ViT/MAE overview | ViT alignment |
+| ViT alignment | MAE alignment |
 | --- | --- |
-| <img src="experiments/figures/fig_vit_mae/plot.png" width="430"> | <img src="experiments/figures/fig_vit_align/plot.png" width="430"> |
+| <img src="experiments/figures/fig_vit_align/plot.png" width="430"> | <img src="experiments/figures/fig_mae_align/plot.png" width="430"> |
 
-| MAE alignment | Swin attention/features |
+| Swin attention/features | ResNet feature maps |
 | --- | --- |
-| <img src="experiments/figures/fig_mae_align/plot.png" width="430"> | <img src="experiments/figures/fig_swin/plot.png" width="430"> |
+| <img src="experiments/figures/fig_swin/plot.png" width="430"> | <img src="experiments/figures/fig_resnet/plot.png" width="430"> |
 
-| ResNet feature maps | SENet channel response |
+| SENet channel response | U-Net segmentation evidence |
 | --- | --- |
-| <img src="experiments/figures/fig_resnet/plot.png" width="430"> | <img src="experiments/figures/fig_senet/plot.png" width="430"> |
+| <img src="experiments/figures/fig_senet/plot.png" width="430"> | <img src="experiments/figures/fig_unet/plot.png" width="430"> |
 
-| U-Net segmentation evidence | Super-resolution output |
+| Super-resolution output | VAE latent/reconstruction |
 | --- | --- |
-| <img src="experiments/figures/fig_unet/plot.png" width="430"> | <img src="experiments/figures/fig_superres/plot.png" width="430"> |
-
-| VAE latent/reconstruction | Visual summary |
-| --- | --- |
-| <img src="experiments/figures/fig_vae/plot.png" width="430"> | <img src="experiments/figures/fig_visual/plot.png" width="430"> |
+| <img src="experiments/figures/fig_superres/plot.png" width="430"> | <img src="experiments/figures/fig_vae/plot.png" width="430"> |
 
 ## SuperRes DSH Result
 

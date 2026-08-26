@@ -28,7 +28,6 @@ def main() -> None:
     _write_text(OUT / "errors.md", _errors(data.get("errors", [])))
     _method_fig(methods)
     _model_fig(rows)
-    _vit_mae_fig(rows)
     _tensor_fig()
     _vit_align_fig()
     _mae_align_fig()
@@ -273,38 +272,6 @@ def _model_fig(rows: list[dict[str, Any]]) -> None:
 """
     _write_text(fig / "figure-spec.md", spec)
     _write_plot(fig / "plot.py", _model_plot_code())
-    _run_plot(fig)
-    _audit(fig)
-
-
-def _vit_mae_fig(rows: list[dict[str, Any]]) -> None:
-    fig = FIGS / "fig_vit_mae"
-    fig.mkdir(parents=True, exist_ok=True)
-    cases = {"vit_pytorch", "mae"}
-    scoped = [row for row in rows if row.get("method") == "dsh_torchport" and row.get("case") in cases]
-    _write_csv(fig / "vit_mae.csv", scoped)
-    spec = """# Figure Spec
-
-- chart_type: comparison_card
-- data_sources: experiments/figures/fig_vit_mae/vit_mae.csv
-- rows_in_scope: ViT and MAE DSH + TorchPort outcomes
-- x_axis:
-  - field: evidence
-  - label: Evidence
-  - unit: mixed
-  - scale: linear
-- y_axis:
-  - field: case
-  - label: Model
-  - unit: category
-  - scale: linear
-- series_or_categories: RN, NA, SA, first divergence, weights
-- legend: none
-- forbidden_elements: fabricated metrics
-- assumptions: ViT means vit_pytorch; MAE means mae_vit_base_patch16
-"""
-    _write_text(fig / "figure-spec.md", spec)
-    _write_plot(fig / "plot.py", _vit_mae_plot_code())
     _run_plot(fig)
     _audit(fig)
 

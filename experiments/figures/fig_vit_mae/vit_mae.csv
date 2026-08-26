@@ -1,3 +1,0 @@
-case,decision,first,fp32,method,status,strict,tensors,weights_loaded,weights_total
-mae,fix-random-replay,blocks.0.attn.qkv,True,dsh_torchport,verified,False,332,254,254
-vit_pytorch,fix-einops-backend,,True,dsh_torchport,verified,True,28,23,23

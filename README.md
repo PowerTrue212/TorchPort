@@ -214,25 +214,21 @@ npm test
 | --- | --- |
 | <img src="experiments/figures/fig_vit/plot.png" width="430"> | <img src="experiments/figures/fig_mae/plot.png" width="430"> |
 
-| ViT/MAE 总览 | ViT 对齐 |
+| ViT 对齐 | MAE 对齐 |
 | --- | --- |
-| <img src="experiments/figures/fig_vit_mae/plot.png" width="430"> | <img src="experiments/figures/fig_vit_align/plot.png" width="430"> |
+| <img src="experiments/figures/fig_vit_align/plot.png" width="430"> | <img src="experiments/figures/fig_mae_align/plot.png" width="430"> |
 
-| MAE 对齐 | Swin 注意力/特征 |
+| Swin 注意力/特征 | ResNet 特征图 |
 | --- | --- |
-| <img src="experiments/figures/fig_mae_align/plot.png" width="430"> | <img src="experiments/figures/fig_swin/plot.png" width="430"> |
+| <img src="experiments/figures/fig_swin/plot.png" width="430"> | <img src="experiments/figures/fig_resnet/plot.png" width="430"> |
 
-| ResNet 特征图 | SENet 通道响应 |
+| SENet 通道响应 | U-Net 分割证据 |
 | --- | --- |
-| <img src="experiments/figures/fig_resnet/plot.png" width="430"> | <img src="experiments/figures/fig_senet/plot.png" width="430"> |
+| <img src="experiments/figures/fig_senet/plot.png" width="430"> | <img src="experiments/figures/fig_unet/plot.png" width="430"> |
 
-| U-Net 分割证据 | 超分输出 |
+| 超分输出 | VAE 潜变量/重建 |
 | --- | --- |
-| <img src="experiments/figures/fig_unet/plot.png" width="430"> | <img src="experiments/figures/fig_superres/plot.png" width="430"> |
-
-| VAE 潜变量/重建 | 可视化总览 |
-| --- | --- |
-| <img src="experiments/figures/fig_vae/plot.png" width="430"> | <img src="experiments/figures/fig_visual/plot.png" width="430"> |
+| <img src="experiments/figures/fig_superres/plot.png" width="430"> | <img src="experiments/figures/fig_vae/plot.png" width="430"> |
 
 ## SuperRes DSH 结果
 

@@ -47,14 +47,12 @@ experiments/figures/fig_methods/plot.png
 experiments/figures/fig_e2e/plot.png
 experiments/figures/fig_rounds/plot.png
 experiments/figures/fig_models/plot.png
-experiments/figures/fig_vit_mae/plot.png
 experiments/figures/fig_tensors/plot.png
 experiments/figures/fig_vit_align/plot.png
 experiments/figures/fig_mae_align/plot.png
 experiments/figures/fig_fail/plot.png
 experiments/figures/fig_status/plot.png
 experiments/figures/fig_strict/plot.png
-experiments/figures/fig_visual/plot.png
 experiments/figures/fig_vit/plot.png
 experiments/figures/fig_mae/plot.png
 experiments/figures/fig_swin/plot.png

@@ -277,37 +277,3 @@ def build(root: Path) -> None:
         plt.close(fig)
         (folder / "audit.md").write_text(audit_text(), encoding="utf-8")
         (folder / "final-status.md").write_text("REPAIRED\n", encoding="utf-8")
-    folder = root / "figures" / "fig_visual"
-    folder.mkdir(parents=True, exist_ok=True)
-    spec = """# Figure Spec
-
-- chart_type: line
-- data_sources: experiments/out/visuals.csv
-- rows_in_scope: maximum displayed-representation difference per model
-- data_columns: case, visual, max_abs, mean_abs
-- x_axis:
-  - field: model
-  - label: Model
-  - unit: category
-  - scale: linear
-- y_axis:
-  - field: max_abs
-  - label: Maximum absolute difference
-  - unit: activation value
-  - scale: log
-- series_or_categories: one measured line across eight models
-- category_order: ViT, MAE, Swin, ResNet, SENet, U-Net, SR, VAE
-- legend: none
-- required_annotations: model labels and a log-scale maximum-difference axis
-- additional_axes: none
-- color_mapping: measured line = blue
-- forbidden_elements: PT-JT image panel, synthetic values, hidden cases
-- assumptions: each model value is the maximum over its displayed visual representations
-"""
-    (folder / "plot.py").write_text(summary_code(), encoding="utf-8")
-    (folder / "figure-spec.md").write_text(spec, encoding="utf-8")
-    fig = draw_summary(rows)
-    fig.savefig(folder / "plot.png", dpi=300, bbox_inches="tight", pad_inches=0.05)
-    plt.close(fig)
-    (folder / "audit.md").write_text(audit_text(), encoding="utf-8")
-    (folder / "final-status.md").write_text("PASSED\n", encoding="utf-8")
