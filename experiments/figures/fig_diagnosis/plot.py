@@ -39,9 +39,10 @@ def main() -> None:
         }
     )
 
-    fig, ax = plt.subplots(figsize=(5.9, 3.45), dpi=300)
+    fig, ax = plt.subplots(figsize=(1792 / 300, 1057 / 300), dpi=300)
     fig.patch.set_facecolor("white")
     ax.set_facecolor("white")
+    fig.subplots_adjust(left=153 / 1792, right=0.985, bottom=0.16, top=0.965)
 
     bars = ax.barh(
         y,
@@ -80,7 +81,22 @@ def main() -> None:
     )
 
     ax.set_yticks(y)
-    ax.set_yticklabels(methods, fontsize=10.2, fontweight="bold")
+    ax.set_yticklabels([])
+    for yi, method in zip(y, methods):
+        label = "DSH+TP" if method == "DSH + TP" else method
+        ax.text(
+            -0.005,
+            yi,
+            label,
+            transform=ax.get_yaxis_transform(),
+            ha="right",
+            va="center",
+            fontsize=8.0 if method == "DSH + TP" else 10.2,
+            fontweight="bold",
+            color="black",
+            clip_on=False,
+            zorder=6,
+        )
     ax.set_xlim(-20, 12350)
     ax.set_ylim(0.02, 0.96)
     ax.set_xticks(range(0, 12001, 2000))
@@ -106,14 +122,13 @@ def main() -> None:
     ax.spines["bottom"].set_color("#333333")
 
     ax.tick_params(axis="x", pad=6)
-    ax.tick_params(axis="y", pad=6)
+    ax.tick_params(axis="y", pad=0, length=0)
     for label in ax.get_xticklabels():
         label.set_fontsize(10.2)
         label.set_fontweight("bold")
 
-    fig.tight_layout(pad=0.45)
-    fig.savefig(OUT / "plot.png", dpi=300, bbox_inches="tight")
-    fig.savefig(OUT / "plot.svg", bbox_inches="tight")
+    fig.savefig(OUT / "plot.png", dpi=300)
+    fig.savefig(OUT / "plot.svg")
 
 
 if __name__ == "__main__":
