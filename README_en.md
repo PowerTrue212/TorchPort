@@ -187,38 +187,29 @@ npm test
 
 ## Status
 
-- [x] Repository scanning and model-entry recovery
-- [x] PyTorch-to-native-Jittor migration skeleton
-- [x] PyTorch/Jittor dual execution, tensor traces, and numerical certificates
-- [x] First-divergence localization and structured failure codes
-- [x] DSH plugin with a repair/verification loop
-- [x] Experiment figures and model visualizations
-- [ ] Freeze the unified benchmark against the official converter, JTorch, pure Codex, pure DSH, and DSH + TorchPort
-- [ ] Expand the unseen real PyTorch repository test set
-- [ ] Complete end-to-end validation on Ascend-class domestic accelerators
-- [ ] Stabilize the public API, documentation, and release flow
+### Public now
 
-Note: current public evidence focuses on PyTorch/Jittor migration and numerical verification. Ascend-class accelerator support is already part of the backend design, but full end-to-end validation remains a TODO item.
+- [x] Open-source repository: core Python package, CLI, tests, documentation, and experiment figures are public.
+- [x] Conversion plugin: `integrations/dsh` exposes DSH tools for scanning, migration, verification, divergence localization, and report generation.
+- [x] Model tests: alignment figures and visualizations are included for CNN, ViT, MAE, Swin, U-Net, SuperRes, VAE, and related models.
+- [x] End-to-end sample: the SuperRes comparison between the official converter and DSH + TorchPort is public.
+
+### In progress
+
+- [ ] Unified benchmark: official converter, JTorch, pure Codex, pure DSH, and DSH + TorchPort.
+- [ ] Unseen repositories: expand the real PyTorch repository test set to measure generalization.
+- [ ] Ascend validation: Ascend training and backend-adaptation results are not public yet and will be released after consolidation.
+- [ ] Release preparation: stabilize APIs, complete documentation, and package the first release.
 
 ## Figures
 
 ### Main Experimental Figures
 
-| End-to-end comparison | DSH repair trajectory |
-| --- | --- |
-| <img src="experiments/figures/fig_e2e/plot.png" width="430"> | <img src="experiments/figures/fig_rounds/plot.png" width="430"> |
-
-| Method summary | Model coverage snapshot |
-| --- | --- |
-| <img src="experiments/figures/fig_methods/plot.png" width="430"> | <img src="experiments/figures/fig_models/plot.png" width="430"> |
-
-| Tensor evidence | Failure/status view |
-| --- | --- |
-| <img src="experiments/figures/fig_tensors/plot.png" width="430"> | <img src="experiments/figures/fig_status/plot.png" width="430"> |
-
-| Strict alignment | Failure attribution |
-| --- | --- |
-| <img src="experiments/figures/fig_strict/plot.png" width="430"> | <img src="experiments/figures/fig_fail/plot.png" width="430"> |
+<div align="center">
+  <img src="experiments/figures/fig_raft_bubbles/plot.png" width="100%">
+  <br>
+  <img src="experiments/figures/fig_diagnosis/plot.png" width="100%">
+</div>
 
 ### Model Visualizations
 

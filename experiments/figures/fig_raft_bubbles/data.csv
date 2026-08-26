@@ -1,0 +1,5 @@
+method,rounds,tokens_m,status
+V4 Flash + TP,3,0.92,pass
+V4 Pro + TP,1,1.08,pass
+DSH,1,0.95,fail
+Codex,5,0.43,pass

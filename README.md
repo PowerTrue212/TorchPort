@@ -178,38 +178,29 @@ npm test
 
 ## 当前状态
 
-- [x] 仓库扫描与模型入口恢复
-- [x] PyTorch 到原生 Jittor 的迁移骨架
-- [x] PyTorch/Jittor 双端执行、张量轨迹与数值证书
-- [x] 首次数值分歧定位与结构化失败分类
-- [x] DSH 插件和修复/验证循环
-- [x] 实验图表与模型可视化
-- [ ] 冻结官方转换器、JTorch、纯 Codex、纯 DSH、DSH + TorchPort 的统一对比实验
-- [ ] 扩展未见真实 PyTorch 仓库测试集
-- [ ] 完成昇腾等国产算力后端的端到端验证
-- [ ] 稳定公开 API、文档和发布流程
+### 已公开
 
-说明：当前公开证据主要集中在 PyTorch/Jittor 迁移与数值验证；昇腾等国产算力已经进入后端设计，但完整端到端实验仍在 TODO 中。
+- [x] 开源仓库：核心 Python 包、命令行工具、测试、文档和实验图表已公开。
+- [x] 转换插件：`integrations/dsh` 已提供 DSH 工具入口，覆盖扫描、迁移、验证、分歧定位和报告生成。
+- [x] 模型测试：已整理 CNN、ViT、MAE、Swin、U-Net、SuperRes、VAE 等模型的对齐图和可视化结果。
+- [x] 端到端样例：已公开 SuperRes 上的官方转换器对比和 DSH + TorchPort 迁移结果。
+
+### 正在整理
+
+- [ ] 统一基准：官方转换器、JTorch、纯 Codex、纯 DSH、DSH + TorchPort 的对比实验。
+- [ ] 未见仓库：扩展真实 PyTorch 仓库测试集，验证系统对新项目的泛化能力。
+- [ ] 昇腾实测：昇腾训练与后端适配结果暂未发布，整理完成后再进入公开结果。
+- [ ] 发布准备：稳定 API、补全文档、整理首个 release 包。
 
 ## 实验图表
 
 ### 主实验图
 
-| 端到端对比 | DSH 修复轨迹 |
-| --- | --- |
-| <img src="experiments/figures/fig_e2e/plot.png" width="430"> | <img src="experiments/figures/fig_rounds/plot.png" width="430"> |
-
-| 方法概览 | 模型覆盖快照 |
-| --- | --- |
-| <img src="experiments/figures/fig_methods/plot.png" width="430"> | <img src="experiments/figures/fig_models/plot.png" width="430"> |
-
-| 张量证据 | 状态分布 |
-| --- | --- |
-| <img src="experiments/figures/fig_tensors/plot.png" width="430"> | <img src="experiments/figures/fig_status/plot.png" width="430"> |
-
-| Strict 对齐 | 失败归因 |
-| --- | --- |
-| <img src="experiments/figures/fig_strict/plot.png" width="430"> | <img src="experiments/figures/fig_fail/plot.png" width="430"> |
+<div align="center">
+  <img src="experiments/figures/fig_raft_bubbles/plot.png" width="100%">
+  <br>
+  <img src="experiments/figures/fig_diagnosis/plot.png" width="100%">
+</div>
 
 ### 模型可视化
 
