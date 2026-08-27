@@ -193,11 +193,11 @@ npm test
 - [x] Conversion plugin: `integrations/dsh` exposes DSH tools for scanning, migration, verification, divergence localization, and report generation.
 - [x] Model tests: alignment figures and visualizations are included for CNN, ViT, MAE, Swin, U-Net, SuperRes, VAE, and related models.
 - [x] End-to-end sample: the SuperRes comparison between the official converter and DSH + TorchPort is public.
+- [x] Unified benchmark: comparisons against the official converter, JTorch, pure Codex, pure DSH, and DSH + TorchPort are complete.
+- [x] Unseen repositories: the real PyTorch repository test set has been expanded to measure generalization to new projects.
 
 ### In progress
 
-- [ ] Unified benchmark: official converter, JTorch, pure Codex, pure DSH, and DSH + TorchPort.
-- [ ] Unseen repositories: expand the real PyTorch repository test set to measure generalization.
 - [ ] Ascend validation: Ascend training and backend-adaptation results are not public yet and will be released after consolidation.
 - [ ] Release preparation: stabilize APIs, complete documentation, and package the first release.
 

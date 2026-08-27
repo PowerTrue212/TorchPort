@@ -184,11 +184,11 @@ npm test
 - [x] 转换插件：`integrations/dsh` 已提供 DSH 工具入口，覆盖扫描、迁移、验证、分歧定位和报告生成。
 - [x] 模型测试：已整理 CNN、ViT、MAE、Swin、U-Net、SuperRes、VAE 等模型的对齐图和可视化结果。
 - [x] 端到端样例：已公开 SuperRes 上的官方转换器对比和 DSH + TorchPort 迁移结果。
+- [x] 统一基准：已完成官方转换器、JTorch、纯 Codex、纯 DSH、DSH + TorchPort 的对比实验。
+- [x] 未见仓库：已完成真实 PyTorch 仓库测试集扩展，用于验证系统对新项目的泛化能力。
 
 ### 正在整理
 
-- [ ] 统一基准：官方转换器、JTorch、纯 Codex、纯 DSH、DSH + TorchPort 的对比实验。
-- [ ] 未见仓库：扩展真实 PyTorch 仓库测试集，验证系统对新项目的泛化能力。
 - [ ] 昇腾实测：昇腾训练与后端适配结果暂未发布，整理完成后再进入公开结果。
 - [ ] 发布准备：稳定 API、补全文档、整理首个 release 包。
 
