@@ -204,3 +204,58 @@ class TensorParityTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class NoiseCalibratedTests(unittest.TestCase):
+    def _write(self, root: Path, **archives: dict[str, np.ndarray]) -> list[Path]:
+        paths = []
+        for name, arrays in archives.items():
+            path = root / f"{name}.npz"
+            np.savez(path, **arrays)
+            paths.append(path)
+        return paths
+
+    def test_candidate_within_noise_passes_and_outlier_fails(self) -> None:
+        from torchport.parity import compare_noise_calibrated
+
+        truth = np.linspace(-1, 1, 100)
+        ref = (truth + 1e-6).astype(np.float32)
+        alt = (truth - 1e-6).astype(np.float32)
+        good = (truth + 2e-6).astype(np.float32)
+        bad = (truth + 1e-3).astype(np.float32)
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            root = Path(temporary_directory)
+            paths = self._write(
+                root,
+                reference={"leaf": ref, "leaf#2": ref, "parent": ref},
+                candidate={"leaf": good, "leaf#2": bad, "parent": bad},
+                fp64={"leaf": truth, "leaf#2": truth, "parent": truth},
+                alt={"leaf": alt, "leaf#2": alt, "parent": alt},
+            )
+            report = compare_noise_calibrated(*paths, leaves={"leaf"})
+
+        by_name = {item["name"]: item for item in report["tensors"]}
+        self.assertTrue(by_name["leaf"]["passed"])
+        self.assertFalse(by_name["leaf#2"]["passed"])
+        self.assertFalse(by_name["parent"]["gating"])
+        self.assertFalse(report["passed"])
+        self.assertEqual(report["first_gating_divergence"]["name"], "leaf#2")
+        self.assertEqual(report["metrics"]["failed_reported_tensors"], 1)
+
+    def test_leaf_key_strips_call_index_and_output_index(self) -> None:
+        from torchport.parity import _leaf_key
+
+        leaves = {"model.encoder.block1.0.attn"}
+        self.assertTrue(_leaf_key("model.encoder.block1.0.attn#3", leaves))
+        self.assertTrue(_leaf_key("model.encoder.block1.0.attn.1", leaves))
+        self.assertFalse(_leaf_key("model.encoder.block1.0", leaves))
+        self.assertFalse(_leaf_key("model.encoder.block1.0.attn.q", leaves))
+
+
+class LeafMarkingTests(unittest.TestCase):
+    def test_parent_modules_are_not_leaves(self) -> None:
+        from torchport.capture import _mark_leaves
+
+        calls = [{"module": "a"}, {"module": "a.b"}, {"module": "ab"}, {"module": "a.b"}]
+        _mark_leaves(calls)
+        self.assertEqual([c["leaf"] for c in calls], [False, True, True, True])

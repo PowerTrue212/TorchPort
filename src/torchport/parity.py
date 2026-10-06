@@ -110,6 +110,121 @@ def compare_tensor_archives(
     return report
 
 
+def compare_noise_calibrated(
+    reference_path: str | Path,
+    candidate_path: str | Path,
+    fp64_path: str | Path,
+    alt_path: str | Path,
+    *,
+    leaves: set[str] | None = None,
+    k: float = 4.0,
+    atol_floor: float = 1e-7,
+) -> dict[str, Any]:
+    """以 source 自身 FP32 噪声为基准判定：err(candidate, fp64) <= k*noise + atol_floor。
+
+    noise = max(err(reference, fp64), err(reference, alt))，按 max_abs 与 p99 分别判定。
+    leaves 给定时只有叶子模块参与判定，组合模块只报告。
+    """
+    if k <= 0 or atol_floor < 0:
+        raise ValueError("k 必须为正数，atol_floor 必须非负。")
+    paths = [Path(p).expanduser().resolve() for p in (reference_path, candidate_path, fp64_path, alt_path)]
+    for path in paths:
+        if not path.is_file():
+            raise ValueError(f"证据不存在：{path}")
+
+    def stats(a: np.ndarray, b: np.ndarray) -> tuple[float, float]:
+        diff = np.abs(a.astype(np.float64) - b.astype(np.float64)).reshape(-1)
+        if not diff.size:
+            return 0.0, 0.0
+        return float(diff.max()), float(np.quantile(diff, 0.99))
+
+    tensors: list[dict[str, Any]] = []
+    missing: list[str] = []
+    uncalibrated: list[str] = []
+    first_gating_divergence: dict[str, Any] | None = None
+    reference, candidate, fp64, alt = (np.load(p, allow_pickle=False) for p in paths)
+    try:
+        for position, name in enumerate(reference.files):
+            if name not in candidate:
+                missing.append(name)
+                continue
+            if name not in fp64 or name not in alt:
+                uncalibrated.append(name)
+                continue
+            ref, cand, truth, other = reference[name], candidate[name], fp64[name], alt[name]
+            if not (ref.shape == cand.shape == truth.shape == other.shape):
+                item = {"name": name, "position": position, "passed": False, "reason": "张量形状不同"}
+            elif not all(np.all(np.isfinite(x)) for x in (ref, cand, truth, other)):
+                item = {"name": name, "position": position, "passed": False, "reason": "张量包含 NaN 或无穷值"}
+            else:
+                cand_max, cand_p99 = stats(cand, truth)
+                ref_max, ref_p99 = stats(ref, truth)
+                alt_max, alt_p99 = stats(ref, other)
+                noise_max, noise_p99 = max(ref_max, alt_max), max(ref_p99, alt_p99)
+                limit_max, limit_p99 = k * noise_max + atol_floor, k * noise_p99 + atol_floor
+                item = {
+                    "name": name,
+                    "position": position,
+                    "elements": int(ref.size),
+                    "candidate_max_abs": cand_max,
+                    "candidate_p99_abs": cand_p99,
+                    "noise_max_abs": noise_max,
+                    "noise_p99_abs": noise_p99,
+                    "ratio_max": cand_max / max(noise_max, atol_floor),
+                    "ratio_p99": cand_p99 / max(noise_p99, atol_floor),
+                    "passed": cand_max <= limit_max and cand_p99 <= limit_p99,
+                }
+            item["gating"] = leaves is None or _leaf_key(name, leaves)
+            tensors.append(item)
+            if first_gating_divergence is None and item["gating"] and not item["passed"]:
+                first_gating_divergence = {
+                    "name": name,
+                    "position": position,
+                    "reason": item.get("reason", "超出 source 噪声底"),
+                }
+    finally:
+        for archive in (reference, candidate, fp64, alt):
+            archive.close()
+
+    gating = [item for item in tensors if item["gating"]]
+    return {
+        "schema_version": 1,
+        "profile": "noise-calibrated",
+        "k": k,
+        "atol_floor": atol_floor,
+        "passed": first_gating_divergence is None and bool(gating),
+        "first_gating_divergence": first_gating_divergence,
+        "missing_in_candidate": missing,
+        "uncalibrated": uncalibrated,
+        "metrics": {
+            "compared_tensors": len(tensors),
+            "gating_tensors": len(gating),
+            "failed_gating_tensors": sum(not item["passed"] for item in gating),
+            "failed_reported_tensors": sum(not item["passed"] for item in tensors if not item["gating"]),
+            "max_gating_ratio": max(
+                (max(item["ratio_max"], item["ratio_p99"]) for item in gating if "ratio_max" in item),
+                default=None,
+            ),
+        },
+        "tensors": tensors,
+    }
+
+
+def _leaf_key(name: str, leaves: set[str]) -> bool:
+    """张量名形如 `<module>`、`<module>#2`、`<module>.0`；去掉调用序号与输出下标后匹配模块名。"""
+    base = name.split("#", 1)[0]
+    while base:
+        if base in leaves:
+            return True
+        if "." not in base:
+            return False
+        head, tail = base.rsplit(".", 1)
+        if not tail.isdigit():
+            return False
+        base = head
+    return False
+
+
 def comparison_metrics(report: dict[str, Any]) -> dict[str, Any]:
     """把逐张量证据归约成稳定、可聚合的计数；结构不一致不伪造元素误差。"""
     tensors = list(report.get("tensors") or [])

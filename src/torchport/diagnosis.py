@@ -2,12 +2,13 @@
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 from typing import Any
 
 from .execution import add_physical_cost, read_json, run_physical_cost, write_json
 from .oracle import run_side
-from .parity import compare_tensor_archives
+from .parity import compare_noise_calibrated, compare_tensor_archives
 
 
 def inspect_task(task: dict[str, Any]) -> dict[str, Any]:
@@ -87,6 +88,17 @@ def trace(task: dict[str, Any], root: Path, *, trial: str = "t0") -> dict[str, A
                     require_all=False,
                 )
                 isolated["capture"] = (target.get("capture") or {}).get("isolated")
+                artifacts = source["artifacts"]
+                if artifacts.get("module_fp64") and artifacts.get("module_alt"):
+                    calls = json.loads(Path(artifacts["module_calls"]).read_text("utf-8"))
+                    leaves = {call["module"] for call in calls if call.get("leaf")}
+                    isolated["calibrated"] = compare_noise_calibrated(
+                        artifacts["module_outputs"],
+                        target["artifacts"]["isolated"],
+                        artifacts["module_fp64"],
+                        artifacts["module_alt"],
+                        leaves=leaves,
+                    )
             report = {
                 "kind": "torchport.trace",
                 "task_id": task["task_id"],

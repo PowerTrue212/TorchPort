@@ -581,6 +581,105 @@ def add_hooks(
     return handles
 
 
+def _mark_leaves(calls: list[dict[str, Any]]) -> None:
+    """叶子 = 没有任何其他被采集模块位于其名字之下；只有叶子参与噪声标定判定。"""
+    names = {call["module"] for call in calls}
+    for call in calls:
+        prefix = call["module"] + "."
+        call["leaf"] = not any(other.startswith(prefix) for other in names)
+
+
+def _to_float64(value: Any) -> Any:
+    import torch
+
+    if isinstance(value, torch.Tensor):
+        return value.double() if value.is_floating_point() else value
+    if isinstance(value, tuple):
+        return tuple(_to_float64(item) for item in value)
+    if isinstance(value, list):
+        return [_to_float64(item) for item in value]
+    if isinstance(value, dict):
+        return {key: _to_float64(item) for key, item in value.items()}
+    return value
+
+
+def calibrate_source_modules(
+    model: Any,
+    calls: list[dict[str, Any]],
+    inputs: dict[str, np.ndarray],
+    device: str,
+) -> tuple[dict[str, np.ndarray], dict[str, np.ndarray], dict[str, Any]]:
+    """source 端噪声底：同一份局部输入分别跑 float64 真值和另一条 FP32 执行路径。"""
+    import torch
+
+    modules = dict(model.named_modules())
+    fp64: dict[str, np.ndarray] = {}
+    alt: dict[str, np.ndarray] = {}
+    failed: list[dict[str, str]] = []
+
+    def decode(call: dict[str, Any]) -> tuple[Any, Any]:
+        args = _decode_call_value(call["args"], inputs, "source")
+        kwargs = _decode_call_value(call["kwargs"], inputs, "source")
+        if device == "cuda":
+            args = _move(args, "cuda")
+            kwargs = _move(kwargs, "cuda")
+        return args, kwargs
+
+    backends = torch.backends
+    saved = (
+        backends.cudnn.benchmark,
+        backends.cudnn.deterministic,
+        backends.cudnn.allow_tf32,
+        backends.cuda.matmul.allow_tf32,
+    )
+    with torch.no_grad():
+        for call in calls:
+            if call.get("unsupported") or call["module"] not in modules:
+                continue
+            key, module = call["key"], modules[call["module"]]
+            try:
+                args, kwargs = decode(call)
+                # 另一条 FP32 路径：换 cuDNN 算法选择，TF32 保持关闭，只量化“合法的 FP32 差异”。
+                backends.cudnn.benchmark, backends.cudnn.deterministic = True, False
+                backends.cudnn.allow_tf32 = backends.cuda.matmul.allow_tf32 = False
+                alt.update(to_arrays(module(*args, **kwargs), "source", key))
+                (
+                    backends.cudnn.benchmark,
+                    backends.cudnn.deterministic,
+                    backends.cudnn.allow_tf32,
+                    backends.cuda.matmul.allow_tf32,
+                ) = saved
+                double = deepcopy(module).double()
+                fp64.update(to_arrays(double(*_to_float64(args), **_to_float64(kwargs)), "source", key))
+                del double
+            except Exception as exc:  # noqa: BLE001 - 标定失败只让该模块失去判定依据
+                failed.append({"key": key, "reason": f"{type(exc).__name__}: {exc}"[:500]})
+            finally:
+                (
+                    backends.cudnn.benchmark,
+                    backends.cudnn.deterministic,
+                    backends.cudnn.allow_tf32,
+                    backends.cuda.matmul.allow_tf32,
+                ) = saved
+    if device == "cuda":
+        torch.cuda.synchronize()
+    return fp64, alt, {"fp64_tensors": len(fp64), "alt_tensors": len(alt), "failed": failed}
+
+
+def _move(value: Any, device: str) -> Any:
+    import torch
+
+    if isinstance(value, torch.Tensor):
+        return value.to(device)
+    if isinstance(value, tuple):
+        return tuple(_move(item, device) for item in value)
+    if isinstance(value, list):
+        return [_move(item, device) for item in value]
+    if isinstance(value, dict):
+        return {key: _move(item, device) for key, item in value.items()}
+    return value
+
+
 def run_isolated_modules(
     model: Any,
     oracle: Path,
@@ -833,7 +932,14 @@ def capture(job: dict[str, Any]) -> dict[str, Any]:
     np.savez(out / "outputs.npz", **arrays, **outputs)
     if trace_values:
         np.savez(out / "trace.npz", **trace_values)
+    calibration = None
     if kind == "source" and mode != "normal":
+        _mark_leaves(module_calls)
+        fp64_values, alt_values, calibration = calibrate_source_modules(
+            model, module_calls, module_inputs, device
+        )
+        np.savez(out / "module_fp64.npz", **fp64_values)
+        np.savez(out / "module_alt.npz", **alt_values)
         np.savez(out / "module_outputs.npz", **module_values)
         np.savez(out / "module_inputs.npz", **module_inputs)
         (out / "module_calls.json").write_text(
@@ -863,6 +969,7 @@ def capture(job: dict[str, Any]) -> dict[str, Any]:
             "calls": len(module_calls),
             "input_tensors": len(module_inputs),
             "output_tensors": len(module_values),
+            "calibration": calibration,
         }
     if isolated is not None:
         report["isolated"] = isolated
