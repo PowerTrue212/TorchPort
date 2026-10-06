@@ -1,0 +1,32 @@
+{
+  "budget": {
+    "budget_stop_reason": null,
+    "logical_query_cost": {
+      "by_tool": {
+        "evaluate": 0,
+        "trace": 0,
+        "verify": 0
+      },
+      "total": 0,
+      "unique_candidates": 0
+    },
+    "max_oracle_queries": 2,
+    "max_wall_seconds": 1800,
+    "oracle_queries": 0,
+    "oracle_queries_remaining": 2,
+    "physical_evaluation_cost": {
+      "cuda_execution_seconds": 0.0,
+      "execution_wall_seconds": 0.0,
+      "executions": 0
+    },
+    "unique_candidate_queries": 0,
+    "wall_seconds": 0.22332686884328723,
+    "wall_seconds_remaining": 1799.7766731311567
+  },
+  "data": {
+    "path": "_torchport_probe.py",
+    "side": "target",
+    "text": "import json\nimport os\nimport jittor as jt\n\njt.flags.use_cuda = 1\nvalue = (jt.ones((16, 16)) * 3).sum()\njt.sync_all()\nprint(json.dumps({\n    \"cuda\": int(jt.flags.use_cuda),\n    \"jittor_home\": os.environ.get(\"JITTOR_HOME\"),\n    \"value\": float(value.item()),\n}))\n"
+  },
+  "ok": true
+}

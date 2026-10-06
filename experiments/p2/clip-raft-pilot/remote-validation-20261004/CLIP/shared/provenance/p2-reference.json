@@ -1,0 +1,28 @@
+{
+  "checkpoint_sha256": "40d365715913c9da98579312b702a82c18be219cc2a73407c4526f58eba950af",
+  "clip_commit": "d05afc436d78f1c48dc0dbf8e5980a9d471f35f6",
+  "device": "cuda",
+  "files": {
+    "shared/prepared/images.npy": {
+      "bytes": 2408576,
+      "sha256": "4da7a4f8513d7c92f48ed710337c9c20823b7acf77ab7b0751a4ee79e6bf3398"
+    },
+    "shared/prepared/logits_ref.npy": {
+      "bytes": 192,
+      "sha256": "9aec38ba821e82b450ec581787f842db2f4939b22ea9bccf850c4548fe4efd6f"
+    },
+    "shared/prepared/tokens.npy": {
+      "bytes": 2592,
+      "sha256": "d8a961e96c74f5aab1a90b43c92317ac588183d9e0b2d53f3297601678269fd2"
+    },
+    "shared/prepared/weights_fp32.npz": {
+      "bytes": 605204132,
+      "sha256": "21bb8d61d7807bc9ee4225e46180f4091c9ba2527a1645befbabffca641b328c"
+    }
+  },
+  "gpu": "NVIDIA GeForce RTX 3080 Ti",
+  "kind": "torchport.p2-clip-assets",
+  "numpy": "2.3.2",
+  "schema_version": 1,
+  "torch": "2.8.0+cu128"
+}

@@ -1,0 +1,89 @@
+{
+  "budget": {
+    "model_turns": 50,
+    "oracle_queries": 10,
+    "total_tokens": 80000,
+    "wall_seconds": 5400
+  },
+  "conditions": [
+    "verdict",
+    "diagnostic",
+    "localized"
+  ],
+  "experiment_id": "p2-camoformer-cod-pilot-20261004",
+  "frozen_artifacts": {
+    "fixtures/hidden-image.npy": "34656490b500558d48256bbdfab05fe14339c4274ffbce9403c95d0e3f12d10e",
+    "fixtures/public-image.npy": "0e87bc2b2da2acd8b37112f10e8020753382dda1382cf46f0d35778b16bb773b",
+    "prompt.md": "2959c9337cbdee56e73b4541b86eebd712978d943878f18752f131eb2be5963a"
+  },
+  "hardware": {
+    "execution": "serial",
+    "gpu": "frozen by runtime-snapshot.json"
+  },
+  "isolation": {
+    "formal_claims_allowed": false,
+    "host_filesystem_isolation": false,
+    "level": "trusted_candidate_pilot",
+    "network_isolation": false,
+    "reason": "First COD integration smoke test; formal worker is not yet available."
+  },
+  "kind": "torchport.p2-run-plan",
+  "model": "deepseek-flash",
+  "price_snapshot": null,
+  "prompt": "prompt.md",
+  "prompt_sha256": "2959c9337cbdee56e73b4541b86eebd712978d943878f18752f131eb2be5963a",
+  "provider": "deepseek",
+  "purpose": "Exercise the controlled migration harness on a complete COD forward pass.",
+  "replicates": 1,
+  "schema_version": 1,
+  "source_manifest": "experiment.json",
+  "source_manifest_sha256": "e6fe8d62ee187c61b7f3b7f380873f5d5374ec69f6b7e103052ddcd18584cc10",
+  "tasks": [
+    "camoformer"
+  ],
+  "temperature": 0.0,
+  "thinking": "disabled",
+  "trial_runtime_snapshot": "runtime-snapshot.json",
+  "trial_runtime_snapshot_sha256": "22c87659c93a34ca4856606cf0798d7de749f4b746e046027d429d20329df457",
+  "trials": [
+    {
+      "condition": "verdict",
+      "hidden_task": "tasks/camoformer-verdict-r0/hidden.json",
+      "path": "runs/camoformer/verdict-r0",
+      "public_task": "tasks/camoformer-verdict-r0/public.json",
+      "replicate": 0,
+      "task": "camoformer",
+      "trial_id": "camoformer-verdict-r0"
+    },
+    {
+      "condition": "diagnostic",
+      "hidden_task": "tasks/camoformer-diagnostic-r0/hidden.json",
+      "path": "runs/camoformer/diagnostic-r0",
+      "public_task": "tasks/camoformer-diagnostic-r0/public.json",
+      "replicate": 0,
+      "task": "camoformer",
+      "trial_id": "camoformer-diagnostic-r0"
+    },
+    {
+      "condition": "localized",
+      "hidden_task": "tasks/camoformer-localized-r0/hidden.json",
+      "path": "runs/camoformer/localized-r0",
+      "public_task": "tasks/camoformer-localized-r0/public.json",
+      "replicate": 0,
+      "task": "camoformer",
+      "trial_id": "camoformer-localized-r0"
+    }
+  ],
+  "upstream": {
+    "calibration_reference": {
+      "agent_visible": false,
+      "revision": "be601810aa1e249440a5da281101bdfaae898cba",
+      "url": "https://github.com/yinbow/CamoFormer-Jittor"
+    },
+    "source": {
+      "revision": "5f924a91a13707b71ca1b986924504464ffd0638",
+      "url": "https://github.com/HVision-NKU/CamoFormer"
+    }
+  },
+  "worker_attestation_sha256": null
+}

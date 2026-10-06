@@ -1,0 +1,25 @@
+schema_version: 1
+task_id: tiny-mlp
+seed: 7
+inputs:
+  - {shape: [2, 8], dtype: float32}
+source:
+  repo: source
+  entry: main.py
+  model: TinyNet
+  python: /root/miniconda3/bin/python
+  device: cuda
+target:
+  repo: target
+  entry: main.py
+  model: TinyNet
+  python: /root/autodl-tmp/jt-env/bin/python
+  device: cuda
+  env:
+    python_config_path: /root/miniconda3/bin/python3.12-config
+    LD_PRELOAD: /usr/lib/x86_64-linux-gnu/libstdc++.so.6
+    use_cutlass: "0"
+    conv_opt: "1"
+protocol:
+  repeats: 3
+  timeout: 600

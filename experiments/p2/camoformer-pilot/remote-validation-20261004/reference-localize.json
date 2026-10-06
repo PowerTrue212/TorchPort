@@ -1,0 +1,55 @@
+{
+  "error_jump": 0.0013341158628463745,
+  "evidence": {
+    "input": null,
+    "output": {
+      "candidate_dtype": "float32",
+      "candidate_shape": [
+        1,
+        64,
+        4,
+        4
+      ],
+      "cosine_similarity": 0.9999999532443049,
+      "elements": 1024,
+      "gating": true,
+      "max_absolute_error": 0.0013343393802642822,
+      "max_relative_error": 5.232179274086124,
+      "mean_absolute_error": 0.00032887346969801,
+      "mismatch_ratio": 0.97265625,
+      "mismatched_elements": 996,
+      "name": "model.encoder.block1.0.attn.sr",
+      "p99_absolute_error": 0.0010129553079605102,
+      "passed": false,
+      "position": 5,
+      "reference_dtype": "float32",
+      "reference_shape": [
+        1,
+        64,
+        4,
+        4
+      ]
+    }
+  },
+  "first_divergence": {
+    "name": "model.encoder.block1.0.attn.sr",
+    "position": 5,
+    "reason": "数值超出容差"
+  },
+  "invocation": 1,
+  "kind": "torchport.localization",
+  "metrics": {
+    "compared_elements": 62101888,
+    "compared_tensors": 1195,
+    "extra_tensors": 12,
+    "max_absolute_error": 2673.9307861328125,
+    "mismatch_ratio": 0.8122442428803452,
+    "mismatched_elements": 50441901,
+    "mismatched_tensors": 1177,
+    "missing_tensors": 24
+  },
+  "operator": null,
+  "passed": false,
+  "scope": "model.encoder.block1.0.attn.sr",
+  "stage": "trace"
+}

@@ -1,0 +1,100 @@
+{
+  "budget": {
+    "model_turns": 50,
+    "oracle_queries": 10,
+    "total_tokens": 80000,
+    "wall_seconds": 5400
+  },
+  "conditions": [
+    "verdict",
+    "diagnostic",
+    "localized"
+  ],
+  "experiment_id": "p2-clip-raft-pilot-20261003",
+  "frozen_artifacts": {
+    "private/clip/images.npy": "4446b6a06307b627177a1f09ca6fc20ef4ac53041665761a4d611bb9ad4a9a4e",
+    "private/clip/tokens.npy": "805f249077b1ccf56766b4ef39d4f4d4fbd545d00ae1fb45ec3ae0624e6309c8",
+    "private/raft/image1.npy": "08e0b85eb094f1607e5b4d971812deb275b443fca901d692bc92c929a27e07b2",
+    "private/raft/image2.npy": "2f2caece87caef00b4845e294c73eb812709921c55379eb675ee86593f460099"
+  },
+  "hardware": {
+    "execution": "serial",
+    "gpu": "NVIDIA GeForce RTX 3080 Ti"
+  },
+  "isolation": {
+    "formal_claims_allowed": false,
+    "host_filesystem_isolation": false,
+    "level": "trusted_candidate_pilot",
+    "network_isolation": false,
+    "reason": "The available GPU worker has no container or bubblewrap runtime."
+  },
+  "model": "deepseek-flash",
+  "price_snapshot": null,
+  "prompt": "../../harness/prompt.example.md",
+  "provider": "deepseek",
+  "purpose": "Validate controlled Agent migration on frozen CLIP and RAFT inference tasks.",
+  "replicates": 1,
+  "schema_version": 1,
+  "tasks": [
+    "clip",
+    "raft"
+  ],
+  "temperature": 0.0,
+  "thinking": "disabled",
+  "trials": [
+    {
+      "condition": "verdict",
+      "hidden_task": "tasks/clip-verdict-r0/hidden.json",
+      "path": "runs/clip/verdict-r0",
+      "public_task": "tasks/clip-verdict-r0/public.json",
+      "replicate": 0,
+      "task": "clip",
+      "trial_id": "clip-verdict-r0"
+    },
+    {
+      "condition": "diagnostic",
+      "hidden_task": "tasks/clip-diagnostic-r0/hidden.json",
+      "path": "runs/clip/diagnostic-r0",
+      "public_task": "tasks/clip-diagnostic-r0/public.json",
+      "replicate": 0,
+      "task": "clip",
+      "trial_id": "clip-diagnostic-r0"
+    },
+    {
+      "condition": "localized",
+      "hidden_task": "tasks/clip-localized-r0/hidden.json",
+      "path": "runs/clip/localized-r0",
+      "public_task": "tasks/clip-localized-r0/public.json",
+      "replicate": 0,
+      "task": "clip",
+      "trial_id": "clip-localized-r0"
+    },
+    {
+      "condition": "verdict",
+      "hidden_task": "tasks/raft-verdict-r0/hidden.json",
+      "path": "runs/raft/verdict-r0",
+      "public_task": "tasks/raft-verdict-r0/public.json",
+      "replicate": 0,
+      "task": "raft",
+      "trial_id": "raft-verdict-r0"
+    },
+    {
+      "condition": "diagnostic",
+      "hidden_task": "tasks/raft-diagnostic-r0/hidden.json",
+      "path": "runs/raft/diagnostic-r0",
+      "public_task": "tasks/raft-diagnostic-r0/public.json",
+      "replicate": 0,
+      "task": "raft",
+      "trial_id": "raft-diagnostic-r0"
+    },
+    {
+      "condition": "localized",
+      "hidden_task": "tasks/raft-localized-r0/hidden.json",
+      "path": "runs/raft/localized-r0",
+      "public_task": "tasks/raft-localized-r0/public.json",
+      "replicate": 0,
+      "task": "raft",
+      "trial_id": "raft-localized-r0"
+    }
+  ]
+}

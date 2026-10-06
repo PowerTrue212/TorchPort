@@ -1,8 +1,14 @@
 # TorchPort DSH 插件
 
-该包把 TorchPort 的确定性分析、迁移和数值验证能力注册为 DeepSeek Harness 工具。
-DSH 负责阅读未知仓库、选择参数与修复动作；Python 核心负责执行并返回可审计证据。
-插件不包含 ResNet、ViT、SuperRes 等模型专用适配器。
+该包把 TorchPort 的确定性运行、数值验收和结构化失败结果注册为 DeepSeek Harness
+工具。DSH 负责阅读 PyTorch 仓库、编写 Jittor candidate 和选择修复；TorchPort
+只执行冻结任务并返回可审计证据。
+
+插件不包含自动代码转换器、仓库入口猜测或模型专用适配器。
+
+该插件直接映射 TorchPort 的六个公开命令。正式 P2 的三组仍然
+必须经过 `experiments/harness/`，由 Gateway 统一限制文件权限、计算 query/physical
+cost 并隔离最终认证。不能直接运行本插件后依靠 prompt 要求模型忽略多余字段。
 
 ## 开发与测试
 
@@ -15,65 +21,50 @@ npm test
 npm run pack:check
 ```
 
-`npm test` 会先编译 TypeScript，再运行分析循环和证书归一化测试。
-
-## 安装到 DSH
+## 安装到 DSH Web
 
 ```bash
-dsh plugin --profile headless add "$PWD"
-
-export TORCHPORT_PYTHON=/path/to/python
-export TORCHPORT_PYTHONPATH=/path/to/torchport/src
-export TORCHPORT_TRACE_DIR=/path/to/traces
+cd integrations/dsh
+npm install
+npm test
+dsh plugin --profile web add "$PWD"
 ```
 
-包内 `dsh.bundle.patch` 会自动插入 `torchport` 插件行，无需手工编辑 DSH profile。
-`DEEPSEEK_API_KEY` 只应通过进程环境或 DSH 凭据系统提供，不得写入仓库。
+安装一次并在 DSH Web 中把 TorchPort 根目录选为工作区后，以后只需运行 `dsh web`。
+插件默认使用工作区中的 `.venv` 和 `src`，并通过
+`scripts/remote/dsh_torchport.py` 把 TorchPort 命令发送到 `~/.tp_ssh.env` 指定的 GPU。
+无需在启动 `dsh web` 前手工加载该文件。需要改为本机执行时，把
+`TORCHPORT_RUNNER` 设为空；也可用 `TORCHPORT_PYTHON`、`TORCHPORT_PYTHONPATH` 和
+`TORCHPORT_TRACE_DIR` 覆盖其他路径。
 
-## 结构化工具
+包内 `torchport.patch.yml` 会自动插入 `torchport` 插件行。API 密钥只通过进程环境或
+DSH 凭据系统提供。
+
+## 工具
 
 | 工具 | 职责 |
-|---|---|
-| `scan_repository` | 扫描框架、入口、依赖、权重和风险 |
-| `create_migration_plan` | 生成不修改源码的迁移计划 |
-| `start_migration` | 执行初始迁移、运行检查和可选对齐 |
-| `run_verification` | 独立执行 PyTorch/Jittor 双端验证 |
-| `locate_first_divergence` | 返回当前状态和首次数值分歧点 |
-| `propose_repairs` | 把失败证据归约为下一轮候选动作 |
-| `apply_verified_repair` | 记录 DSH 决策后重新迁移和验证 |
-| `generate_certification_report` | 生成稳定、可发布的 DSH 报告 |
+| --- | --- |
+| `torchport_inspect` | 查看公开任务契约 |
+| `torchport_run` | 运行 source 或 target，生成运行记录 |
+| `torchport_evaluate` | 读取既有产物并判定，不启动模型 |
+| `torchport_trace` | 采集双端中间结果并比较 |
+| `torchport_localize` | 从 trace 报告提取首次分歧 |
+| `torchport_verify` | 冻结 oracle 并重复验收 target |
 
-`modelArgs`、`modelKw` 和多输入描述使用真实 JSON schema，整数、布尔值和嵌套配置
-不会退化成字符串。外部命令以参数数组启动，不经过 shell；完整报告写入输出目录，送回
-LLM 的结果只保留证书、失败原因、入口链和下一步动作。
+外部命令以参数数组启动，不经过 shell。每次 Python 工具调用都会追加 JSONL 轨迹；
+插件只转录内核的 `passed`、`failure_code` 和证据，不维护第二套验收规则。
 
 ## 闭环
 
 ```text
-扫描 → 规划 → 迁移 → 双端运行 → 数值证书
-                         ↓ 失败
-                首次分歧与结构化动作
-                         ↓
-                   DSH 选择修复
-                         ↓
-                    重新迁移验证
+DSH 阅读仓库并编写 candidate
+              ↓
+       torchport_verify
+              ↓
+     通过 ─────────→ 验收报告
+              │失败
+              ↓
+ torchport_trace / torchport_localize
+              ↓
+        DSH 修改后重试
 ```
-
-每次 Python 工具调用都写入 JSONL 轨迹；`auto.json` 保存 `agent.round`、
-`agent.decision` 和 `agent.candidate`。FP32 通过即签发迁移证书，Strict 结果继续保留为
-中间层诊断，不会被隐藏。
-
-## 已验证端到端样本
-
-在 PyTorch 官方 examples 的 `super_resolution` 子仓库上，真实 DSH 完成了扫描、
-参数修复、Jittor 环境归因、重新验证和报告生成。最终结果为：
-
-```text
-status   verified
-passed   true
-FP32     true
-Strict   false
-first    conv3
-```
-
-复现实验摘要和脱敏证书位于 `experiments/stage3_method/` 与 `experiments/results/`。

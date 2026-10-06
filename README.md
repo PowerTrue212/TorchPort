@@ -4,7 +4,7 @@
   <h1>TorchPort</h1>
 
   <p>
-    <strong>面向全国产化 AI 软件栈的 PyTorch → Jittor 自动迁移与验证 Agent。</strong><br>
+    <strong>供 PyTorch → Jittor 迁移 Agent 调用的可复现执行与验证工具。</strong><br>
     TorchPort 以 DeepSeek/DSH 作为源代码分析与操作平台，支持 Pytorch、TensorFlow、Caffe 等框架到 Jittor 的迁移，
     并天然支持昇腾等国产算力硬件。
   </p>
@@ -41,7 +41,7 @@
 
 TorchPort 的核心假设很简单：模型迁移不能只看代码是否被替换，更要看迁移后的模型能否保持数值行为与性能对齐。
 
-该智能体由两层组成。首先基于 DeepSeek/DSH 对未知 PyTorch 仓库做阅读、决策和修复调度，然后 TorchPort 提供确定性的扫描、迁移、双端执行、数值对齐和首次数值分歧定位工具。核心目标是构建一条从 DeepSeek、Jittor 到国产算力后端的全国产化模型迁移平台。
+系统由两层组成。DeepSeek/DSH 阅读未知 PyTorch 仓库、编写 Jittor candidate 并选择修复；TorchPort 按冻结任务执行双端模型、核验输入和参数、比较数值结果并返回可审计证据。下一阶段会把真实迁移中复验过的问题整理为有证据的问题库，供 Agent 在新任务中只读参考。
 
 ## 项目定位
 
@@ -49,7 +49,7 @@ TorchPort 关注的是一个可复验的问题：
 
 ```text
 给定一个未知 PyTorch 仓库，
-系统能否迁移到 Jittor，
+迁移 Agent 能否提交一个 Jittor candidate，
 实际运行 PyTorch 与 Jittor 两端，
 比较同一输入和同一权重下的数值结果，
 在不一致时定位首个分歧位置，
@@ -94,7 +94,7 @@ README 中使用的核心指标如下：
 | `NA` | PyTorch/Jittor 最终输出通过数值对齐 |
 | `SA` | 中间层轨迹通过更严格的对齐检查 |
 | `FD` | 首次数值分歧点 |
-| `Cert` | 包含输入、权重、轨迹、误差和失败归因的数值证书 |
+| `Cert` | 包含输入、权重、轨迹、误差和失败分类的数值证书 |
 
 ## 快速开始
 
@@ -112,60 +112,58 @@ ruff check .
 python -m build
 ```
 
-扫描并规划 PyTorch 仓库：
+验证一个显式任务：
 
 ```bash
-PYTHONPATH=src python -m torchport scan /path/to/pytorch-repo
-PYTHONPATH=src python -m torchport plan /path/to/pytorch-repo --target jittor-native
+PYTHONPATH=src python -m torchport verify benchmarks/tasks/tiny/task.yaml \
+  --root .torchport/harness \
+  --trial t0
 ```
 
-执行一次自动迁移和验证：
+也可以把执行和判定拆开：
 
 ```bash
-PYTHONPATH=src python -m torchport auto /path/to/pytorch-repo \
-  --output /path/to/migrated-jittor \
-  --target jittor-native \
-  --entrypoint main.py \
-  --model main.Model \
-  --shape 1,3,224,224 \
-  --check-run
+PYTHONPATH=src python -m torchport run task.yaml target --root .torchport/harness --trial t0
+PYTHONPATH=src python -m torchport evaluate task.yaml path/to/manifest.json \
+  --root .torchport/harness --trial t0
+PYTHONPATH=src python -m torchport inspect task.yaml
+PYTHONPATH=src python -m torchport trace task.yaml --root .torchport/harness --trial t0
+PYTHONPATH=src python -m torchport localize .torchport/harness/trace/t0.json
 ```
 
-主报告写入：
+正式结果写入：
 
 ```text
-/path/to/migrated-jittor/.torchport/auto.json
+.torchport/harness/verify/t0.json
 ```
 
 ## Workflow
 
 ```text
-仓库扫描
-      -> 模型入口
-      -> 代码迁移
+DSH/Agent 阅读仓库并修改 candidate
+      -> 编写显式 task
       -> PyTorch/Jittor 双端执行
       -> 权重与输入检查
-      -> 张量轨迹比较
+      -> 最终输出与可选轨迹比较
       -> 首次数值分歧定位
-      -> 修复建议
-      -> 再验证
+      -> DSH/Agent 修复
+      -> 重复独立验收
 ```
 
-TorchPort 在面对新仓库时，DSH 先读取仓库并调用 TorchPort 工具；TorchPort 返回结构化证据；DSH 再基于证据选择迁移或修复动作。
+TorchPort 不自动扫描并改写未知仓库。DSH 或其他 Agent 负责仓库特有决策，TorchPort
+只接受显式任务并返回结构化证据。
 
 ## DSH 集成
 
-DSH 插件位于 `integrations/dsh`，目前提供 8 个工具：
+DSH 插件位于 `integrations/dsh`，目前提供 6 个工具：
 
 ```text
-scan_repository
-create_migration_plan
-start_migration
-run_verification
-locate_first_divergence
-propose_repairs
-apply_verified_repair
-generate_certification_report
+torchport_inspect
+torchport_run
+torchport_evaluate
+torchport_trace
+torchport_localize
+torchport_verify
 ```
 
 运行插件测试：
@@ -178,12 +176,14 @@ npm test
 
 ## 当前状态
 
-- [x] 仓库扫描与模型入口恢复
-- [x] PyTorch 到原生 Jittor 的迁移骨架
-- [x] PyTorch/Jittor 双端执行、张量轨迹与数值证书
+- [x] 显式 TaskSpec、oracle 和 candidate 身份冻结
+- [x] PyTorch/Jittor 双端执行、张量证据与唯一验收结果
 - [x] 首次数值分歧定位与结构化失败分类
-- [x] DSH 插件和修复/验证循环
+- [x] DSH 验证插件和 Agent 修复循环
+- [x] P2 受控 Gateway、DeepSeek adapter、成本聚合与 tiny GPU smoke 闭环
 - [x] 实验图表与模型可视化
+- [ ] 冻结 P2 正式 benchmark 并运行多 replicate 真实迁移实验
+- [ ] P3 建立有证据的迁移问题库，并在 held-out 新案例上评测经验复用
 - [ ] 冻结官方转换器、JTorch、纯 Codex、纯 DSH、DSH + TorchPort 的统一对比实验
 - [ ] 扩展未见真实 PyTorch 仓库测试集
 - [ ] 完成昇腾等国产算力后端的端到端验证
@@ -210,6 +210,27 @@ npm test
 | Strict 对齐 | 失败归因 |
 | --- | --- |
 | <img src="experiments/figures/fig_strict/plot.png" width="430"> | <img src="experiments/figures/fig_fail/plot.png" width="430"> |
+
+### RAFT 三方法迁移
+
+| 公共 evaluator 与框架差异 | Optical flow 输出 |
+| --- | --- |
+| <img src="experiments/figures/fig_raft/comparison.png" width="430"> | <img src="experiments/figures/fig_raft/flows.png" width="430"> |
+
+| Flow error map | PyTorch/Jittor 中间 feature |
+| --- | --- |
+| <img src="experiments/figures/fig_raft/errors.png" width="430"> | <img src="experiments/figures/fig_raft/feature_pairs.png" width="430"> |
+
+| 中间 feature 差异 | 12 次迭代收敛轨迹 |
+| --- | --- |
+| <img src="experiments/figures/fig_raft/feature_errors.png" width="430"> | <img src="experiments/figures/fig_raft/iteration_convergence.png" width="430"> |
+
+| Strict mismatch 累积 | Round–RN/NA 修复轨迹 |
+| --- | --- |
+| <img src="experiments/figures/fig_raft/strict_profile.png" width="430"> | <img src="experiments/figures/fig_raft/method_results.png" width="430"> |
+
+RAFT 图只使用公共 evaluator 和 TorchPort 双端捕获的真实数据。三种方法的 agent
+用时/token 未完整记录，因此不画成本气泡图，也不以空心点或零值代替缺失记录。
 
 ### 模型可视化
 
@@ -258,14 +279,19 @@ DSH + TorchPort：
 ## 目录结构
 
 ```text
-src/torchport/       Python 核心与命令行
-integrations/dsh/    DSH 插件
-benchmarks/          入口模式与仓库基准
-compatibility/       兼容性说明与修复规则
-experiments/         实验数据、图表、提示词和报告
-docs/                设计文档和图片资源
-tests/               单元测试与集成测试
+src/torchport/          可信执行、证据采集、oracle、比较与验收核心
+integrations/dsh/       DSH 插件，只消费 TorchPort 命令和稳定结果
+benchmarks/             小型仓库、任务定义与入口发现基准
+compatibility/          历史兼容性规则与有证据的迁移问题
+experiments/            实验协议、数据、图表、提示词和报告
+CLIP/ RAFT/ apt/        独立的大模型迁移实验协议与本地工作区
+scripts/                安装、复现和远程开发工具
+docs/                   架构、实施计划和开发说明
+tests/                  单元测试与集成测试
 ```
+
+完整的目录职责、生成物归属和两个 Python 包的边界见
+[项目目录说明](docs/project-layout.md)。
 
 ## 复现实验图
 

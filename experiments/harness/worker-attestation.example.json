@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "kind": "torchport.p2-worker-attestation",
+  "runtime": "replace-with-container-runtime-and-version",
+  "image_digest": "replace-with-immutable-image-digest",
+  "network_isolation": false,
+  "host_filesystem_isolation": false,
+  "candidate_workspace_is_only_writable_mount": false,
+  "source_and_frozen_inputs_read_only": false,
+  "hidden_artifacts_not_mounted_for_agent": false
+}

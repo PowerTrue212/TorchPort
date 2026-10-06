@@ -41,7 +41,7 @@
 
 TorchPort starts from a narrow requirement: migration should be judged by execution and numerical behavior, not by whether source text has been rewritten.
 
-The system has two layers. DeepSeek/DSH reads unknown PyTorch repositories and schedules migration or repair actions. TorchPort provides deterministic tools for scanning, migration, dual-runtime execution, numerical alignment, and first-divergence localization. Jittor is the primary target today. Ascend-class domestic accelerators are treated as backend constraints from the design stage, not as an afterthought. The long-term goal is a verifiable migration path from DeepSeek/DSH and Jittor to domestic compute backends.
+The system has two layers. DeepSeek/DSH reads unknown PyTorch repositories, writes the Jittor candidate, and chooses repairs. TorchPort executes a frozen task, checks inputs and parameters, compares numerical results, and returns auditable evidence. The next phase will curate reproduced migration issues as read-only evidence for agents working on unseen tasks.
 
 ## Positioning
 
@@ -49,7 +49,7 @@ TorchPort is not a collection of model-specific adapters, and it is not a one-pa
 
 ```text
 Given an unknown PyTorch repository,
-can the system migrate it to Jittor,
+can a migration agent submit a Jittor candidate,
 run both PyTorch and Jittor with the same input and weights,
 compare numerical outputs and intermediate traces,
 localize the first divergence when alignment fails,
@@ -59,7 +59,7 @@ and record the repair process?
 This gives each component a clear role:
 
 - DeepSeek/DSH handles repository-specific understanding, including entry points, configs, weights, and inference paths.
-- TorchPort produces auditable engineering evidence, including scan results, execution logs, tensor traces, and numerical certificates.
+- TorchPort produces auditable engineering evidence, including execution logs, tensor traces, and numerical certificates.
 - Jittor is the current domestic target framework with the most complete verification path.
 - Ascend-class accelerators are a backend target for later integration under the same evidence chain.
 
@@ -120,61 +120,58 @@ ruff check .
 python -m build
 ```
 
-Scan and plan a PyTorch repository:
+Verify an explicit task:
 
 ```bash
-PYTHONPATH=src python -m torchport scan /path/to/pytorch-repo
-PYTHONPATH=src python -m torchport plan /path/to/pytorch-repo --target jittor-native
+PYTHONPATH=src python -m torchport verify benchmarks/tasks/tiny/task.yaml \
+  --root .torchport/harness \
+  --trial t0
 ```
 
-Run one automatic migration attempt:
+Execution and evaluation can also be invoked separately:
 
 ```bash
-PYTHONPATH=src python -m torchport auto /path/to/pytorch-repo \
-  --output /path/to/migrated-jittor \
-  --target jittor-native \
-  --entrypoint main.py \
-  --model main.Model \
-  --shape 1,3,224,224 \
-  --check-run
+PYTHONPATH=src python -m torchport run task.yaml target --root .torchport/harness --trial t0
+PYTHONPATH=src python -m torchport evaluate task.yaml path/to/manifest.json \
+  --root .torchport/harness --trial t0
+PYTHONPATH=src python -m torchport inspect task.yaml
+PYTHONPATH=src python -m torchport trace task.yaml --root .torchport/harness --trial t0
+PYTHONPATH=src python -m torchport localize .torchport/harness/trace/t0.json
 ```
 
-The main report is written to:
+The verification result is written to:
 
 ```text
-/path/to/migrated-jittor/.torchport/auto.json
+.torchport/harness/verify/t0.json
 ```
 
 ## Workflow
 
 ```text
-repository scan
-      -> model-entry recovery
-      -> code migration
+DSH/Agent reads the repository and edits the candidate
+      -> explicit task
       -> PyTorch/Jittor dual execution
       -> weight and input checks
-      -> tensor-trace comparison
+      -> final-output and optional-trace comparison
       -> first-divergence localization
-      -> repair proposal
-      -> re-verification
+      -> DSH/Agent repair
+      -> repeated independent verification
       -> numerical certificate
 ```
 
-TorchPort does not hard-code model knowledge into files such as `resnet_adapter.py` or `vit_adapter.py`. For a new repository, DSH reads the project and calls TorchPort tools. TorchPort returns structured evidence. DSH then chooses the next migration or repair action.
+TorchPort does not scan and rewrite unknown repositories. DSH or another agent owns repository-specific decisions; TorchPort accepts an explicit task and returns structured evidence.
 
 ## DSH Integration
 
-The DSH plugin lives in `integrations/dsh` and currently exposes eight tools:
+The DSH plugin lives in `integrations/dsh` and exposes six tools:
 
 ```text
-scan_repository
-create_migration_plan
-start_migration
-run_verification
-locate_first_divergence
-propose_repairs
-apply_verified_repair
-generate_certification_report
+torchport_inspect
+torchport_run
+torchport_evaluate
+torchport_trace
+torchport_localize
+torchport_verify
 ```
 
 Run plugin tests:
@@ -187,12 +184,13 @@ npm test
 
 ## Status
 
-- [x] Repository scanning and model-entry recovery
-- [x] PyTorch-to-native-Jittor migration skeleton
-- [x] PyTorch/Jittor dual execution, tensor traces, and numerical certificates
+- [x] Explicit TaskSpec plus frozen oracle and candidate identities
+- [x] PyTorch/Jittor dual execution, tensor evidence, and one verification result
 - [x] First-divergence localization and structured failure codes
-- [x] DSH plugin with a repair/verification loop
+- [x] DSH verification plugin with an agent repair loop
+- [x] P2 controlled gateway, DeepSeek adapter, cost aggregation, and tiny GPU smoke loop
 - [x] Experiment figures and model visualizations
+- [ ] P3 evidence-backed migration issue library with evaluation on held-out cases
 - [ ] Freeze the unified benchmark against the official converter, JTorch, pure Codex, pure DSH, and DSH + TorchPort
 - [ ] Expand the unseen real PyTorch repository test set
 - [ ] Complete end-to-end validation on Ascend-class domestic accelerators
@@ -267,14 +265,19 @@ This sample shows two things. First, the migrated Jittor project runs and its fi
 ## Layout
 
 ```text
-src/torchport/       Python core and CLI
-integrations/dsh/    DSH plugin
-benchmarks/          entry-pattern and repository benchmarks
-compatibility/       compatibility notes and repair rules
-experiments/         experiment data, figures, prompts, and reports
-docs/                design notes and assets
-tests/               unit and integration tests
+src/torchport/          trusted execution, evidence, oracle, comparison, and verification core
+integrations/dsh/       DSH plugin consuming TorchPort commands and stable results
+benchmarks/             small repository fixtures, task specs, and entry-pattern benchmarks
+compatibility/          historical compatibility rules and evidence-backed migration issues
+experiments/            experiment data, figures, prompts, and reports
+CLIP/ RAFT/ apt/        standalone migration protocols and local experiment workspaces
+scripts/                installation, reproduction, and remote development tools
+docs/                   architecture, roadmap, and development notes
+tests/                  unit and integration tests
 ```
+
+See [Project Layout](docs/project-layout.md) for ownership rules, generated artifacts, and the
+boundary between the two Python packages.
 
 ## Reproduce Figures
 

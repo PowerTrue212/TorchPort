@@ -1,0 +1,61 @@
+{
+  "build_physical_cost": {
+    "cuda_execution_seconds": 11.52791953086853,
+    "execution_wall_seconds": 11.52791953086853,
+    "executions": 3
+  },
+  "capture": {
+    "checkpoint": {
+      "complete": true,
+      "loaded": 162,
+      "missing": [],
+      "path": "/root/autodl-tmp/tp-p2-final-20261003/RAFT/shared/prepared/weights_fp32.npz",
+      "requested": true,
+      "sha256": "fa48172cd5c441aa49941d7177e4a36e0d43fe38bf8be6eb21ae76e090d936e8",
+      "total": 162,
+      "unexpected": []
+    },
+    "framework": {
+      "cuda": "12.8",
+      "device": "cuda",
+      "device_name": "NVIDIA GeForce RTX 3080 Ti",
+      "name": "pytorch",
+      "version": "2.8.0+cu128"
+    },
+    "hashes": {
+      "input": "ad61c9ca2ffcea00c5d9bdd1e7735bd82bd20b5081eb19e52b723e7ebbb6749f",
+      "output": "0ab1f0d73087d12fa582bae6f03f01a2d210e1c2222604bbb101d8aa91f203f3",
+      "state": "b3aee2abc1871658da8ce8376a6678147a2a59a0cc217db0b5218305abfaaae9"
+    },
+    "kind": "source",
+    "loaded": 162,
+    "mode": "normal",
+    "numpy": "2.3.2",
+    "outputs": [
+      "output.0",
+      "output.1"
+    ],
+    "state": {
+      "loaded": 162,
+      "missing": [],
+      "total": 162,
+      "value_mismatch": []
+    },
+    "weights": 162
+  },
+  "dir": "/root/autodl-tmp/tp-p2-final-20261003/gpu-validation-results-final/raft/verify/oracle/02d2afee2aa5bf62",
+  "files": {
+    "inputs.npz": "15149fb0a60b631d20edc91dc7c17141f4f5ecb6974bf3eaa98136606adebeb5",
+    "outputs.npz": "62bba454ee799bf7fc5704d983dfab2b703a5f12550cc95175b1158d8a363f32",
+    "state.npz": "b3aee2abc1871658da8ce8376a6678147a2a59a0cc217db0b5218305abfaaae9"
+  },
+  "kind": "torchport.oracle",
+  "ok": true,
+  "source_runs": [
+    "source-20261003-235804-d9a7bfc7",
+    "source-20261003-235808-42597152",
+    "source-20261003-235812-c67e167b"
+  ],
+  "task_digest": "02d2afee2aa5bf62634a1d7e8654977b6a4c37edf55db13c1e1f7faa39c41b2b",
+  "task_id": "raft-p2"
+}

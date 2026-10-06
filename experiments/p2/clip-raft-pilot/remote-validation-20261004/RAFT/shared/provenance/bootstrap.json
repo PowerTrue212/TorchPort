@@ -1,0 +1,34 @@
+{
+  "crop_xyxy": [
+    256,
+    26,
+    768,
+    410
+  ],
+  "files": {
+    "shared/checkpoints/raft-things.pth": {
+      "bytes": 21108000,
+      "sha256": "fcfa4125d6418f4de95d84aec20a3c5f4e205101715a79f193243c186ac9a7e1"
+    },
+    "shared/prepared/image1.npy": {
+      "bytes": 2359424,
+      "sha256": "2f2caece87caef00b4845e294c73eb812709921c55379eb675ee86593f460099"
+    },
+    "shared/prepared/image2.npy": {
+      "bytes": 2359424,
+      "sha256": "08e0b85eb094f1607e5b4d971812deb275b443fca901d692bc92c929a27e07b2"
+    }
+  },
+  "protocol_version": "raft-v1-frozen-2026-08-24",
+  "raft_commit": "2888e15a51fa41140771d3f498ed8023cff098d1",
+  "source_frames": [
+    {
+      "path": "source/princeton-vl-raft/demo-frames/frame_0016.png",
+      "sha256": "5a815fe352c27c8fe94e19e5236bef3856ae22b9b9ee0b38ec406ef213faaaff"
+    },
+    {
+      "path": "source/princeton-vl-raft/demo-frames/frame_0017.png",
+      "sha256": "6c6f31f001dadddb9578dcc03f8bd53a045fe752311a53b9f9bcd1e1a1b2a329"
+    }
+  ]
+}

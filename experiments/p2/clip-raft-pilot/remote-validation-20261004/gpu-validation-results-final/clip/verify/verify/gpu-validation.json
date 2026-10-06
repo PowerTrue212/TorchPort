@@ -1,0 +1,356 @@
+{
+  "aligned": true,
+  "failure_code": null,
+  "kind": "torchport.verify",
+  "mismatch": {
+    "fp32": {
+      "compared_elements": 602436,
+      "compared_tensors": 3,
+      "extra_tensors": 0,
+      "max_absolute_error": 1.52587890625e-05,
+      "mismatch_ratio": 0.0,
+      "mismatched_elements": 0,
+      "mismatched_tensors": 0,
+      "missing_tensors": 0
+    },
+    "strict": {
+      "compared_elements": 602436,
+      "compared_tensors": 3,
+      "extra_tensors": 0,
+      "max_absolute_error": 1.52587890625e-05,
+      "mismatch_ratio": 0.0,
+      "mismatched_elements": 0,
+      "mismatched_tensors": 0,
+      "missing_tensors": 0
+    }
+  },
+  "next": null,
+  "oracle": "/root/autodl-tmp/tp-p2-final-20261003/gpu-validation-results-final/clip/verify/oracle/c0ac448db1781f7f",
+  "passed": true,
+  "physical_cost": {
+    "cuda_execution_seconds": 47.92554473876953,
+    "execution_wall_seconds": 47.92554473876953,
+    "executions": 6
+  },
+  "repeats": {
+    "failure_code": null,
+    "passed": true,
+    "passed_runs": 3,
+    "required": 3,
+    "runs": 3
+  },
+  "results": [
+    {
+      "aligned": true,
+      "artifacts": {
+        "candidate": "/root/autodl-tmp/tp-p2-final-20261003/gpu-validation-results-final/clip/verify/runs/gpu-validation/target-20261003-235339-6c6ea0ce/outputs.npz",
+        "reference": "/root/autodl-tmp/tp-p2-final-20261003/gpu-validation-results-final/clip/verify/oracle/c0ac448db1781f7f/outputs.npz"
+      },
+      "candidate_identity": "e00ac84a35151785771399665d7fab9a8bf9fd924340495ccbec0f3c83d748bf",
+      "evidence": {
+        "checkpoint": {
+          "complete": true,
+          "loaded": 302,
+          "missing": [],
+          "path": "/root/autodl-tmp/tp-p2-final-20261003/CLIP/shared/prepared/weights_fp32.npz",
+          "requested": true,
+          "sha256": "21bb8d61d7807bc9ee4225e46180f4091c9ba2527a1645befbabffca641b328c",
+          "total": 302,
+          "unexpected": []
+        },
+        "input_identical": true,
+        "mode": "normal",
+        "weights": {
+          "complete": true,
+          "extra": [],
+          "loaded": 302,
+          "missing": [],
+          "source": 302,
+          "target_total": 302,
+          "value_mismatch": []
+        }
+      },
+      "failure_code": null,
+      "kind": "torchport.evaluation",
+      "mismatch": {
+        "fp32": {
+          "compared_elements": 602436,
+          "compared_tensors": 3,
+          "extra_tensors": 0,
+          "max_absolute_error": 1.52587890625e-05,
+          "mismatch_ratio": 0.0,
+          "mismatched_elements": 0,
+          "mismatched_tensors": 0,
+          "missing_tensors": 0
+        },
+        "strict": {
+          "compared_elements": 602436,
+          "compared_tensors": 3,
+          "extra_tensors": 0,
+          "max_absolute_error": 1.52587890625e-05,
+          "mismatch_ratio": 0.0,
+          "mismatched_elements": 0,
+          "mismatched_tensors": 0,
+          "missing_tensors": 0
+        }
+      },
+      "next": null,
+      "numerical": "pass",
+      "passed": true,
+      "problems": [],
+      "profiles": {
+        "fp32": {
+          "extra": [],
+          "first": null,
+          "first_any": null,
+          "metrics": {
+            "compared_elements": 602436,
+            "compared_tensors": 3,
+            "extra_tensors": 0,
+            "max_absolute_error": 1.52587890625e-05,
+            "mismatch_ratio": 0.0,
+            "mismatched_elements": 0,
+            "mismatched_tensors": 0,
+            "missing_tensors": 0
+          },
+          "missing": [],
+          "passed": true
+        },
+        "strict": {
+          "extra": [],
+          "first": null,
+          "first_any": null,
+          "metrics": {
+            "compared_elements": 602436,
+            "compared_tensors": 3,
+            "extra_tensors": 0,
+            "max_absolute_error": 1.52587890625e-05,
+            "mismatch_ratio": 0.0,
+            "mismatched_elements": 0,
+            "mismatched_tensors": 0,
+            "missing_tensors": 0
+          },
+          "missing": [],
+          "passed": true
+        }
+      },
+      "run_id": "target-20261003-235339-6c6ea0ce",
+      "runnable": "pass",
+      "schema_version": 2,
+      "status": "verified",
+      "strict_aligned": true,
+      "structural": "pass",
+      "summary": "通过"
+    },
+    {
+      "aligned": true,
+      "artifacts": {
+        "candidate": "/root/autodl-tmp/tp-p2-final-20261003/gpu-validation-results-final/clip/verify/runs/gpu-validation/target-20261003-235345-a3623508/outputs.npz",
+        "reference": "/root/autodl-tmp/tp-p2-final-20261003/gpu-validation-results-final/clip/verify/oracle/c0ac448db1781f7f/outputs.npz"
+      },
+      "candidate_identity": "e00ac84a35151785771399665d7fab9a8bf9fd924340495ccbec0f3c83d748bf",
+      "evidence": {
+        "checkpoint": {
+          "complete": true,
+          "loaded": 302,
+          "missing": [],
+          "path": "/root/autodl-tmp/tp-p2-final-20261003/CLIP/shared/prepared/weights_fp32.npz",
+          "requested": true,
+          "sha256": "21bb8d61d7807bc9ee4225e46180f4091c9ba2527a1645befbabffca641b328c",
+          "total": 302,
+          "unexpected": []
+        },
+        "input_identical": true,
+        "mode": "normal",
+        "weights": {
+          "complete": true,
+          "extra": [],
+          "loaded": 302,
+          "missing": [],
+          "source": 302,
+          "target_total": 302,
+          "value_mismatch": []
+        }
+      },
+      "failure_code": null,
+      "kind": "torchport.evaluation",
+      "mismatch": {
+        "fp32": {
+          "compared_elements": 602436,
+          "compared_tensors": 3,
+          "extra_tensors": 0,
+          "max_absolute_error": 1.9073486328125e-05,
+          "mismatch_ratio": 0.0,
+          "mismatched_elements": 0,
+          "mismatched_tensors": 0,
+          "missing_tensors": 0
+        },
+        "strict": {
+          "compared_elements": 602436,
+          "compared_tensors": 3,
+          "extra_tensors": 0,
+          "max_absolute_error": 1.9073486328125e-05,
+          "mismatch_ratio": 0.0,
+          "mismatched_elements": 0,
+          "mismatched_tensors": 0,
+          "missing_tensors": 0
+        }
+      },
+      "next": null,
+      "numerical": "pass",
+      "passed": true,
+      "problems": [],
+      "profiles": {
+        "fp32": {
+          "extra": [],
+          "first": null,
+          "first_any": null,
+          "metrics": {
+            "compared_elements": 602436,
+            "compared_tensors": 3,
+            "extra_tensors": 0,
+            "max_absolute_error": 1.9073486328125e-05,
+            "mismatch_ratio": 0.0,
+            "mismatched_elements": 0,
+            "mismatched_tensors": 0,
+            "missing_tensors": 0
+          },
+          "missing": [],
+          "passed": true
+        },
+        "strict": {
+          "extra": [],
+          "first": null,
+          "first_any": null,
+          "metrics": {
+            "compared_elements": 602436,
+            "compared_tensors": 3,
+            "extra_tensors": 0,
+            "max_absolute_error": 1.9073486328125e-05,
+            "mismatch_ratio": 0.0,
+            "mismatched_elements": 0,
+            "mismatched_tensors": 0,
+            "missing_tensors": 0
+          },
+          "missing": [],
+          "passed": true
+        }
+      },
+      "run_id": "target-20261003-235345-a3623508",
+      "runnable": "pass",
+      "schema_version": 2,
+      "status": "verified",
+      "strict_aligned": true,
+      "structural": "pass",
+      "summary": "通过"
+    },
+    {
+      "aligned": true,
+      "artifacts": {
+        "candidate": "/root/autodl-tmp/tp-p2-final-20261003/gpu-validation-results-final/clip/verify/runs/gpu-validation/target-20261003-235351-701b4ffd/outputs.npz",
+        "reference": "/root/autodl-tmp/tp-p2-final-20261003/gpu-validation-results-final/clip/verify/oracle/c0ac448db1781f7f/outputs.npz"
+      },
+      "candidate_identity": "e00ac84a35151785771399665d7fab9a8bf9fd924340495ccbec0f3c83d748bf",
+      "evidence": {
+        "checkpoint": {
+          "complete": true,
+          "loaded": 302,
+          "missing": [],
+          "path": "/root/autodl-tmp/tp-p2-final-20261003/CLIP/shared/prepared/weights_fp32.npz",
+          "requested": true,
+          "sha256": "21bb8d61d7807bc9ee4225e46180f4091c9ba2527a1645befbabffca641b328c",
+          "total": 302,
+          "unexpected": []
+        },
+        "input_identical": true,
+        "mode": "normal",
+        "weights": {
+          "complete": true,
+          "extra": [],
+          "loaded": 302,
+          "missing": [],
+          "source": 302,
+          "target_total": 302,
+          "value_mismatch": []
+        }
+      },
+      "failure_code": null,
+      "kind": "torchport.evaluation",
+      "mismatch": {
+        "fp32": {
+          "compared_elements": 602436,
+          "compared_tensors": 3,
+          "extra_tensors": 0,
+          "max_absolute_error": 1.52587890625e-05,
+          "mismatch_ratio": 0.0,
+          "mismatched_elements": 0,
+          "mismatched_tensors": 0,
+          "missing_tensors": 0
+        },
+        "strict": {
+          "compared_elements": 602436,
+          "compared_tensors": 3,
+          "extra_tensors": 0,
+          "max_absolute_error": 1.52587890625e-05,
+          "mismatch_ratio": 0.0,
+          "mismatched_elements": 0,
+          "mismatched_tensors": 0,
+          "missing_tensors": 0
+        }
+      },
+      "next": null,
+      "numerical": "pass",
+      "passed": true,
+      "problems": [],
+      "profiles": {
+        "fp32": {
+          "extra": [],
+          "first": null,
+          "first_any": null,
+          "metrics": {
+            "compared_elements": 602436,
+            "compared_tensors": 3,
+            "extra_tensors": 0,
+            "max_absolute_error": 1.52587890625e-05,
+            "mismatch_ratio": 0.0,
+            "mismatched_elements": 0,
+            "mismatched_tensors": 0,
+            "missing_tensors": 0
+          },
+          "missing": [],
+          "passed": true
+        },
+        "strict": {
+          "extra": [],
+          "first": null,
+          "first_any": null,
+          "metrics": {
+            "compared_elements": 602436,
+            "compared_tensors": 3,
+            "extra_tensors": 0,
+            "max_absolute_error": 1.52587890625e-05,
+            "mismatch_ratio": 0.0,
+            "mismatched_elements": 0,
+            "mismatched_tensors": 0,
+            "missing_tensors": 0
+          },
+          "missing": [],
+          "passed": true
+        }
+      },
+      "run_id": "target-20261003-235351-701b4ffd",
+      "runnable": "pass",
+      "schema_version": 2,
+      "status": "verified",
+      "strict_aligned": true,
+      "structural": "pass",
+      "summary": "通过"
+    }
+  ],
+  "status": "verified",
+  "strict_aligned": true,
+  "summary": "通过",
+  "task_digest": "c0ac448db1781f7f24f1d5eef7a12d5dd560587c5e875ccdf92e4726405c186d",
+  "task_id": "clip-p2",
+  "trial_id": "gpu-validation"
+}

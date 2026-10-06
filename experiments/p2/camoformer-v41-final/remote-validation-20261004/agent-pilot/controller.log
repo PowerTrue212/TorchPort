@@ -1,0 +1,451 @@
+{
+  "run_state": {
+    "schema_version": 1,
+    "kind": "torchport.p2-run-state",
+    "plan_sha256": "1b87787d190564bcdac3c358138c8d7987f8b0d67b97a77a9d891986c8c9d578",
+    "trials": {
+      "camoformer-verdict-r0": {
+        "attempts": [
+          {
+            "attempt_id": "camoformer-verdict-r0",
+            "path": "runs/camoformer/verdict-r0/attempt-0",
+            "status": "complete",
+            "valid": true,
+            "success": false,
+            "stop_reason": "token_budget_exhausted"
+          }
+        ],
+        "selected": "runs/camoformer/verdict-r0/attempt-0"
+      },
+      "camoformer-diagnostic-r0": {
+        "attempts": [
+          {
+            "attempt_id": "camoformer-diagnostic-r0",
+            "path": "runs/camoformer/diagnostic-r0/attempt-0",
+            "status": "complete",
+            "valid": true,
+            "success": false,
+            "stop_reason": "token_budget_exhausted"
+          }
+        ],
+        "selected": "runs/camoformer/diagnostic-r0/attempt-0"
+      },
+      "camoformer-localized-r0": {
+        "attempts": [
+          {
+            "attempt_id": "camoformer-localized-r0",
+            "path": "runs/camoformer/localized-r0/attempt-0",
+            "status": "complete",
+            "valid": true,
+            "success": false,
+            "stop_reason": "token_budget_exhausted"
+          }
+        ],
+        "selected": "runs/camoformer/localized-r0/attempt-0"
+      }
+    }
+  },
+  "summary": {
+    "schema_version": 1,
+    "kind": "torchport.p2-aggregate",
+    "experiment_id": "p2-camoformer-cod-v41-final-20261004",
+    "provider": "deepseek",
+    "model": "deepseek-flash",
+    "budget": {
+      "model_turns": 80,
+      "oracle_queries": 10,
+      "total_tokens": 300000,
+      "wall_seconds": 5400
+    },
+    "trial_runtime_snapshot_sha256": "7de5bf89cff57d9b552aee594464ee29fc6d8174880a0c8f14772dbb1c9114f5",
+    "manifest": "run-plan.json",
+    "complete": true,
+    "scheduled_trials": 3,
+    "completed_trials": 3,
+    "valid_trials": 3,
+    "successes": 0,
+    "success_at_budget": {
+      "successes": 0,
+      "valid_trials": 3,
+      "rate": 0.0
+    },
+    "time_to_success_seconds": {
+      "successful_trials": 0,
+      "valid_trials": 3,
+      "median": null
+    },
+    "stop_reasons": {
+      "token_budget_exhausted": 3
+    },
+    "tokens": {
+      "input_tokens": 949339,
+      "cached_input_tokens": 861696,
+      "output_tokens": 5711,
+      "reasoning_tokens": null,
+      "total_tokens": 955050
+    },
+    "cost": null,
+    "physical_evaluation_cost": {
+      "executions": 12,
+      "execution_wall_seconds": 624.715984582901,
+      "cuda_execution_seconds": 624.715984582901
+    },
+    "physical_evaluation_cost_by_tool": {
+      "inspect": {
+        "executions": 0,
+        "execution_wall_seconds": 0.0,
+        "cuda_execution_seconds": 0.0
+      },
+      "list_files": {
+        "executions": 0,
+        "execution_wall_seconds": 0.0,
+        "cuda_execution_seconds": 0.0
+      },
+      "read_file": {
+        "executions": 0,
+        "execution_wall_seconds": 0.0,
+        "cuda_execution_seconds": 0.0
+      },
+      "search_code": {
+        "executions": 0,
+        "execution_wall_seconds": 0.0,
+        "cuda_execution_seconds": 0.0
+      }
+    },
+    "tool_calls_by_name": {
+      "inspect": 3,
+      "list_files": 6,
+      "read_file": 56,
+      "search_code": 21
+    },
+    "tool_time_seconds_by_name": {
+      "inspect": 0.039844730868935585,
+      "list_files": 0.04966935142874718,
+      "read_file": 0.7601339444518089,
+      "search_code": 0.1854224419221282
+    },
+    "candidate_revisions": 0,
+    "milestone_medians_seconds": {
+      "first_run_success": null,
+      "first_development_verify_pass": null,
+      "official_verify_complete": 230.6276235440746
+    },
+    "performance_available": false,
+    "performance": null,
+    "by_condition": {
+      "diagnostic": {
+        "scheduled": 1,
+        "completed": 1,
+        "valid": 1,
+        "successes": 0,
+        "success_rate": 0.0
+      },
+      "localized": {
+        "scheduled": 1,
+        "completed": 1,
+        "valid": 1,
+        "successes": 0,
+        "success_rate": 0.0
+      },
+      "verdict": {
+        "scheduled": 1,
+        "completed": 1,
+        "valid": 1,
+        "successes": 0,
+        "success_rate": 0.0
+      }
+    },
+    "trials": [
+      {
+        "trial_id": "camoformer-verdict-r0",
+        "condition": "verdict",
+        "replicate": 0,
+        "path": "runs/camoformer/verdict-r0",
+        "completed": true,
+        "attempts": [
+          {
+            "attempt_id": "camoformer-verdict-r0",
+            "path": "runs/camoformer/verdict-r0/attempt-0",
+            "status": "complete",
+            "stop_reason": "token_budget_exhausted",
+            "success": false,
+            "valid": true
+          }
+        ],
+        "selected_attempt": "runs/camoformer/verdict-r0/attempt-0",
+        "valid": true,
+        "success": false,
+        "passed": false,
+        "stop_reason": "token_budget_exhausted",
+        "logical_query_cost": {
+          "by_tool": {
+            "evaluate": 0,
+            "trace": 0,
+            "verify": 0
+          },
+          "total": 0,
+          "unique_candidates": 0
+        },
+        "physical_evaluation_cost": {
+          "agent": {
+            "cuda_execution_seconds": 0.0,
+            "execution_wall_seconds": 0.0,
+            "executions": 0
+          },
+          "official": {
+            "cuda_execution_seconds": 207.18545770645142,
+            "execution_wall_seconds": 207.18545770645142,
+            "executions": 4
+          },
+          "total": {
+            "cuda_execution_seconds": 207.18545770645142,
+            "execution_wall_seconds": 207.18545770645142,
+            "executions": 4
+          }
+        },
+        "agent_wall_seconds": 18.118299619294703,
+        "official_wall_seconds": 208.40991579182446,
+        "total_wall_seconds": 226.52821541111916,
+        "tokens": {
+          "input_tokens": 312927,
+          "cached_input_tokens": 279424,
+          "output_tokens": 1746,
+          "reasoning_tokens": null,
+          "total_tokens": 314673
+        },
+        "tool_calls_by_name": {
+          "inspect": 1,
+          "list_files": 2,
+          "read_file": 20
+        },
+        "tool_time_seconds_by_name": {
+          "inspect": 0.014974223915487528,
+          "list_files": 0.011853992007672787,
+          "read_file": 0.29226382775232196
+        },
+        "physical_evaluation_cost_by_tool": {
+          "inspect": {
+            "executions": 0,
+            "execution_wall_seconds": 0.0,
+            "cuda_execution_seconds": 0.0
+          },
+          "list_files": {
+            "executions": 0,
+            "execution_wall_seconds": 0.0,
+            "cuda_execution_seconds": 0.0
+          },
+          "read_file": {
+            "executions": 0,
+            "execution_wall_seconds": 0.0,
+            "cuda_execution_seconds": 0.0
+          }
+        },
+        "candidate_revisions": 0,
+        "unique_candidate_identities": 1,
+        "milestones_seconds": {
+          "first_run_success": null,
+          "first_development_verify_pass": null,
+          "official_verify_complete": 226.52821541111916
+        }
+      },
+      {
+        "trial_id": "camoformer-diagnostic-r0",
+        "condition": "diagnostic",
+        "replicate": 0,
+        "path": "runs/camoformer/diagnostic-r0",
+        "completed": true,
+        "attempts": [
+          {
+            "attempt_id": "camoformer-diagnostic-r0",
+            "path": "runs/camoformer/diagnostic-r0/attempt-0",
+            "status": "complete",
+            "stop_reason": "token_budget_exhausted",
+            "success": false,
+            "valid": true
+          }
+        ],
+        "selected_attempt": "runs/camoformer/diagnostic-r0/attempt-0",
+        "valid": true,
+        "success": false,
+        "passed": false,
+        "stop_reason": "token_budget_exhausted",
+        "logical_query_cost": {
+          "by_tool": {
+            "evaluate": 0,
+            "trace": 0,
+            "verify": 0
+          },
+          "total": 0,
+          "unique_candidates": 0
+        },
+        "physical_evaluation_cost": {
+          "agent": {
+            "cuda_execution_seconds": 0.0,
+            "execution_wall_seconds": 0.0,
+            "executions": 0
+          },
+          "official": {
+            "cuda_execution_seconds": 205.69220280647278,
+            "execution_wall_seconds": 205.69220280647278,
+            "executions": 4
+          },
+          "total": {
+            "cuda_execution_seconds": 205.69220280647278,
+            "execution_wall_seconds": 205.69220280647278,
+            "executions": 4
+          }
+        },
+        "agent_wall_seconds": 23.75897831702605,
+        "official_wall_seconds": 206.86864522704855,
+        "total_wall_seconds": 230.6276235440746,
+        "tokens": {
+          "input_tokens": 310866,
+          "cached_input_tokens": 283008,
+          "output_tokens": 1865,
+          "reasoning_tokens": null,
+          "total_tokens": 312731
+        },
+        "tool_calls_by_name": {
+          "inspect": 1,
+          "list_files": 2,
+          "read_file": 21,
+          "search_code": 5
+        },
+        "tool_time_seconds_by_name": {
+          "inspect": 0.01428768690675497,
+          "list_files": 0.02119884779676795,
+          "read_file": 0.27591451769694686,
+          "search_code": 0.0464090034365654
+        },
+        "physical_evaluation_cost_by_tool": {
+          "inspect": {
+            "executions": 0,
+            "execution_wall_seconds": 0.0,
+            "cuda_execution_seconds": 0.0
+          },
+          "list_files": {
+            "executions": 0,
+            "execution_wall_seconds": 0.0,
+            "cuda_execution_seconds": 0.0
+          },
+          "read_file": {
+            "executions": 0,
+            "execution_wall_seconds": 0.0,
+            "cuda_execution_seconds": 0.0
+          },
+          "search_code": {
+            "executions": 0,
+            "execution_wall_seconds": 0.0,
+            "cuda_execution_seconds": 0.0
+          }
+        },
+        "candidate_revisions": 0,
+        "unique_candidate_identities": 1,
+        "milestones_seconds": {
+          "first_run_success": null,
+          "first_development_verify_pass": null,
+          "official_verify_complete": 230.6276235440746
+        }
+      },
+      {
+        "trial_id": "camoformer-localized-r0",
+        "condition": "localized",
+        "replicate": 0,
+        "path": "runs/camoformer/localized-r0",
+        "completed": true,
+        "attempts": [
+          {
+            "attempt_id": "camoformer-localized-r0",
+            "path": "runs/camoformer/localized-r0/attempt-0",
+            "status": "complete",
+            "stop_reason": "token_budget_exhausted",
+            "success": false,
+            "valid": true
+          }
+        ],
+        "selected_attempt": "runs/camoformer/localized-r0/attempt-0",
+        "valid": true,
+        "success": false,
+        "passed": false,
+        "stop_reason": "token_budget_exhausted",
+        "logical_query_cost": {
+          "by_tool": {
+            "evaluate": 0,
+            "trace": 0,
+            "verify": 0
+          },
+          "total": 0,
+          "unique_candidates": 0
+        },
+        "physical_evaluation_cost": {
+          "agent": {
+            "cuda_execution_seconds": 0.0,
+            "execution_wall_seconds": 0.0,
+            "executions": 0
+          },
+          "official": {
+            "cuda_execution_seconds": 211.8383240699768,
+            "execution_wall_seconds": 211.8383240699768,
+            "executions": 4
+          },
+          "total": {
+            "cuda_execution_seconds": 211.8383240699768,
+            "execution_wall_seconds": 211.8383240699768,
+            "executions": 4
+          }
+        },
+        "agent_wall_seconds": 20.89402243308723,
+        "official_wall_seconds": 213.08785528503358,
+        "total_wall_seconds": 233.9818777181208,
+        "tokens": {
+          "input_tokens": 325546,
+          "cached_input_tokens": 299264,
+          "output_tokens": 2100,
+          "reasoning_tokens": null,
+          "total_tokens": 327646
+        },
+        "tool_calls_by_name": {
+          "inspect": 1,
+          "list_files": 2,
+          "read_file": 15,
+          "search_code": 16
+        },
+        "tool_time_seconds_by_name": {
+          "inspect": 0.010582820046693087,
+          "list_files": 0.01661651162430644,
+          "read_file": 0.1919555990025401,
+          "search_code": 0.1390134384855628
+        },
+        "physical_evaluation_cost_by_tool": {
+          "inspect": {
+            "executions": 0,
+            "execution_wall_seconds": 0.0,
+            "cuda_execution_seconds": 0.0
+          },
+          "list_files": {
+            "executions": 0,
+            "execution_wall_seconds": 0.0,
+            "cuda_execution_seconds": 0.0
+          },
+          "read_file": {
+            "executions": 0,
+            "execution_wall_seconds": 0.0,
+            "cuda_execution_seconds": 0.0
+          },
+          "search_code": {
+            "executions": 0,
+            "execution_wall_seconds": 0.0,
+            "cuda_execution_seconds": 0.0
+          }
+        },
+        "candidate_revisions": 0,
+        "unique_candidate_identities": 1,
+        "milestones_seconds": {
+          "first_run_success": null,
+          "first_development_verify_pass": null,
+          "official_verify_complete": 233.9818777181208
+        }
+      }
+    ]
+  }
+}

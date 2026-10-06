@@ -1,0 +1,403 @@
+{
+  "budget": {
+    "model_turns": 80,
+    "oracle_queries": 10,
+    "total_tokens": 300000,
+    "wall_seconds": 5400
+  },
+  "by_condition": {
+    "diagnostic": {
+      "completed": 1,
+      "scheduled": 1,
+      "success_rate": 0.0,
+      "successes": 0,
+      "valid": 1
+    },
+    "localized": {
+      "completed": 1,
+      "scheduled": 1,
+      "success_rate": 0.0,
+      "successes": 0,
+      "valid": 1
+    },
+    "verdict": {
+      "completed": 1,
+      "scheduled": 1,
+      "success_rate": 0.0,
+      "successes": 0,
+      "valid": 1
+    }
+  },
+  "candidate_revisions": 0,
+  "complete": true,
+  "completed_trials": 3,
+  "cost": null,
+  "experiment_id": "p2-camoformer-cod-v41-final-20261004",
+  "kind": "torchport.p2-aggregate",
+  "manifest": "run-plan.json",
+  "milestone_medians_seconds": {
+    "first_development_verify_pass": null,
+    "first_run_success": null,
+    "official_verify_complete": 230.6276235440746
+  },
+  "model": "deepseek-flash",
+  "performance": null,
+  "performance_available": false,
+  "physical_evaluation_cost": {
+    "cuda_execution_seconds": 624.715984582901,
+    "execution_wall_seconds": 624.715984582901,
+    "executions": 12
+  },
+  "physical_evaluation_cost_by_tool": {
+    "inspect": {
+      "cuda_execution_seconds": 0.0,
+      "execution_wall_seconds": 0.0,
+      "executions": 0
+    },
+    "list_files": {
+      "cuda_execution_seconds": 0.0,
+      "execution_wall_seconds": 0.0,
+      "executions": 0
+    },
+    "read_file": {
+      "cuda_execution_seconds": 0.0,
+      "execution_wall_seconds": 0.0,
+      "executions": 0
+    },
+    "search_code": {
+      "cuda_execution_seconds": 0.0,
+      "execution_wall_seconds": 0.0,
+      "executions": 0
+    }
+  },
+  "provider": "deepseek",
+  "scheduled_trials": 3,
+  "schema_version": 1,
+  "stop_reasons": {
+    "token_budget_exhausted": 3
+  },
+  "success_at_budget": {
+    "rate": 0.0,
+    "successes": 0,
+    "valid_trials": 3
+  },
+  "successes": 0,
+  "time_to_success_seconds": {
+    "median": null,
+    "successful_trials": 0,
+    "valid_trials": 3
+  },
+  "tokens": {
+    "cached_input_tokens": 861696,
+    "input_tokens": 949339,
+    "output_tokens": 5711,
+    "reasoning_tokens": null,
+    "total_tokens": 955050
+  },
+  "tool_calls_by_name": {
+    "inspect": 3,
+    "list_files": 6,
+    "read_file": 56,
+    "search_code": 21
+  },
+  "tool_time_seconds_by_name": {
+    "inspect": 0.039844730868935585,
+    "list_files": 0.04966935142874718,
+    "read_file": 0.7601339444518089,
+    "search_code": 0.1854224419221282
+  },
+  "trial_runtime_snapshot_sha256": "7de5bf89cff57d9b552aee594464ee29fc6d8174880a0c8f14772dbb1c9114f5",
+  "trials": [
+    {
+      "agent_wall_seconds": 18.118299619294703,
+      "attempts": [
+        {
+          "attempt_id": "camoformer-verdict-r0",
+          "path": "runs/camoformer/verdict-r0/attempt-0",
+          "status": "complete",
+          "stop_reason": "token_budget_exhausted",
+          "success": false,
+          "valid": true
+        }
+      ],
+      "candidate_revisions": 0,
+      "completed": true,
+      "condition": "verdict",
+      "logical_query_cost": {
+        "by_tool": {
+          "evaluate": 0,
+          "trace": 0,
+          "verify": 0
+        },
+        "total": 0,
+        "unique_candidates": 0
+      },
+      "milestones_seconds": {
+        "first_development_verify_pass": null,
+        "first_run_success": null,
+        "official_verify_complete": 226.52821541111916
+      },
+      "official_wall_seconds": 208.40991579182446,
+      "passed": false,
+      "path": "runs/camoformer/verdict-r0",
+      "physical_evaluation_cost": {
+        "agent": {
+          "cuda_execution_seconds": 0.0,
+          "execution_wall_seconds": 0.0,
+          "executions": 0
+        },
+        "official": {
+          "cuda_execution_seconds": 207.18545770645142,
+          "execution_wall_seconds": 207.18545770645142,
+          "executions": 4
+        },
+        "total": {
+          "cuda_execution_seconds": 207.18545770645142,
+          "execution_wall_seconds": 207.18545770645142,
+          "executions": 4
+        }
+      },
+      "physical_evaluation_cost_by_tool": {
+        "inspect": {
+          "cuda_execution_seconds": 0.0,
+          "execution_wall_seconds": 0.0,
+          "executions": 0
+        },
+        "list_files": {
+          "cuda_execution_seconds": 0.0,
+          "execution_wall_seconds": 0.0,
+          "executions": 0
+        },
+        "read_file": {
+          "cuda_execution_seconds": 0.0,
+          "execution_wall_seconds": 0.0,
+          "executions": 0
+        }
+      },
+      "replicate": 0,
+      "selected_attempt": "runs/camoformer/verdict-r0/attempt-0",
+      "stop_reason": "token_budget_exhausted",
+      "success": false,
+      "tokens": {
+        "cached_input_tokens": 279424,
+        "input_tokens": 312927,
+        "output_tokens": 1746,
+        "reasoning_tokens": null,
+        "total_tokens": 314673
+      },
+      "tool_calls_by_name": {
+        "inspect": 1,
+        "list_files": 2,
+        "read_file": 20
+      },
+      "tool_time_seconds_by_name": {
+        "inspect": 0.014974223915487528,
+        "list_files": 0.011853992007672787,
+        "read_file": 0.29226382775232196
+      },
+      "total_wall_seconds": 226.52821541111916,
+      "trial_id": "camoformer-verdict-r0",
+      "unique_candidate_identities": 1,
+      "valid": true
+    },
+    {
+      "agent_wall_seconds": 23.75897831702605,
+      "attempts": [
+        {
+          "attempt_id": "camoformer-diagnostic-r0",
+          "path": "runs/camoformer/diagnostic-r0/attempt-0",
+          "status": "complete",
+          "stop_reason": "token_budget_exhausted",
+          "success": false,
+          "valid": true
+        }
+      ],
+      "candidate_revisions": 0,
+      "completed": true,
+      "condition": "diagnostic",
+      "logical_query_cost": {
+        "by_tool": {
+          "evaluate": 0,
+          "trace": 0,
+          "verify": 0
+        },
+        "total": 0,
+        "unique_candidates": 0
+      },
+      "milestones_seconds": {
+        "first_development_verify_pass": null,
+        "first_run_success": null,
+        "official_verify_complete": 230.6276235440746
+      },
+      "official_wall_seconds": 206.86864522704855,
+      "passed": false,
+      "path": "runs/camoformer/diagnostic-r0",
+      "physical_evaluation_cost": {
+        "agent": {
+          "cuda_execution_seconds": 0.0,
+          "execution_wall_seconds": 0.0,
+          "executions": 0
+        },
+        "official": {
+          "cuda_execution_seconds": 205.69220280647278,
+          "execution_wall_seconds": 205.69220280647278,
+          "executions": 4
+        },
+        "total": {
+          "cuda_execution_seconds": 205.69220280647278,
+          "execution_wall_seconds": 205.69220280647278,
+          "executions": 4
+        }
+      },
+      "physical_evaluation_cost_by_tool": {
+        "inspect": {
+          "cuda_execution_seconds": 0.0,
+          "execution_wall_seconds": 0.0,
+          "executions": 0
+        },
+        "list_files": {
+          "cuda_execution_seconds": 0.0,
+          "execution_wall_seconds": 0.0,
+          "executions": 0
+        },
+        "read_file": {
+          "cuda_execution_seconds": 0.0,
+          "execution_wall_seconds": 0.0,
+          "executions": 0
+        },
+        "search_code": {
+          "cuda_execution_seconds": 0.0,
+          "execution_wall_seconds": 0.0,
+          "executions": 0
+        }
+      },
+      "replicate": 0,
+      "selected_attempt": "runs/camoformer/diagnostic-r0/attempt-0",
+      "stop_reason": "token_budget_exhausted",
+      "success": false,
+      "tokens": {
+        "cached_input_tokens": 283008,
+        "input_tokens": 310866,
+        "output_tokens": 1865,
+        "reasoning_tokens": null,
+        "total_tokens": 312731
+      },
+      "tool_calls_by_name": {
+        "inspect": 1,
+        "list_files": 2,
+        "read_file": 21,
+        "search_code": 5
+      },
+      "tool_time_seconds_by_name": {
+        "inspect": 0.01428768690675497,
+        "list_files": 0.02119884779676795,
+        "read_file": 0.27591451769694686,
+        "search_code": 0.0464090034365654
+      },
+      "total_wall_seconds": 230.6276235440746,
+      "trial_id": "camoformer-diagnostic-r0",
+      "unique_candidate_identities": 1,
+      "valid": true
+    },
+    {
+      "agent_wall_seconds": 20.89402243308723,
+      "attempts": [
+        {
+          "attempt_id": "camoformer-localized-r0",
+          "path": "runs/camoformer/localized-r0/attempt-0",
+          "status": "complete",
+          "stop_reason": "token_budget_exhausted",
+          "success": false,
+          "valid": true
+        }
+      ],
+      "candidate_revisions": 0,
+      "completed": true,
+      "condition": "localized",
+      "logical_query_cost": {
+        "by_tool": {
+          "evaluate": 0,
+          "trace": 0,
+          "verify": 0
+        },
+        "total": 0,
+        "unique_candidates": 0
+      },
+      "milestones_seconds": {
+        "first_development_verify_pass": null,
+        "first_run_success": null,
+        "official_verify_complete": 233.9818777181208
+      },
+      "official_wall_seconds": 213.08785528503358,
+      "passed": false,
+      "path": "runs/camoformer/localized-r0",
+      "physical_evaluation_cost": {
+        "agent": {
+          "cuda_execution_seconds": 0.0,
+          "execution_wall_seconds": 0.0,
+          "executions": 0
+        },
+        "official": {
+          "cuda_execution_seconds": 211.8383240699768,
+          "execution_wall_seconds": 211.8383240699768,
+          "executions": 4
+        },
+        "total": {
+          "cuda_execution_seconds": 211.8383240699768,
+          "execution_wall_seconds": 211.8383240699768,
+          "executions": 4
+        }
+      },
+      "physical_evaluation_cost_by_tool": {
+        "inspect": {
+          "cuda_execution_seconds": 0.0,
+          "execution_wall_seconds": 0.0,
+          "executions": 0
+        },
+        "list_files": {
+          "cuda_execution_seconds": 0.0,
+          "execution_wall_seconds": 0.0,
+          "executions": 0
+        },
+        "read_file": {
+          "cuda_execution_seconds": 0.0,
+          "execution_wall_seconds": 0.0,
+          "executions": 0
+        },
+        "search_code": {
+          "cuda_execution_seconds": 0.0,
+          "execution_wall_seconds": 0.0,
+          "executions": 0
+        }
+      },
+      "replicate": 0,
+      "selected_attempt": "runs/camoformer/localized-r0/attempt-0",
+      "stop_reason": "token_budget_exhausted",
+      "success": false,
+      "tokens": {
+        "cached_input_tokens": 299264,
+        "input_tokens": 325546,
+        "output_tokens": 2100,
+        "reasoning_tokens": null,
+        "total_tokens": 327646
+      },
+      "tool_calls_by_name": {
+        "inspect": 1,
+        "list_files": 2,
+        "read_file": 15,
+        "search_code": 16
+      },
+      "tool_time_seconds_by_name": {
+        "inspect": 0.010582820046693087,
+        "list_files": 0.01661651162430644,
+        "read_file": 0.1919555990025401,
+        "search_code": 0.1390134384855628
+      },
+      "total_wall_seconds": 233.9818777181208,
+      "trial_id": "camoformer-localized-r0",
+      "unique_candidate_identities": 1,
+      "valid": true
+    }
+  ],
+  "valid_trials": 3
+}

@@ -1,0 +1,400 @@
+{
+  "candidate_identity": "4b255fe07d8b543031c06a39712959e515bfef8af36ee3729b774a6ec184fe1e",
+  "hidden_task_digest": "02d2afee2aa5bf62634a1d7e8654977b6a4c37edf55db13c1e1f7faa39c41b2b",
+  "hidden_verify": {
+    "aligned": false,
+    "artifacts": {
+      "report": "/root/autodl-tmp/tp-p2-final-20261003/gpu-validation-results-final/raft/verify/verify/gpu-validation.json"
+    },
+    "failure_code": "PARITY_FAILED",
+    "kind": "torchport.verify",
+    "mismatch": {
+      "fp32": {
+        "compared_elements": 1579008,
+        "compared_tensors": 4,
+        "extra_tensors": 0,
+        "max_absolute_error": 0.014033913612365723,
+        "mismatch_ratio": 0.14543118210927367,
+        "mismatched_elements": 229637,
+        "mismatched_tensors": 2,
+        "missing_tensors": 0
+      },
+      "strict": {
+        "compared_elements": 1579008,
+        "compared_tensors": 4,
+        "extra_tensors": 0,
+        "max_absolute_error": 0.014033913612365723,
+        "mismatch_ratio": 0.24403296246757458,
+        "mismatched_elements": 385330,
+        "mismatched_tensors": 2,
+        "missing_tensors": 0
+      }
+    },
+    "next": "运行 torchport trace 定位首次分歧",
+    "oracle": "/root/autodl-tmp/tp-p2-final-20261003/gpu-validation-results-final/raft/verify/oracle/02d2afee2aa5bf62",
+    "passed": false,
+    "physical_cost": {
+      "cuda_execution_seconds": 17.120871543884277,
+      "execution_wall_seconds": 17.120871543884277,
+      "executions": 4
+    },
+    "repeats": {
+      "failure_code": "PARITY_FAILED",
+      "passed": false,
+      "passed_runs": 0,
+      "required": 3,
+      "runs": 1
+    },
+    "results": [
+      {
+        "aligned": false,
+        "artifacts": {
+          "candidate": "/root/autodl-tmp/tp-p2-final-20261003/gpu-validation-results-final/raft/verify/runs/gpu-validation/target-20261003-235816-2913a5db/outputs.npz",
+          "reference": "/root/autodl-tmp/tp-p2-final-20261003/gpu-validation-results-final/raft/verify/oracle/02d2afee2aa5bf62/outputs.npz"
+        },
+        "candidate_identity": "4b255fe07d8b543031c06a39712959e515bfef8af36ee3729b774a6ec184fe1e",
+        "evidence": {
+          "checkpoint": {
+            "complete": true,
+            "loaded": 162,
+            "missing": [],
+            "path": "/root/autodl-tmp/tp-p2-final-20261003/RAFT/shared/prepared/weights_fp32.npz",
+            "requested": true,
+            "sha256": "fa48172cd5c441aa49941d7177e4a36e0d43fe38bf8be6eb21ae76e090d936e8",
+            "total": 162,
+            "unexpected": []
+          },
+          "input_identical": true,
+          "mode": "normal",
+          "weights": {
+            "complete": true,
+            "extra": [],
+            "loaded": 162,
+            "missing": [],
+            "source": 162,
+            "target_total": 162,
+            "value_mismatch": []
+          }
+        },
+        "failure_code": "PARITY_FAILED",
+        "kind": "torchport.evaluation",
+        "mismatch": {
+          "fp32": {
+            "compared_elements": 1579008,
+            "compared_tensors": 4,
+            "extra_tensors": 0,
+            "max_absolute_error": 0.014033913612365723,
+            "mismatch_ratio": 0.14543118210927367,
+            "mismatched_elements": 229637,
+            "mismatched_tensors": 2,
+            "missing_tensors": 0
+          },
+          "strict": {
+            "compared_elements": 1579008,
+            "compared_tensors": 4,
+            "extra_tensors": 0,
+            "max_absolute_error": 0.014033913612365723,
+            "mismatch_ratio": 0.24403296246757458,
+            "mismatched_elements": 385330,
+            "mismatched_tensors": 2,
+            "missing_tensors": 0
+          }
+        },
+        "next": "运行 torchport trace 定位首次分歧",
+        "numerical": "fail",
+        "passed": false,
+        "problems": [
+          "首个分歧 output.0：数值超出容差，max_abs=0.00391，mismatch_ratio=0.199"
+        ],
+        "profiles": {
+          "fp32": {
+            "extra": [],
+            "first": {
+              "name": "output.0",
+              "position": 2,
+              "reason": "数值超出容差"
+            },
+            "first_any": {
+              "name": "output.0",
+              "position": 2,
+              "reason": "数值超出容差"
+            },
+            "metrics": {
+              "compared_elements": 1579008,
+              "compared_tensors": 4,
+              "extra_tensors": 0,
+              "max_absolute_error": 0.014033913612365723,
+              "mismatch_ratio": 0.14543118210927367,
+              "mismatched_elements": 229637,
+              "mismatched_tensors": 2,
+              "missing_tensors": 0
+            },
+            "missing": [],
+            "passed": false
+          },
+          "strict": {
+            "extra": [],
+            "first": {
+              "name": "output.0",
+              "position": 2,
+              "reason": "数值超出容差"
+            },
+            "first_any": {
+              "name": "output.0",
+              "position": 2,
+              "reason": "数值超出容差"
+            },
+            "metrics": {
+              "compared_elements": 1579008,
+              "compared_tensors": 4,
+              "extra_tensors": 0,
+              "max_absolute_error": 0.014033913612365723,
+              "mismatch_ratio": 0.24403296246757458,
+              "mismatched_elements": 385330,
+              "mismatched_tensors": 2,
+              "missing_tensors": 0
+            },
+            "missing": [],
+            "passed": false
+          }
+        },
+        "run_id": "target-20261003-235816-2913a5db",
+        "runnable": "pass",
+        "schema_version": 2,
+        "status": "failed",
+        "strict_aligned": false,
+        "structural": "pass",
+        "summary": "PARITY_FAILED: 首个分歧 output.0：数值超出容差，max_abs=0.00391，mismatch_ratio=0.199"
+      }
+    ],
+    "status": "failed",
+    "strict_aligned": false,
+    "summary": "PARITY_FAILED: 首个分歧 output.0：数值超出容差，max_abs=0.00391，mismatch_ratio=0.199",
+    "task_digest": "02d2afee2aa5bf62634a1d7e8654977b6a4c37edf55db13c1e1f7faa39c41b2b",
+    "task_id": "raft-p2",
+    "trial_id": "gpu-validation"
+  },
+  "probe": {
+    "budget": {
+      "budget_stop_reason": null,
+      "logical_query_cost": {
+        "by_tool": {
+          "evaluate": 0,
+          "trace": 0,
+          "verify": 0
+        },
+        "total": 0,
+        "unique_candidates": 0
+      },
+      "max_oracle_queries": 2,
+      "max_wall_seconds": 1800,
+      "oracle_queries": 0,
+      "oracle_queries_remaining": 2,
+      "physical_evaluation_cost": {
+        "cuda_execution_seconds": 92.9476969242096,
+        "execution_wall_seconds": 92.9476969242096,
+        "executions": 1
+      },
+      "unique_candidate_queries": 0,
+      "wall_seconds": 93.63857189472765,
+      "wall_seconds_remaining": 1706.3614281052724
+    },
+    "response": {
+      "exit_code": 0,
+      "kind": "torchport.probe",
+      "ok": true,
+      "path": "_torchport_probe.py",
+      "physical_cost": {
+        "cuda_execution_seconds": 92.9476969242096,
+        "execution_wall_seconds": 92.9476969242096,
+        "executions": 1
+      },
+      "probe_id": "probe-20261003-235359-bc9475e7",
+      "seconds": 92.9476969242096,
+      "stderr": "[i 1003 23:54:19.448024 92 __init__.py:227] Total mem: 440.27GB, using 16 procs for compiling.\n[i 1003 23:54:53.330646 92 jit_compiler.cc:28] Load cc_path: /usr/bin/g++\n[i 1003 23:54:53.641253 92 init.cc:63] Found cuda archs: [86,]\n[i 1003 23:54:53.782247 92 compiler.py:34] Create cache dir: /root/autodl-tmp/tp-p2-final-20261003/gpu-validation-results-final/raft/evidence/raft/cache/raft-gpu-probe/probe-target/jittor/.cache/jittor/cutt\n[i 1003 23:54:53.794499 92 compile_extern.py:388] Downloading cutt...\n\n0.00B [00:00, ?B/s]\n  0%|          | 0.00/289k [00:01<?, ?B/s]\n  6%|▌         | 16.0k/289k [00:01<00:01, 161kB/s]\n 14%|█▍        | 40.0k/289k [00:01<00:01, 207kB/s]\n 28%|██▊       | 80.0k/289k [00:01<00:00, 294kB/s]\n 61%|██████    | 176k/289k [00:01<00:00, 555kB/s] \n296kB [00:01, 198kB/s]                           \n[i 1003 23:54:55.339949 92 compile_extern.py:401] installing cutt...\n[i 1003 23:55:05.063666 92 compiler.py:34] Create cache dir: /root/autodl-tmp/tp-p2-final-20261003/gpu-validation-results-final/raft/evidence/raft/cache/raft-gpu-probe/probe-target/jittor/.cache/jittor/jt1.3.9/g++11.4.0/py3.12.3/Linux-5.4.0-16x25/IntelRXeonRSilx76/c5f1/default/cu12.8.93_sm_86/custom_ops\n[i 1003 23:55:06.553704 92 compiler.py:34] Create cache dir: /root/autodl-tmp/tp-p2-final-20261003/gpu-validation-results-final/raft/evidence/raft/cache/raft-gpu-probe/probe-target/jittor/.cache/jittor/mkl\n[i 1003 23:55:06.554268 92 compile_extern.py:73] Downloading mkl...\n\n0.00B [00:00, ?B/s]\n  0%|          | 0.00/10.5M [00:00<?, ?B/s]\n  1%|          | 96.0k/10.5M [00:00<00:11, 931kB/s]\n  5%|▍         | 496k/10.5M [00:00<00:03, 2.74MB/s]\n 23%|██▎       | 2.38M/10.5M [00:00<00:00, 10.5MB/s]\n 74%|███████▍  | 7.85M/10.5M [00:00<00:00, 23.7MB/s]\n 92%|█████████▏| 9.68M/10.5M [00:00<00:00, 21.8MB/s]\n10.5MB [00:00, 14.2MB/s]                            \n[i 1003 23:55:20.305692 92 compiler.py:34] Create cache dir: /root/autodl-tmp/tp-p2-final-20261003/gpu-validation-results-final/raft/evidence/raft/cache/raft-gpu-probe/probe-target/jittor/.cache/jittor/jt1.3.9/g++11.4.0/py3.12.3/Linux-5.4.0-16x25/IntelRXeonRSilx76/c5f1/default/cu12.8.93_sm_86/cuda\n[i 1003 23:55:26.725435 92 cuda_flags.cc:49] CUDA enabled.\n\nCompiling Operators(1/3) used: 3.31s eta: 6.63s \nCompiling Operators(3/3) used: 5.31s eta:    0s \n",
+      "stderr_truncated": false,
+      "stdout": "[i 1003 23:53:59.565967 08 lock.py:85] Create lock file:/root/autodl-tmp/tp-p2-final-20261003/gpu-validation-results-final/raft/evidence/raft/cache/raft-gpu-probe/probe-target/jittor/.cache/jittor/jt1.3.9/g++11.4.0/py3.12.3/Linux-5.4.0-16x25/IntelRXeonRSilx76/c5f1/jittor.lock\n[i 1003 23:53:59.594374 08 compiler.py:956] Jittor(1.3.9.14) src: /root/autodl-tmp/jt-env/lib/python3.12/site-packages/jittor\n[i 1003 23:53:59.601673 08 compiler.py:957] g++ at /usr/bin/g++(11.4.0)\n[i 1003 23:53:59.601814 08 compiler.py:958] cache_path: /root/autodl-tmp/tp-p2-final-20261003/gpu-validation-results-final/raft/evidence/raft/cache/raft-gpu-probe/probe-target/jittor/.cache/jittor/jt1.3.9/g++11.4.0/py3.12.3/Linux-5.4.0-16x25/IntelRXeonRSilx76/c5f1/default\n[i 1003 23:53:59.610446 08 __init__.py:412] Found /usr/local/cuda/bin/nvcc(12.8.93) at /usr/local/cuda/bin/nvcc.\n[i 1003 23:53:59.617458 08 __init__.py:412] Found addr2line(2.38) at /usr/bin/addr2line.\n[i 1003 23:54:00.037621 08 compiler.py:1013] cuda key:cu12.8.93_sm_86\n[i 1003 23:54:00.119609 08 compiler.py:34] Create cache dir: /root/autodl-tmp/tp-p2-final-20261003/gpu-validation-results-final/raft/evidence/raft/cache/raft-gpu-probe/probe-target/jittor/.cache/jittor/jt1.3.9/g++11.4.0/py3.12.3/Linux-5.4.0-16x25/IntelRXeonRSilx76/c5f1/default/cu12.8.93_sm_86\n[i 1003 23:54:00.119850 08 compiler.py:34] Create cache dir: /root/autodl-tmp/tp-p2-final-20261003/gpu-validation-results-final/raft/evidence/raft/cache/raft-gpu-probe/probe-target/jittor/.cache/jittor/jt1.3.9/g++11.4.0/py3.12.3/Linux-5.4.0-16x25/IntelRXeonRSilx76/c5f1/default/cu12.8.93_sm_86/jit\n[i 1003 23:54:00.120000 08 compiler.py:34] Create cache dir: /root/autodl-tmp/tp-p2-final-20261003/gpu-validation-results-final/raft/evidence/raft/cache/raft-gpu-probe/probe-target/jittor/.cache/jittor/jt1.3.9/g++11.4.0/py3.12.3/Linux-5.4.0-16x25/IntelRXeonRSilx76/c5f1/default/cu12.8.93_sm_86/obj_files\n[i 1003 23:54:00.120143 08 compiler.py:34] Create cache dir: /root/autodl-tmp/tp-p2-final-20261003/gpu-validation-results-final/raft/evidence/raft/cache/raft-gpu-probe/probe-target/jittor/.cache/jittor/jt1.3.9/g++11.4.0/py3.12.3/Linux-5.4.0-16x25/IntelRXeonRSilx76/c5f1/default/cu12.8.93_sm_86/gen\n[i 1003 23:54:00.120283 08 compiler.py:34] Create cache dir: /root/autodl-tmp/tp-p2-final-20261003/gpu-validation-results-final/raft/evidence/raft/cache/raft-gpu-probe/probe-target/jittor/.cache/jittor/jt1.3.9/g++11.4.0/py3.12.3/Linux-5.4.0-16x25/IntelRXeonRSilx76/c5f1/default/cu12.8.93_sm_86/tmp\n[i 1003 23:54:00.120415 08 compiler.py:34] Create cache dir: /root/autodl-tmp/tp-p2-final-20261003/gpu-validation-results-final/raft/evidence/raft/cache/raft-gpu-probe/probe-target/jittor/.cache/jittor/jt1.3.9/g++11.4.0/py3.12.3/Linux-5.4.0-16x25/IntelRXeonRSilx76/c5f1/default/cu12.8.93_sm_86/checkpoints\nCompiling jittor_core(13/151) used: 2.003s eta: 21.268s\nCompiling jittor_core(14/151) used: 2.030s eta: 19.866s\nCompiling jittor_core(15/151) used: 2.235s eta: 20.268s\nCompiling jittor_core(16/151) used: 2.510s eta: 21.176s\nCompiling jittor_core(17/151) used: 3.174s eta: 25.022s\nCompiling jittor_core(18/151) used: 3.484s eta: 25.745s\nCompiling jittor_core(19/151) used: 3.516s eta: 24.427s\nCompiling jittor_core(20/151) used: 3.521s eta: 23.065s\nCompiling jittor_core(21/151) used: 3.681s eta: 22.788s\nCompiling jittor_core(22/151) used: 3.687s eta: 21.621s\nCompiling jittor_core(23/151) used: 3.733s eta: 20.776s\nCompiling jittor_core(24/151) used: 4.021s eta: 21.280s\nCompiling jittor_core(25/151) used: 4.086s eta: 20.594s\nCompiling jittor_core(26/151) used: 4.096s eta: 19.694s\nCompiling jittor_core(27/151) used: 4.400s eta: 20.207s\nCompiling jittor_core(28/151) used: 4.497s eta: 19.753s\nCompiling jittor_core(29/151) used: 4.666s eta: 19.628s\nCompiling jittor_core(30/151) used: 4.782s eta: 19.287s\nCompiling jittor_core(31/151) used: 5.205s eta: 20.148s\nCompiling jittor_core(32/151) used: 5.397s eta: 20.068s\nCompiling jittor_core(33/151) used: 5.417s eta: 19.369s\nCompiling jittor_core(34/151) used: 5.677s eta: 19.535s\nCompiling jittor_core(35/151) used: 5.685s eta: 18.841s\nCompiling jittor_core(36/151) used: 5.736s eta: 18.325s\nCompiling jittor_core(37/151) used: 6.236s eta: 19.214s\nCompiling jittor_core(38/151) used: 6.288s eta: 18.700s\nCompiling jittor_core(39/151) used: 6.320s eta: 18.150s\nCompiling jittor_core(40/151) used: 6.434s eta: 17.854s\nCompiling jittor_core(41/151) used: 6.537s eta: 17.538s\nCompiling jittor_core(42/151) used: 6.630s eta: 17.207s\nCompiling jittor_core(43/151) used: 6.672s eta: 16.758s\nCompiling jittor_core(44/151) used: 6.971s eta: 16.951s\nCompiling jittor_core(45/151) used: 6.976s eta: 16.431s\nCompiling jittor_core(46/151) used: 6.993s eta: 15.961s\nCompiling jittor_core(47/151) used: 7.000s eta: 15.490s\nCompiling jittor_core(48/151) used: 7.119s eta: 15.277s\nCompiling jittor_core(49/151) used: 7.120s eta: 14.821s\nCompiling jittor_core(50/151) used: 7.378s eta: 14.904s\nCompiling jittor_core(51/151) used: 7.384s eta: 14.478s\nCompiling jittor_core(52/151) used: 7.507s eta: 14.293s\nCompiling jittor_core(53/151) used: 7.880s eta: 14.570s\nCompiling jittor_core(54/151) used: 7.936s eta: 14.255s\nCompiling jittor_core(55/151) used: 8.111s eta: 14.157s\nCompiling jittor_core(56/151) used: 8.482s eta: 14.389s\nCompiling jittor_core(57/151) used: 8.515s eta: 14.042s\nCompiling jittor_core(58/151) used: 8.881s eta: 14.240s\nCompiling jittor_core(59/151) used: 8.891s eta: 13.864s\nCompiling jittor_core(60/151) used: 8.984s eta: 13.625s\nCompiling jittor_core(61/151) used: 9.006s eta: 13.288s\nCompiling jittor_core(62/151) used: 9.166s eta: 13.158s\nCompiling jittor_core(63/151) used: 9.183s eta: 12.828s\nCompiling jittor_core(64/151) used: 9.287s eta: 12.625s\nCompiling jittor_core(65/151) used: 9.393s eta: 12.427s\nCompiling jittor_core(66/151) used: 9.823s eta: 12.651s\nCompiling jittor_core(67/151) used: 9.884s eta: 12.392s\nCompiling jittor_core(68/151) used: 10.069s eta: 12.291s\nCompiling jittor_core(69/151) used: 10.121s eta: 12.027s\nCompiling jittor_core(70/151) used: 10.537s eta: 12.193s\nCompiling jittor_core(71/151) used: 10.611s eta: 11.957s\nCompiling jittor_core(72/151) used: 10.634s eta: 11.668s\nCompiling jittor_core(73/151) used: 10.785s eta: 11.524s\nCompiling jittor_core(74/151) used: 11.002s eta: 11.448s\nCompiling jittor_core(75/151) used: 11.082s eta: 11.230s\nCompiling jittor_core(76/151) used: 11.223s eta: 11.075s\nCompiling jittor_core(77/151) used: 11.474s eta: 11.027s\nCompiling jittor_core(78/151) used: 11.587s eta: 10.844s\nCompiling jittor_core(79/151) used: 12.001s eta: 10.938s\nCompiling jittor_core(80/151) used: 12.016s eta: 10.664s\nCompiling jittor_core(81/151) used: 12.034s eta: 10.400s\nCompiling jittor_core(82/151) used: 12.137s eta: 10.213s\nCompiling jittor_core(83/151) used: 12.503s eta: 10.243s\nCompiling jittor_core(84/151) used: 12.622s eta: 10.068s\nCompiling jittor_core(85/151) used: 13.086s eta: 10.161s\nCompiling jittor_core(86/151) used: 13.138s eta: 9.930s\nCompiling jittor_core(87/151) used: 13.382s eta: 9.844s\nCompiling jittor_core(88/151) used: 13.517s eta: 9.677s\nCompiling jittor_core(89/151) used: 13.577s eta: 9.458s\nCompiling jittor_core(90/151) used: 13.582s eta: 9.205s\nCompiling jittor_core(91/151) used: 13.613s eta: 8.976s\nCompiling jittor_core(92/151) used: 14.077s eta: 9.027s\nCompiling jittor_core(93/151) used: 14.315s eta: 8.928s\nCompiling jittor_core(94/151) used: 14.594s eta: 8.850s\nCompiling jittor_core(95/151) used: 14.924s eta: 8.797s\nCompiling jittor_core(96/151) used: 14.981s eta: 8.583s\nCompiling jittor_core(97/151) used: 15.076s eta: 8.393s\nCompiling jittor_core(98/151) used: 15.214s eta: 8.228s\nCompiling jittor_core(99/151) used: 15.224s eta: 7.996s\nCompiling jittor_core(100/151) used: 15.321s eta: 7.814s\nCompiling jittor_core(101/151) used: 15.366s eta: 7.607s\nCompiling jittor_core(102/151) used: 15.594s eta: 7.491s\nCompiling jittor_core(103/151) used: 15.730s eta: 7.330s\nCompiling jittor_core(104/151) used: 15.866s eta: 7.170s\nCompiling jittor_core(105/151) used: 16.096s eta: 7.051s\nCompiling jittor_core(106/151) used: 16.129s eta: 6.847s\nCompiling jittor_core(107/151) used: 16.309s eta: 6.707s\nCompiling jittor_core(108/151) used: 16.502s eta: 6.570s\nCompiling jittor_core(109/151) used: 16.709s eta: 6.438s\nCompiling jittor_core(110/151) used: 17.013s eta: 6.341s\nCompiling jittor_core(111/151) used: 17.021s eta: 6.134s\nCompiling jittor_core(112/151) used: 17.084s eta: 5.949s\nCompiling jittor_core(113/151) used: 17.176s eta: 5.776s\nCompiling jittor_core(114/151) used: 17.219s eta: 5.589s\nCompiling jittor_core(115/151) used: 17.304s eta: 5.417s\nCompiling jittor_core(116/151) used: 17.388s eta: 5.246s\nCompiling jittor_core(117/151) used: 17.477s eta: 5.079s\nCompiling jittor_core(118/151) used: 17.582s eta: 4.917s\nCompiling jittor_core(119/151) used: 17.590s eta: 4.730s\nCompiling jittor_core(120/151) used: 17.613s eta: 4.550s\nCompiling jittor_core(121/151) used: 17.817s eta: 4.417s\nCompiling jittor_core(122/151) used: 17.873s eta: 4.249s\nCompiling jittor_core(123/151) used: 17.890s eta: 4.073s\nCompiling jittor_core(124/151) used: 17.929s eta: 3.904s\nCompiling jittor_core(125/151) used: 18.025s eta: 3.749s\nCompiling jittor_core(126/151) used: 18.078s eta: 3.587s\nCompiling jittor_core(127/151) used: 18.671s eta: 3.528s\nCompiling jittor_core(128/151) used: 18.889s eta: 3.394s\nCompiling jittor_core(129/151) used: 19.011s eta: 3.242s\nCompiling jittor_core(130/151) used: 19.072s eta: 3.081s\nCompiling jittor_core(131/151) used: 19.077s eta: 2.912s\nCompiling jittor_core(132/151) used: 19.106s eta: 2.750s\nCompiling jittor_core(133/151) used: 19.137s eta: 2.590s\nCompiling jittor_core(134/151) used: 19.379s eta: 2.459s\nCompiling jittor_core(135/151) used: 19.515s eta: 2.313s\nCompiling jittor_core(136/151) used: 19.695s eta: 2.172s\nCompiling jittor_core(137/151) used: 19.984s eta: 2.042s\nCompiling jittor_core(138/151) used: 20.023s eta: 1.886s\nCompiling jittor_core(139/151) used: 20.033s eta: 1.730s\nCompiling jittor_core(140/151) used: 20.167s eta: 1.585s\nCompiling jittor_core(141/151) used: 20.229s eta: 1.435s\nCompiling jittor_core(142/151) used: 20.280s eta: 1.285s\nCompiling jittor_core(143/151) used: 20.523s eta: 1.148s\nCompiling jittor_core(144/151) used: 20.547s eta: 0.999s\nCompiling jittor_core(145/151) used: 20.592s eta: 0.852s\nCompiling jittor_core(146/151) used: 20.652s eta: 0.707s\nCompiling jittor_core(147/151) used: 20.670s eta: 0.562s\nCompiling jittor_core(148/151) used: 22.239s eta: 0.451s\nCompiling jittor_core(149/151) used: 22.271s eta: 0.299s\nCompiling jittor_core(150/151) used: 23.157s eta: 0.154s\nCompiling jittor_core(151/151) used: 33.507s eta: 0.000s\nDownloading https://codeload.github.com/Jittor/cutt/zip/v1.2 to /root/autodl-tmp/tp-p2-final-20261003/gpu-validation-results-final/raft/evidence/raft/cache/raft-gpu-probe/probe-target/jittor/.cache/jittor/cutt/cutt-1.2.zip\nCompiling libcutt(8/9) used: 5.675s eta: 0.709s\nCompiling libcutt(9/9) used: 9.599s eta: 0.000s\nDownloading https://cg.cs.tsinghua.edu.cn/jittor/assets/dnnl_lnx_2.2.0_cpu_gomp.tgz to /root/autodl-tmp/tp-p2-final-20261003/gpu-validation-results-final/raft/evidence/raft/cache/raft-gpu-probe/probe-target/jittor/.cache/jittor/mkl/dnnl_lnx_2.2.0_cpu_gomp.tgz\nUse time: 60.91 ms per iteration.\nExample passed on CPU.\nCompiling gen_ops_mkl_conv_backward_w_mkl_conv_backward_x_mk___hashc4699b(6/7) used: 2.732s eta: 0.455s\nCompiling gen_ops_mkl_conv_backward_w_mkl_conv_backward_x_mk___hashc4699b(7/7) used: 3.269s eta: 0.000s\nCompiling gen_ops_cub_arg_reduce_cub_argsort_cub_cumsum_cub____hash3ccf67(6/6) used: 2.101s eta: 0.000s\n{\"cuda\": 1, \"jittor_home\": \"/root/autodl-tmp/tp-p2-final-20261003/gpu-validation-results-final/raft/evidence/raft/cache/raft-gpu-probe/probe-target/jittor\", \"value\": 768.0}\n",
+      "stdout_truncated": false,
+      "timeout": false
+    },
+    "runtime": {
+      "cuda": 1,
+      "jittor_home": "/root/autodl-tmp/tp-p2-final-20261003/gpu-validation-results-final/raft/evidence/raft/cache/raft-gpu-probe/probe-target/jittor",
+      "value": 768.0
+    }
+  },
+  "public_task_digest": "dc759652f4e32db6e863fc75772d597ff9dbcf39f571bcf65232beb333be74ca",
+  "public_verify": {
+    "aligned": false,
+    "artifacts": {
+      "report": "/root/autodl-tmp/tp-p2-final-20261003/gpu-validation-results-final/raft/verify/verify/gpu-validation.json"
+    },
+    "failure_code": "PARITY_FAILED",
+    "kind": "torchport.verify",
+    "mismatch": {
+      "fp32": {
+        "compared_elements": 1579008,
+        "compared_tensors": 4,
+        "extra_tensors": 0,
+        "max_absolute_error": 0.010167121887207031,
+        "mismatch_ratio": 0.12740974079928663,
+        "mismatched_elements": 201181,
+        "mismatched_tensors": 2,
+        "missing_tensors": 0
+      },
+      "strict": {
+        "compared_elements": 1579008,
+        "compared_tensors": 4,
+        "extra_tensors": 0,
+        "max_absolute_error": 0.010167121887207031,
+        "mismatch_ratio": 0.2402128424935149,
+        "mismatched_elements": 379298,
+        "mismatched_tensors": 2,
+        "missing_tensors": 0
+      }
+    },
+    "next": "运行 torchport trace 定位首次分歧",
+    "oracle": "/root/autodl-tmp/tp-p2-final-20261003/gpu-validation-results-final/raft/verify/oracle/dc759652f4e32db6",
+    "passed": false,
+    "physical_cost": {
+      "cuda_execution_seconds": 151.20682311058044,
+      "execution_wall_seconds": 151.20682311058044,
+      "executions": 4
+    },
+    "repeats": {
+      "failure_code": "PARITY_FAILED",
+      "passed": false,
+      "passed_runs": 0,
+      "required": 3,
+      "runs": 1
+    },
+    "results": [
+      {
+        "aligned": false,
+        "artifacts": {
+          "candidate": "/root/autodl-tmp/tp-p2-final-20261003/gpu-validation-results-final/raft/verify/runs/gpu-validation/target-20261003-235544-0fd02d91/outputs.npz",
+          "reference": "/root/autodl-tmp/tp-p2-final-20261003/gpu-validation-results-final/raft/verify/oracle/dc759652f4e32db6/outputs.npz"
+        },
+        "candidate_identity": "4b255fe07d8b543031c06a39712959e515bfef8af36ee3729b774a6ec184fe1e",
+        "evidence": {
+          "checkpoint": {
+            "complete": true,
+            "loaded": 162,
+            "missing": [],
+            "path": "/root/autodl-tmp/tp-p2-final-20261003/RAFT/shared/prepared/weights_fp32.npz",
+            "requested": true,
+            "sha256": "fa48172cd5c441aa49941d7177e4a36e0d43fe38bf8be6eb21ae76e090d936e8",
+            "total": 162,
+            "unexpected": []
+          },
+          "input_identical": true,
+          "mode": "normal",
+          "weights": {
+            "complete": true,
+            "extra": [],
+            "loaded": 162,
+            "missing": [],
+            "source": 162,
+            "target_total": 162,
+            "value_mismatch": []
+          }
+        },
+        "failure_code": "PARITY_FAILED",
+        "kind": "torchport.evaluation",
+        "mismatch": {
+          "fp32": {
+            "compared_elements": 1579008,
+            "compared_tensors": 4,
+            "extra_tensors": 0,
+            "max_absolute_error": 0.010167121887207031,
+            "mismatch_ratio": 0.12740974079928663,
+            "mismatched_elements": 201181,
+            "mismatched_tensors": 2,
+            "missing_tensors": 0
+          },
+          "strict": {
+            "compared_elements": 1579008,
+            "compared_tensors": 4,
+            "extra_tensors": 0,
+            "max_absolute_error": 0.010167121887207031,
+            "mismatch_ratio": 0.2402128424935149,
+            "mismatched_elements": 379298,
+            "mismatched_tensors": 2,
+            "missing_tensors": 0
+          }
+        },
+        "next": "运行 torchport trace 定位首次分歧",
+        "numerical": "fail",
+        "passed": false,
+        "problems": [
+          "首个分歧 output.0：数值超出容差，max_abs=0.000961，mismatch_ratio=0.133"
+        ],
+        "profiles": {
+          "fp32": {
+            "extra": [],
+            "first": {
+              "name": "output.0",
+              "position": 2,
+              "reason": "数值超出容差"
+            },
+            "first_any": {
+              "name": "output.0",
+              "position": 2,
+              "reason": "数值超出容差"
+            },
+            "metrics": {
+              "compared_elements": 1579008,
+              "compared_tensors": 4,
+              "extra_tensors": 0,
+              "max_absolute_error": 0.010167121887207031,
+              "mismatch_ratio": 0.12740974079928663,
+              "mismatched_elements": 201181,
+              "mismatched_tensors": 2,
+              "missing_tensors": 0
+            },
+            "missing": [],
+            "passed": false
+          },
+          "strict": {
+            "extra": [],
+            "first": {
+              "name": "output.0",
+              "position": 2,
+              "reason": "数值超出容差"
+            },
+            "first_any": {
+              "name": "output.0",
+              "position": 2,
+              "reason": "数值超出容差"
+            },
+            "metrics": {
+              "compared_elements": 1579008,
+              "compared_tensors": 4,
+              "extra_tensors": 0,
+              "max_absolute_error": 0.010167121887207031,
+              "mismatch_ratio": 0.2402128424935149,
+              "mismatched_elements": 379298,
+              "mismatched_tensors": 2,
+              "missing_tensors": 0
+            },
+            "missing": [],
+            "passed": false
+          }
+        },
+        "run_id": "target-20261003-235544-0fd02d91",
+        "runnable": "pass",
+        "schema_version": 2,
+        "status": "failed",
+        "strict_aligned": false,
+        "structural": "pass",
+        "summary": "PARITY_FAILED: 首个分歧 output.0：数值超出容差，max_abs=0.000961，mismatch_ratio=0.133"
+      }
+    ],
+    "status": "failed",
+    "strict_aligned": false,
+    "summary": "PARITY_FAILED: 首个分歧 output.0：数值超出容差，max_abs=0.000961，mismatch_ratio=0.133",
+    "task_digest": "dc759652f4e32db6e863fc75772d597ff9dbcf39f571bcf65232beb333be74ca",
+    "task_id": "raft-p2",
+    "trial_id": "gpu-validation"
+  }
+}

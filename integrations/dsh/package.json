@@ -1,7 +1,7 @@
 {
   "name": "@torchport/dsh-plugin",
   "version": "0.1.0",
-  "description": "DeepSeek Harness tools for verified PyTorch to Jittor migration",
+  "description": "DeepSeek Harness tools for evidence-driven PyTorch to Jittor verification",
   "type": "module",
   "main": "lib/plugin.js",
   "types": "lib/plugin.d.ts",
@@ -35,15 +35,16 @@
     }
   },
   "dependencies": {
-    "@deepseek-ai/schemastery": "^3.18.1"
+    "@deepseek-ai/dsh-util-values": "0.2.0-rc.2",
+    "@deepseek-ai/schemastery": "~3.18.4"
   },
   "peerDependencies": {
-    "@deepseek-ai/cordis": "^4.0.1",
-    "@deepseek-ai/dsh-tools": "^0.1.0-rc.8"
+    "@deepseek-ai/cordis": "~4.0.4",
+    "@deepseek-ai/dsh-tools": "0.2.0-rc.2"
   },
   "devDependencies": {
-    "@deepseek-ai/cordis": "^4.0.1",
-    "@deepseek-ai/dsh-tools": "^0.1.0-rc.8",
+    "@deepseek-ai/cordis": "~4.0.4",
+    "@deepseek-ai/dsh-tools": "0.2.0-rc.2",
     "@types/node": "^22.15.0",
     "typescript": "^5.8.3"
   }

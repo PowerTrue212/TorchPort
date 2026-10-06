@@ -1,0 +1,17 @@
+{
+  "created_at": 1791042523.754398,
+  "hidden_task": "/root/autodl-tmp/tp-p2-final-20261003/gpu-validation-v3/tasks/clip-localized-r0/public.json",
+  "initial_candidate_identity": "e00ac84a35151785771399665d7fab9a8bf9fd924340495ccbec0f3c83d748bf",
+  "protocol": {
+    "feedback": "localized",
+    "feedback_schema_version": 1,
+    "max_oracle_queries": 2,
+    "max_wall_seconds": 1800
+  },
+  "schema_version": 1,
+  "task": "/root/autodl-tmp/tp-p2-final-20261003/gpu-validation-v3/tasks/clip-localized-r0/public.json",
+  "task_digest": "5afc18a9e65a8558efa3895d15588718e475d56680fd54bb3020ec1d861904b1",
+  "task_id": "clip-p2",
+  "trial_id": "clip-gpu-probe",
+  "workspace": "/root/autodl-tmp/tp-p2-final-20261003/gpu-validation-v3/workspaces/clip-localized-r0/repo"
+}

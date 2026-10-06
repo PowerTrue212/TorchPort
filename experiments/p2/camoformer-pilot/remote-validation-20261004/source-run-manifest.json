@@ -1,0 +1,69 @@
+{
+  "artifacts": {
+    "outputs": "/root/autodl-tmp/tp-p2-final-20261003/experiments/p2/camoformer-pilot/source-smoke/runs/source-r0/source-20261004-145802-95febb3a/outputs.npz"
+  },
+  "capture": {
+    "checkpoint": {
+      "complete": true,
+      "requested": false
+    },
+    "framework": {
+      "cuda": "12.8",
+      "device": "cuda",
+      "device_name": "NVIDIA GeForce RTX 3080 Ti",
+      "name": "pytorch",
+      "version": "2.8.0+cu128"
+    },
+    "hashes": {
+      "input": "6a028e9f6ef67cedad540ee0e12b1ce4602c3e586d6b39e08f13d08310625fe5",
+      "output": "727d504b9c275bc54cc18a1be87a8951dd60f8679748b43b028ad871e737956c",
+      "state": "f0deebb55e5b0c546068670dbf180ad91128baeae91adc00ce62469abc65c985"
+    },
+    "kind": "source",
+    "loaded": 1100,
+    "mode": "normal",
+    "numpy": "2.3.2",
+    "outputs": [
+      "output.0",
+      "output.1",
+      "output.2",
+      "output.3",
+      "output.4"
+    ],
+    "state": {
+      "loaded": 1100,
+      "missing": [],
+      "total": 1100,
+      "value_mismatch": []
+    },
+    "weights": 1100
+  },
+  "dir": "/root/autodl-tmp/tp-p2-final-20261003/experiments/p2/camoformer-pilot/source-smoke/runs/source-r0/source-20261004-145802-95febb3a",
+  "execution": {
+    "cache": "/root/autodl-tmp/tp-p2-final-20261003/experiments/p2/camoformer-pilot/source-smoke/cache/source-r0/source-_root_miniconda3_bin_python",
+    "command": [
+      "/root/miniconda3/bin/python",
+      "-m",
+      "torchport",
+      "_capture",
+      "/root/autodl-tmp/tp-p2-final-20261003/experiments/p2/camoformer-pilot/source-smoke/runs/source-r0/source-20261004-145802-95febb3a/job.json"
+    ],
+    "cwd": "/root/autodl-tmp/tp-p2-final-20261003/CamoFormer/source/HVision-NKU-CamoFormer",
+    "exit_code": 0,
+    "finished": 1791097092.951088,
+    "ok": true,
+    "seconds": 10.462728500366211,
+    "started": 1791097082.4883595,
+    "timeout": false
+  },
+  "kind": "torchport.run",
+  "mode": "normal",
+  "ok": true,
+  "oracle": null,
+  "run_id": "source-20261004-145802-95febb3a",
+  "side": "source",
+  "side_identity": "16eeb13d331f548e92d90030b14ac31fda67a0662c4c430164eff64f46bedb57",
+  "task_digest": "7242e78c245eb1000e8cbcb5737dc71171ad72cf97e41f82a4aa7df40bbbbfc9",
+  "task_id": "camoformer-cod-pilot",
+  "trial_id": "source-r0"
+}

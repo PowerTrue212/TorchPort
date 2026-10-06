@@ -1,0 +1,37 @@
+{
+  "base_url": "https://api.deepseek.com",
+  "captured_at": "2026-10-04T13:07:25.600010+00:00",
+  "kind": "torchport.provider-model-snapshot",
+  "official_docs": "https://api-docs.deepseek.com/updates/",
+  "official_release": "DeepSeek-V4.1-Flash",
+  "resolved_model": {
+    "api_capabilities": {
+      "anthropic_messages": {
+        "system_prompt_update": "in-history"
+      }
+    },
+    "context_window": 1048576,
+    "effort": {
+      "default_level": "high",
+      "supported_levels": [
+        "low",
+        "high",
+        "max"
+      ]
+    },
+    "id": "deepseek-flash",
+    "input_modalities": [
+      "text",
+      "image"
+    ],
+    "max_output_tokens": 393216,
+    "name": "DeepSeek-V4.1-Flash",
+    "object": "model",
+    "output_modalities": [
+      "text"
+    ],
+    "owned_by": "deepseek"
+  },
+  "schema_version": 1,
+  "selected_model_id": "deepseek-flash"
+}

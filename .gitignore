@@ -18,6 +18,7 @@ artifacts/jittor-deps/
 artifacts/dist/
 artifacts/trash/
 artifacts/dsh-runs/
+artifacts/clip-transfer/
 
 # 本地 DSH/Node 构建和远端工具链。
 integrations/dsh/node_modules/
@@ -27,7 +28,60 @@ tools/
 
 # 实验脚本缓存。
 experiments/**/__pycache__/
+experiments/p2/**/runs/
+experiments/p2/**/.preflight-cache/
 
 # 论文参考图原始下载件不进入开源仓库；保留 prompts/ref_images/README.md 中的来源说明。
 experiments/prompts/ref_images/*
 !experiments/prompts/ref_images/README.md
+
+# 本地分析/隔离产生的可恢复临时目录不进入 Git。
+.understand-anything/
+.trash/
+
+# 本机开发工具、临时运行目录和编辑器私有配置。
+.claude/settings.local.json
+.codex-build/
+.codex-finalizer/
+.pylibs/
+.tmp/
+.torchport/
+
+# CLIP 三方法对比：官方源码、权重、固定输入、迁移工作区和运行结果均由脚本生成。
+CLIP/source/
+CLIP/shared/
+CLIP/workspaces/
+CLIP/results/
+CLIP/outputs/
+CLIP/downloads/
+CLIP/env.sh
+
+# RAFT 三方法对比：协议代码可提交；官方源码、checkpoint、fixture/reference、
+# 方法工作区、原始 evaluator 产物和生成图保留在 data-fs，由 experiments/ 接收脱敏导出。
+RAFT/source/
+RAFT/shared/
+RAFT/workspaces/
+RAFT/results/
+RAFT/outputs/
+RAFT/env.sh
+
+# APT 协议代码可提交；下载资源和运行态数据不进入 Git。
+apt/assets/
+apt/source/
+apt/shared/
+apt/workspaces/
+apt/results/
+apt/outputs/
+apt/env.sh
+
+# CamoFormer COD pilot: freeze revisions in the materializer; keep downloaded repos and runs local.
+CamoFormer/source/
+CamoFormer/reference/
+CamoFormer/shared/
+CamoFormer/workspaces/
+CamoFormer/results/
+CamoFormer/outputs/
+CamoFormer/env.sh
+
+# 运行期进程号文件。
+*.pid

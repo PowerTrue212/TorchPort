@@ -1,0 +1,182 @@
+{
+  "captured_at": 1791097040.528964,
+  "gpu": {
+    "command": [
+      "nvidia-smi",
+      "--query-gpu=name,driver_version,memory.total",
+      "--format=csv,noheader,nounits"
+    ],
+    "devices": [
+      "NVIDIA GeForce RTX 3080 Ti, 580.105.08, 12288"
+    ]
+  },
+  "host": {
+    "controller_python": "3.12.3 | packaged by Anaconda, Inc. | (main, May  6 2024, 19:46:43) [GCC 11.2.0]",
+    "machine": "x86_64",
+    "platform": "Linux-5.4.0-162-generic-x86_64-with-glibc2.35"
+  },
+  "kind": "torchport.p2-runtime-snapshot",
+  "runtimes": {
+    "33321d8d20eb5194": {
+      "details": {
+        "packages": {
+          "jittor": "1.3.9.14",
+          "numpy": "1.26.4"
+        },
+        "python": "3.12.3"
+      },
+      "exit_code": 0,
+      "ok": true,
+      "python": "/root/autodl-tmp/jt-env/bin/python",
+      "stderr_tail": ""
+    },
+    "6bb9981e8a971cab": {
+      "details": {
+        "packages": {
+          "jittor": "1.3.9.14",
+          "numpy": "1.26.4"
+        },
+        "python": "3.12.3"
+      },
+      "exit_code": 0,
+      "ok": true,
+      "python": "/root/autodl-tmp/jt-env/bin/python",
+      "stderr_tail": ""
+    },
+    "c286148fd76b01e1": {
+      "details": {
+        "packages": {
+          "jittor": "1.3.9.14",
+          "numpy": "1.26.4"
+        },
+        "python": "3.12.3"
+      },
+      "exit_code": 0,
+      "ok": true,
+      "python": "/root/autodl-tmp/jt-env/bin/python",
+      "stderr_tail": ""
+    },
+    "d23d22231294da80": {
+      "details": {
+        "packages": {
+          "ftfy": "6.3.1",
+          "numpy": "2.3.2",
+          "regex": "2026.9.29",
+          "scipy": "1.18.1",
+          "torch": "2.8.0+cu128"
+        },
+        "python": "3.12.3"
+      },
+      "exit_code": 0,
+      "ok": true,
+      "python": "/root/miniconda3/bin/python",
+      "stderr_tail": ""
+    }
+  },
+  "schema_version": 1,
+  "tasks": [
+    {
+      "hidden_task_digest": "e1a3341ae3bea8ce50dd00db3ef0ba9ec0261261bfc4e43752dce3fa71cbf864",
+      "initial_candidate_identity": "981940b3db61e200d2b91dd65f77bb4347b960adb19d3ff641781de02b958c9c",
+      "public_task_digest": "7242e78c245eb1000e8cbcb5737dc71171ad72cf97e41f82a4aa7df40bbbbfc9",
+      "source": {
+        "args": [],
+        "device": "cuda",
+        "entry": "torchport_adapter.py",
+        "env": {},
+        "kwargs": {},
+        "model": "TorchPortCamoFormer",
+        "paths": [],
+        "python": "/root/miniconda3/bin/python",
+        "repo": "/root/autodl-tmp/tp-p2-final-20261003/CamoFormer/source/HVision-NKU-CamoFormer"
+      },
+      "target": {
+        "args": [],
+        "device": "cuda",
+        "entry": "torchport_adapter.py",
+        "env": {
+          "LD_LIBRARY_PATH": "/usr/lib/x86_64-linux-gnu",
+          "LD_PRELOAD": "/usr/lib/x86_64-linux-gnu/libstdc++.so.6",
+          "conv_opt": "1",
+          "python_config_path": "/root/miniconda3/bin/python3.12-config",
+          "use_cutlass": "0"
+        },
+        "kwargs": {},
+        "model": "TorchPortCamoFormer",
+        "paths": [],
+        "python": "/root/autodl-tmp/jt-env/bin/python",
+        "repo": "/root/autodl-tmp/tp-p2-final-20261003/experiments/p2/camoformer-pilot/workspaces/camoformer-verdict-r0/repo"
+      },
+      "trial_id": "camoformer-verdict-r0"
+    },
+    {
+      "hidden_task_digest": "e1a3341ae3bea8ce50dd00db3ef0ba9ec0261261bfc4e43752dce3fa71cbf864",
+      "initial_candidate_identity": "981940b3db61e200d2b91dd65f77bb4347b960adb19d3ff641781de02b958c9c",
+      "public_task_digest": "7242e78c245eb1000e8cbcb5737dc71171ad72cf97e41f82a4aa7df40bbbbfc9",
+      "source": {
+        "args": [],
+        "device": "cuda",
+        "entry": "torchport_adapter.py",
+        "env": {},
+        "kwargs": {},
+        "model": "TorchPortCamoFormer",
+        "paths": [],
+        "python": "/root/miniconda3/bin/python",
+        "repo": "/root/autodl-tmp/tp-p2-final-20261003/CamoFormer/source/HVision-NKU-CamoFormer"
+      },
+      "target": {
+        "args": [],
+        "device": "cuda",
+        "entry": "torchport_adapter.py",
+        "env": {
+          "LD_LIBRARY_PATH": "/usr/lib/x86_64-linux-gnu",
+          "LD_PRELOAD": "/usr/lib/x86_64-linux-gnu/libstdc++.so.6",
+          "conv_opt": "1",
+          "python_config_path": "/root/miniconda3/bin/python3.12-config",
+          "use_cutlass": "0"
+        },
+        "kwargs": {},
+        "model": "TorchPortCamoFormer",
+        "paths": [],
+        "python": "/root/autodl-tmp/jt-env/bin/python",
+        "repo": "/root/autodl-tmp/tp-p2-final-20261003/experiments/p2/camoformer-pilot/workspaces/camoformer-diagnostic-r0/repo"
+      },
+      "trial_id": "camoformer-diagnostic-r0"
+    },
+    {
+      "hidden_task_digest": "e1a3341ae3bea8ce50dd00db3ef0ba9ec0261261bfc4e43752dce3fa71cbf864",
+      "initial_candidate_identity": "981940b3db61e200d2b91dd65f77bb4347b960adb19d3ff641781de02b958c9c",
+      "public_task_digest": "7242e78c245eb1000e8cbcb5737dc71171ad72cf97e41f82a4aa7df40bbbbfc9",
+      "source": {
+        "args": [],
+        "device": "cuda",
+        "entry": "torchport_adapter.py",
+        "env": {},
+        "kwargs": {},
+        "model": "TorchPortCamoFormer",
+        "paths": [],
+        "python": "/root/miniconda3/bin/python",
+        "repo": "/root/autodl-tmp/tp-p2-final-20261003/CamoFormer/source/HVision-NKU-CamoFormer"
+      },
+      "target": {
+        "args": [],
+        "device": "cuda",
+        "entry": "torchport_adapter.py",
+        "env": {
+          "LD_LIBRARY_PATH": "/usr/lib/x86_64-linux-gnu",
+          "LD_PRELOAD": "/usr/lib/x86_64-linux-gnu/libstdc++.so.6",
+          "conv_opt": "1",
+          "python_config_path": "/root/miniconda3/bin/python3.12-config",
+          "use_cutlass": "0"
+        },
+        "kwargs": {},
+        "model": "TorchPortCamoFormer",
+        "paths": [],
+        "python": "/root/autodl-tmp/jt-env/bin/python",
+        "repo": "/root/autodl-tmp/tp-p2-final-20261003/experiments/p2/camoformer-pilot/workspaces/camoformer-localized-r0/repo"
+      },
+      "trial_id": "camoformer-localized-r0"
+    }
+  ],
+  "worker_attestation": null
+}

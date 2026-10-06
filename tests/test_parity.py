@@ -10,6 +10,22 @@ from torchport.parity import compare_tensor_archives
 
 
 class TensorParityTests(unittest.TestCase):
+    def test_nested_outputs_satisfy_fp32_output_requirement(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            root = Path(temporary_directory)
+            reference = root / "reference.npz"
+            candidate = root / "candidate.npz"
+            arrays = {
+                "output.0": np.asarray([1.0], dtype=np.float32),
+                "output.1": np.asarray([2.0], dtype=np.float32),
+            }
+            np.savez(reference, **arrays)
+            np.savez(candidate, **arrays)
+
+            report = compare_tensor_archives(reference, candidate)
+
+            self.assertTrue(report["passed"])
+
     def test_nested_output_is_gating(self) -> None:
         with tempfile.TemporaryDirectory() as temporary_directory:
             root = Path(temporary_directory)
@@ -28,6 +44,8 @@ class TensorParityTests(unittest.TestCase):
 
             self.assertFalse(report["passed"])
             self.assertEqual(report["first_gating_divergence"]["name"], "output.aux")
+            self.assertEqual(report["metrics"]["mismatched_tensors"], 1)
+            self.assertEqual(report["metrics"]["mismatched_elements"], 2)
 
     def test_matching_archives_pass(self) -> None:
         with tempfile.TemporaryDirectory() as temporary_directory:
@@ -108,6 +126,31 @@ class TensorParityTests(unittest.TestCase):
 
             self.assertEqual(report["missing_in_candidate"], ["output"])
             self.assertEqual(report["first_divergence"]["name"], "output")
+            self.assertEqual(report["metrics"]["missing_tensors"], 1)
+            self.assertEqual(report["metrics"]["mismatched_tensors"], 1)
+
+    def test_common_only_comparison_reports_coverage_without_failing_on_missing_modules(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            root = Path(temporary_directory)
+            reference = root / "reference.npz"
+            candidate = root / "candidate.npz"
+            np.savez(
+                reference,
+                first=np.asarray([1.0], dtype=np.float32),
+                source_only=np.asarray([2.0], dtype=np.float32),
+            )
+            np.savez(candidate, first=np.asarray([1.0], dtype=np.float32))
+
+            report = compare_tensor_archives(
+                reference,
+                candidate,
+                profile="operator-strict",
+                require_all=False,
+            )
+
+            self.assertTrue(report["passed"])
+            self.assertEqual(report["missing_in_candidate"], ["source_only"])
+            self.assertEqual(report["metrics"]["compared_tensors"], 1)
 
     def test_tolerance_profiles_distinguish_inference_from_operator_checks(self) -> None:
         with tempfile.TemporaryDirectory() as temporary_directory:

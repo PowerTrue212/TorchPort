@@ -1,5 +1,0 @@
-model:
-  module: model
-  name: Net
-  width: 4
-  hidden: 6

@@ -1,0 +1,28 @@
+{
+  "args": [],
+  "candidate_identity": "e00ac84a35151785771399665d7fab9a8bf9fd924340495ccbec0f3c83d748bf",
+  "device": "cuda",
+  "execution": {
+    "cache": "/root/autodl-tmp/tp-p2-final-20261003/gpu-validation-results-final/clip/evidence/clip/cache/clip-gpu-probe/probe-target",
+    "command": [
+      "/root/autodl-tmp/jt-env/bin/python",
+      "_torchport_probe.py"
+    ],
+    "cwd": "/root/autodl-tmp/tp-p2-final-20261003/gpu-validation-v3/workspaces/clip-localized-r0/repo",
+    "exit_code": 0,
+    "finished": 1791042627.7851732,
+    "ok": true,
+    "seconds": 92.81525301933289,
+    "started": 1791042534.9699202,
+    "timeout": false
+  },
+  "kind": "torchport.probe",
+  "path": "_torchport_probe.py",
+  "physical_cost": {
+    "cuda_execution_seconds": 92.81525301933289,
+    "execution_wall_seconds": 92.81525301933289,
+    "executions": 1
+  },
+  "probe_id": "probe-20261003-234854-8621477b",
+  "schema_version": 1
+}

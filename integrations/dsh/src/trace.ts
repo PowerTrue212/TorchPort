@@ -1,9 +1,10 @@
 import { spawn } from "node:child_process";
+import { existsSync } from "node:fs";
 import { appendFile, mkdir } from "node:fs/promises";
-import { dirname, isAbsolute, resolve } from "node:path";
-import type { JsonValue, ToolRunContext } from "@deepseek-ai/dsh-tools";
+import { delimiter, dirname, isAbsolute, resolve } from "node:path";
+import type { ToolRunContext } from "@deepseek-ai/dsh-tools";
+import type { JsonValue } from "@deepseek-ai/dsh-util-values";
 
-import { asRecord } from "./loop.js";
 import type { Config } from "./plugin.js";
 
 export interface RunResult {
@@ -53,16 +54,6 @@ function parseJson(text: string): JsonValue {
   }
 }
 
-function compactData(tool: string, data: JsonValue): JsonValue {
-  if (tool !== "auto") return data;
-  const source = asRecord(data);
-  const keys = [
-    "kind", "status", "passed", "source", "output", "target", "failure",
-    "entry_cert", "certificate", "advice", "agent", "artifacts", "attempts",
-  ];
-  return Object.fromEntries(keys.filter((key) => key in source).map((key) => [key, source[key] ?? null]));
-}
-
 export async function runTool(
   config: Config,
   args: string[],
@@ -70,12 +61,30 @@ export async function runTool(
   output?: string,
 ): Promise<RunResult> {
   const cwd = toolCwd(exec);
-  const command = [config.python, "-m", "torchport", ...args];
+  let python = config.python.includes("/") || config.python.includes("\\")
+    ? resolve(cwd, config.python)
+    : config.python;
+  if (config.python === "python") {
+    const workspacePython = resolve(
+      cwd,
+      process.platform === "win32" ? ".venv/Scripts/python.exe" : ".venv/bin/python",
+    );
+    if (existsSync(workspacePython)) python = workspacePython;
+  }
+  const command = config.runner
+    ? [python, isAbsolute(config.runner) ? config.runner : resolve(cwd, config.runner), ...args]
+    : [python, "-m", "torchport", ...args];
   const path = tracePath(cwd, config.traceDir, output);
   const env = { ...process.env };
-  if (config.pythonPath) env.PYTHONPATH = [config.pythonPath, env.PYTHONPATH].filter(Boolean).join(":");
+  if (config.pythonPath) {
+    const configured = config.pythonPath
+      .split(delimiter)
+      .filter(Boolean)
+      .map((item) => isAbsolute(item) ? item : resolve(cwd, item));
+    env.PYTHONPATH = [...configured, env.PYTHONPATH].filter(Boolean).join(delimiter);
+  }
   const result = await new Promise<{ code: number; stdout: string; stderr: string }>((done) => {
-    const child = spawn(config.python, command.slice(1), { cwd, env });
+    const child = spawn(python, command.slice(1), { cwd, env });
     let stdout = "";
     let stderr = "";
     child.stdout.on("data", (chunk) => (stdout += String(chunk)));
@@ -92,7 +101,7 @@ export async function runTool(
     ok: result.code === 0,
     code: result.code,
     command,
-    data: compactData(args[0] ?? "", parseJson(result.stdout)),
+    data: parseJson(result.stdout),
     stderr: result.stderr.trim(),
     trace: path,
   };

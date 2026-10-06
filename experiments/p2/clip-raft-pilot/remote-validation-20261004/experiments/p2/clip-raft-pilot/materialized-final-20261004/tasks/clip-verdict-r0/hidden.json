@@ -1,0 +1,58 @@
+{
+  "inputs": [
+    {
+      "dtype": "float32",
+      "path": "/root/autodl-tmp/tp-p2-final-20261003/experiments/p2/clip-raft-pilot/materialized-final-20261004/private/clip/images.npy",
+      "shape": [
+        4,
+        3,
+        224,
+        224
+      ]
+    },
+    {
+      "dtype": "int64",
+      "path": "/root/autodl-tmp/tp-p2-final-20261003/experiments/p2/clip-raft-pilot/materialized-final-20261004/private/clip/tokens.npy",
+      "shape": [
+        4,
+        77
+      ]
+    }
+  ],
+  "protocol": {
+    "profile": "fp32-inference",
+    "repeats": 3,
+    "timeout": 900
+  },
+  "schema_version": 1,
+  "seed": 0,
+  "source": {
+    "device": "cuda",
+    "entry": "torchport_adapter.py",
+    "model": "TorchPortCLIP",
+    "paths": [
+      "/root/autodl-tmp/tp-p2-final-20261003/CLIP/source/openai-clip"
+    ],
+    "python": "/root/miniconda3/bin/python",
+    "repo": "/root/autodl-tmp/tp-p2-final-20261003/CLIP/source"
+  },
+  "target": {
+    "device": "cuda",
+    "entry": "torchport_adapter.py",
+    "env": {
+      "LD_LIBRARY_PATH": "/usr/lib/x86_64-linux-gnu",
+      "LD_PRELOAD": "/usr/lib/x86_64-linux-gnu/libstdc++.so.6",
+      "conv_opt": "1",
+      "python_config_path": "/root/miniconda3/bin/python3.12-config",
+      "use_cutlass": "0"
+    },
+    "kwargs": {
+      "weights_path": "/root/autodl-tmp/tp-p2-final-20261003/CLIP/shared/prepared/weights_fp32.npz"
+    },
+    "model": "TorchPortCLIP",
+    "python": "/root/autodl-tmp/jt-env/bin/python",
+    "repo": "/root/autodl-tmp/tp-p2-final-20261003/experiments/p2/clip-raft-pilot/materialized-final-20261004/workspaces/clip-verdict-r0/repo"
+  },
+  "task_id": "clip-p2",
+  "weights": "/root/autodl-tmp/tp-p2-final-20261003/CLIP/shared/prepared/weights_fp32.npz"
+}

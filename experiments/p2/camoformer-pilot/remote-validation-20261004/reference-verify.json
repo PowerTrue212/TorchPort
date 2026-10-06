@@ -1,0 +1,164 @@
+{
+  "aligned": false,
+  "failure_code": "PARITY_FAILED",
+  "kind": "torchport.verify",
+  "mismatch": {
+    "fp32": {
+      "compared_elements": 131072,
+      "compared_tensors": 6,
+      "extra_tensors": 0,
+      "max_absolute_error": 1560.2234916687012,
+      "mismatch_ratio": 0.608612060546875,
+      "mismatched_elements": 79772,
+      "mismatched_tensors": 5,
+      "missing_tensors": 0
+    },
+    "strict": {
+      "compared_elements": 131072,
+      "compared_tensors": 6,
+      "extra_tensors": 0,
+      "max_absolute_error": 1560.2234916687012,
+      "mismatch_ratio": 0.6237564086914062,
+      "mismatched_elements": 81757,
+      "mismatched_tensors": 5,
+      "missing_tensors": 0
+    }
+  },
+  "next": "运行 torchport trace 定位首次分歧",
+  "oracle": "/root/autodl-tmp/tp-p2-final-20261003/experiments/p2/camoformer-reference-validation/evidence/oracle/7242e78c245eb100",
+  "passed": false,
+  "physical_cost": {
+    "cuda_execution_seconds": 40.86619830131531,
+    "execution_wall_seconds": 40.86619830131531,
+    "executions": 1
+  },
+  "repeats": {
+    "failure_code": "PARITY_FAILED",
+    "passed": false,
+    "passed_runs": 0,
+    "required": 3,
+    "runs": 1
+  },
+  "results": [
+    {
+      "aligned": false,
+      "artifacts": {
+        "candidate": "/root/autodl-tmp/tp-p2-final-20261003/experiments/p2/camoformer-reference-validation/evidence/runs/ref-r0/target-20261004-150302-860313c3/outputs.npz",
+        "reference": "/root/autodl-tmp/tp-p2-final-20261003/experiments/p2/camoformer-reference-validation/evidence/oracle/7242e78c245eb100/outputs.npz"
+      },
+      "candidate_identity": "70fef6c2d5048b9ffb576c6a29586b099d85d470239342c3fad45b30d2fe9d19",
+      "evidence": {
+        "checkpoint": {
+          "complete": true,
+          "requested": false
+        },
+        "input_identical": true,
+        "mode": "normal",
+        "weights": {
+          "complete": true,
+          "extra": [],
+          "loaded": 1100,
+          "missing": [],
+          "source": 1100,
+          "target_total": 1100,
+          "value_mismatch": []
+        }
+      },
+      "failure_code": "PARITY_FAILED",
+      "kind": "torchport.evaluation",
+      "mismatch": {
+        "fp32": {
+          "compared_elements": 131072,
+          "compared_tensors": 6,
+          "extra_tensors": 0,
+          "max_absolute_error": 1560.2234916687012,
+          "mismatch_ratio": 0.608612060546875,
+          "mismatched_elements": 79772,
+          "mismatched_tensors": 5,
+          "missing_tensors": 0
+        },
+        "strict": {
+          "compared_elements": 131072,
+          "compared_tensors": 6,
+          "extra_tensors": 0,
+          "max_absolute_error": 1560.2234916687012,
+          "mismatch_ratio": 0.6237564086914062,
+          "mismatched_elements": 81757,
+          "mismatched_tensors": 5,
+          "missing_tensors": 0
+        }
+      },
+      "next": "运行 torchport trace 定位首次分歧",
+      "numerical": "fail",
+      "passed": false,
+      "problems": [
+        "首个分歧 output.0：数值超出容差，max_abs=0.00459，mismatch_ratio=0.869"
+      ],
+      "profiles": {
+        "fp32": {
+          "extra": [],
+          "first": {
+            "name": "output.0",
+            "position": 1,
+            "reason": "数值超出容差"
+          },
+          "first_any": {
+            "name": "output.0",
+            "position": 1,
+            "reason": "数值超出容差"
+          },
+          "metrics": {
+            "compared_elements": 131072,
+            "compared_tensors": 6,
+            "extra_tensors": 0,
+            "max_absolute_error": 1560.2234916687012,
+            "mismatch_ratio": 0.608612060546875,
+            "mismatched_elements": 79772,
+            "mismatched_tensors": 5,
+            "missing_tensors": 0
+          },
+          "missing": [],
+          "passed": false
+        },
+        "strict": {
+          "extra": [],
+          "first": {
+            "name": "output.0",
+            "position": 1,
+            "reason": "数值超出容差"
+          },
+          "first_any": {
+            "name": "output.0",
+            "position": 1,
+            "reason": "数值超出容差"
+          },
+          "metrics": {
+            "compared_elements": 131072,
+            "compared_tensors": 6,
+            "extra_tensors": 0,
+            "max_absolute_error": 1560.2234916687012,
+            "mismatch_ratio": 0.6237564086914062,
+            "mismatched_elements": 81757,
+            "mismatched_tensors": 5,
+            "missing_tensors": 0
+          },
+          "missing": [],
+          "passed": false
+        }
+      },
+      "run_id": "target-20261004-150302-860313c3",
+      "runnable": "pass",
+      "schema_version": 2,
+      "status": "failed",
+      "strict_aligned": false,
+      "structural": "pass",
+      "summary": "PARITY_FAILED: 首个分歧 output.0：数值超出容差，max_abs=0.00459，mismatch_ratio=0.869"
+    }
+  ],
+  "status": "failed",
+  "strict_aligned": false,
+  "summary": "PARITY_FAILED: 首个分歧 output.0：数值超出容差，max_abs=0.00459，mismatch_ratio=0.869",
+  "task_digest": "7242e78c245eb1000e8cbcb5737dc71171ad72cf97e41f82a4aa7df40bbbbfc9",
+  "task_id": "camoformer-cod-pilot",
+  "trial_id": "ref-r0"
+}

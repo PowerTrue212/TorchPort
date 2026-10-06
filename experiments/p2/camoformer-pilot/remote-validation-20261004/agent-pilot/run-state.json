@@ -1,0 +1,53 @@
+{
+  "kind": "torchport.p2-run-state",
+  "plan_sha256": "e033269bec5a9966d6c9d7ee74809c326e6c1eb0f2a1434b4dcce947627cbbcd",
+  "schema_version": 1,
+  "trials": {
+    "camoformer-diagnostic-r0": {
+      "attempts": [
+        {
+          "attempt_id": "camoformer-diagnostic-r0",
+          "path": "runs/camoformer/diagnostic-r0/attempt-0",
+          "status": "complete",
+          "stop_reason": "token_budget_exhausted",
+          "success": false,
+          "valid": true
+        }
+      ],
+      "selected": "runs/camoformer/diagnostic-r0/attempt-0"
+    },
+    "camoformer-localized-r0": {
+      "attempts": [
+        {
+          "attempt_id": "camoformer-localized-r0",
+          "error": "controller_interrupted",
+          "path": "runs/camoformer/localized-r0/attempt-0",
+          "status": "infrastructure_error",
+          "valid": false
+        },
+        {
+          "attempt_id": "camoformer-localized-r0-infra-r1",
+          "path": "runs/camoformer/localized-r0/infra-r1",
+          "status": "complete",
+          "stop_reason": "token_budget_exhausted",
+          "success": false,
+          "valid": true
+        }
+      ],
+      "selected": "runs/camoformer/localized-r0/infra-r1"
+    },
+    "camoformer-verdict-r0": {
+      "attempts": [
+        {
+          "attempt_id": "camoformer-verdict-r0",
+          "path": "runs/camoformer/verdict-r0/attempt-0",
+          "status": "complete",
+          "stop_reason": "token_budget_exhausted",
+          "success": false,
+          "valid": true
+        }
+      ],
+      "selected": "runs/camoformer/verdict-r0/attempt-0"
+    }
+  }
+}

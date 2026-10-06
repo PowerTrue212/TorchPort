@@ -1,0 +1,77 @@
+{
+  "batch_size": 2,
+  "candidate_identity": "a578be4f098c3810c2793de393b252d442b8f4d20576a173ee2fd6f87e48153c",
+  "cold_start_seconds": 184.58252930641174,
+  "correctness_preserved": true,
+  "intervention": false,
+  "iterations": 30,
+  "kind": "torchport.performance",
+  "latency_samples_ms": [
+    0.15455996617674828,
+    0.15854788944125175,
+    0.14767097309231758,
+    0.1447112299501896,
+    0.17184391617774963,
+    0.15317974612116814,
+    0.14722580090165138,
+    0.13950979337096214,
+    0.1437668688595295,
+    0.13933423906564713,
+    0.14403881505131721,
+    0.13892818242311478,
+    0.1528169959783554,
+    0.13111717998981476,
+    0.12839306145906448,
+    0.14692405238747597,
+    0.14797691255807877,
+    0.14275219291448593,
+    0.14623720198869705,
+    0.14074565842747688,
+    0.14167511835694313,
+    0.14581112191081047,
+    0.13901712372899055,
+    0.14665210619568825,
+    0.13891607522964478,
+    0.1405850052833557,
+    0.1374981366097927,
+    0.14740275219082832,
+    0.1377798616886139,
+    0.1435438171029091
+  ],
+  "memory": "unsupported",
+  "mode": "normal",
+  "passed_before_measurement": true,
+  "physical_evaluation_cost": {
+    "measurement": {
+      "cuda_execution_seconds": 186.66318607330322,
+      "execution_wall_seconds": 186.66318607330322,
+      "executions": 2
+    },
+    "setup": {
+      "cuda_execution_seconds": 7.65091609954834,
+      "execution_wall_seconds": 7.65091609954834,
+      "executions": 3
+    },
+    "total": {
+      "cuda_execution_seconds": 194.31410217285156,
+      "execution_wall_seconds": 194.31410217285156,
+      "executions": 5
+    }
+  },
+  "runs": [
+    "target-20261002-214902-db5d667a",
+    "target-20261002-215207-ff3d3ba6"
+  ],
+  "schema_version": 1,
+  "steady_latency_ms": {
+    "median": 0.14390284195542336,
+    "p90": 0.15317974612116814
+  },
+  "task_digest": "40e62037214289226203806a1d7638a88a6e7408d177733a6608e2e079740746",
+  "task_id": "tiny-mlp",
+  "throughput_per_second": 13898.266169194478,
+  "trace": false,
+  "trial_id": "tiny-performance-final-r0",
+  "warm_start_seconds": 1.6590628623962402,
+  "warmup": 10
+}

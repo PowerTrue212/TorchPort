@@ -1,0 +1,60 @@
+{
+  "inputs": [
+    {
+      "dtype": "float32",
+      "path": "/root/autodl-tmp/tp-p2-final-20261003/RAFT/shared/prepared/image1.npy",
+      "shape": [
+        1,
+        3,
+        384,
+        512
+      ]
+    },
+    {
+      "dtype": "float32",
+      "path": "/root/autodl-tmp/tp-p2-final-20261003/RAFT/shared/prepared/image2.npy",
+      "shape": [
+        1,
+        3,
+        384,
+        512
+      ]
+    }
+  ],
+  "protocol": {
+    "profile": "fp32-inference",
+    "repeats": 3,
+    "timeout": 1800
+  },
+  "schema_version": 1,
+  "seed": 0,
+  "source": {
+    "device": "cuda",
+    "entry": "torchport_adapter.py",
+    "model": "TorchPortRAFT",
+    "paths": [
+      "/root/autodl-tmp/tp-p2-final-20261003/RAFT/source/princeton-vl-raft/core"
+    ],
+    "python": "/root/miniconda3/bin/python",
+    "repo": "/root/autodl-tmp/tp-p2-final-20261003/RAFT/source"
+  },
+  "target": {
+    "device": "cuda",
+    "entry": "torchport_adapter.py",
+    "env": {
+      "LD_LIBRARY_PATH": "/usr/lib/x86_64-linux-gnu",
+      "LD_PRELOAD": "/usr/lib/x86_64-linux-gnu/libstdc++.so.6",
+      "conv_opt": "1",
+      "python_config_path": "/root/miniconda3/bin/python3.12-config",
+      "use_cutlass": "0"
+    },
+    "kwargs": {
+      "weights_path": "/root/autodl-tmp/tp-p2-final-20261003/RAFT/shared/prepared/weights_fp32.npz"
+    },
+    "model": "TorchPortRAFT",
+    "python": "/root/autodl-tmp/jt-env/bin/python",
+    "repo": "/root/autodl-tmp/tp-p2-final-20261003/experiments/p2/clip-raft-pilot/materialized-final-20261004/workspaces/raft-verdict-r0/repo"
+  },
+  "task_id": "raft-p2",
+  "weights": "/root/autodl-tmp/tp-p2-final-20261003/RAFT/shared/prepared/weights_fp32.npz"
+}

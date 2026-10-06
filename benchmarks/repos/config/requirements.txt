@@ -1,2 +1,0 @@
-torch
-PyYAML>=6.0

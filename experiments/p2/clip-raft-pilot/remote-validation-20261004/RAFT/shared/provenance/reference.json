@@ -1,0 +1,58 @@
+{
+  "execution": {
+    "alternate_corr": false,
+    "batch": 1,
+    "device": "cuda",
+    "gpu": "Tesla V100-SXM2-16GB",
+    "iters": 12,
+    "max_repair_rounds": 8,
+    "mixed_precision": false,
+    "precision": "float32",
+    "seed": 0,
+    "small": false,
+    "test_mode": true
+  },
+  "files": {
+    "shared/checkpoints/raft-things.pth": {
+      "bytes": 21108000,
+      "sha256": "fcfa4125d6418f4de95d84aec20a3c5f4e205101715a79f193243c186ac9a7e1"
+    },
+    "shared/prepared/flow_low_ref.npy": {
+      "bytes": 24704,
+      "sha256": "1cc8070e585888683b4ab56aa7dd8f5e423c1b5eb28062ff5589684632102fbb"
+    },
+    "shared/prepared/flow_up_ref.npy": {
+      "bytes": 1572992,
+      "sha256": "a24e267999938aebebd3c7ec33b1d93710207069db8f0440ef37fb263931b576"
+    },
+    "shared/prepared/image1.npy": {
+      "bytes": 2359424,
+      "sha256": "2f2caece87caef00b4845e294c73eb812709921c55379eb675ee86593f460099"
+    },
+    "shared/prepared/image2.npy": {
+      "bytes": 2359424,
+      "sha256": "08e0b85eb094f1607e5b4d971812deb275b443fca901d692bc92c929a27e07b2"
+    },
+    "shared/prepared/weights_fp32.npz": {
+      "bytes": 21097140,
+      "sha256": "fa48172cd5c441aa49941d7177e4a36e0d43fe38bf8be6eb21ae76e090d936e8"
+    }
+  },
+  "protocol_version": "raft-v1-frozen-2026-08-24",
+  "raft_commit": "2888e15a51fa41140771d3f498ed8023cff098d1",
+  "reference_environment": {
+    "checkpoint_loaded_with_weights_only": true,
+    "cuda": "12.4",
+    "device": "Tesla V100-SXM2-16GB",
+    "elapsed_seconds": 0.4169885669834912,
+    "flow_low_max": 0.7226638793945312,
+    "flow_low_min": -1.2431755065917969,
+    "flow_up_max": 5.4379777908325195,
+    "flow_up_min": -9.132988929748535,
+    "numpy": "1.26.4",
+    "peak_cuda_memory_bytes": 174976000,
+    "python": "3.10.18",
+    "scipy": "1.15.1",
+    "torch": "2.6.0+cu124"
+  }
+}

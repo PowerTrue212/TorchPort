@@ -1,6 +1,3 @@
-"""TorchPort 公共包入口。"""
+"""TorchPort：PyTorch → Jittor 迁移的执行与验证内核。"""
 
-from .models import MigrationPlan, ProjectInspection, SourceFramework
-
-__all__ = ["MigrationPlan", "ProjectInspection", "SourceFramework"]
-__version__ = "0.38.3"
+__version__ = "2.0.0.dev0"

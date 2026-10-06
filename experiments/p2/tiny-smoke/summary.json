@@ -1,0 +1,290 @@
+{
+  "budget": {
+    "model_turns": 12,
+    "oracle_queries": 5,
+    "total_tokens": 30000,
+    "wall_seconds": 1800
+  },
+  "by_condition": {
+    "diagnostic": {
+      "completed": 1,
+      "scheduled": 1,
+      "success_rate": 1.0,
+      "successes": 1,
+      "valid": 1
+    },
+    "localized": {
+      "completed": 1,
+      "scheduled": 1,
+      "success_rate": 1.0,
+      "successes": 1,
+      "valid": 1
+    },
+    "verdict": {
+      "completed": 1,
+      "scheduled": 1,
+      "success_rate": 1.0,
+      "successes": 1,
+      "valid": 1
+    }
+  },
+  "complete": true,
+  "completed_trials": 3,
+  "cost": null,
+  "experiment_id": "p2-tiny-smoke-deepseek-flash-20261002",
+  "kind": "torchport.p2-aggregate",
+  "manifest": "experiment.json",
+  "model": "deepseek-flash",
+  "performance": {
+    "batch_size": 2,
+    "candidate_identity": "a578be4f098c3810c2793de393b252d442b8f4d20576a173ee2fd6f87e48153c",
+    "cold_start_seconds": 184.58252930641174,
+    "correctness_preserved": true,
+    "intervention": false,
+    "iterations": 30,
+    "kind": "torchport.performance",
+    "latency_samples_ms": [
+      0.15455996617674828,
+      0.15854788944125175,
+      0.14767097309231758,
+      0.1447112299501896,
+      0.17184391617774963,
+      0.15317974612116814,
+      0.14722580090165138,
+      0.13950979337096214,
+      0.1437668688595295,
+      0.13933423906564713,
+      0.14403881505131721,
+      0.13892818242311478,
+      0.1528169959783554,
+      0.13111717998981476,
+      0.12839306145906448,
+      0.14692405238747597,
+      0.14797691255807877,
+      0.14275219291448593,
+      0.14623720198869705,
+      0.14074565842747688,
+      0.14167511835694313,
+      0.14581112191081047,
+      0.13901712372899055,
+      0.14665210619568825,
+      0.13891607522964478,
+      0.1405850052833557,
+      0.1374981366097927,
+      0.14740275219082832,
+      0.1377798616886139,
+      0.1435438171029091
+    ],
+    "memory": "unsupported",
+    "mode": "normal",
+    "passed_before_measurement": true,
+    "physical_evaluation_cost": {
+      "measurement": {
+        "cuda_execution_seconds": 186.66318607330322,
+        "execution_wall_seconds": 186.66318607330322,
+        "executions": 2
+      },
+      "setup": {
+        "cuda_execution_seconds": 7.65091609954834,
+        "execution_wall_seconds": 7.65091609954834,
+        "executions": 3
+      },
+      "total": {
+        "cuda_execution_seconds": 194.31410217285156,
+        "execution_wall_seconds": 194.31410217285156,
+        "executions": 5
+      }
+    },
+    "runs": [
+      "target-20261002-214902-db5d667a",
+      "target-20261002-215207-ff3d3ba6"
+    ],
+    "schema_version": 1,
+    "steady_latency_ms": {
+      "median": 0.14390284195542336,
+      "p90": 0.15317974612116814
+    },
+    "task_digest": "40e62037214289226203806a1d7638a88a6e7408d177733a6608e2e079740746",
+    "task_id": "tiny-mlp",
+    "throughput_per_second": 13898.266169194478,
+    "trace": false,
+    "trial_id": "tiny-performance-final-r0",
+    "warm_start_seconds": 1.6590628623962402,
+    "warmup": 10
+  },
+  "performance_available": true,
+  "physical_evaluation_cost": {
+    "cuda_execution_seconds": 1146.749773979187,
+    "execution_wall_seconds": 1146.749773979187,
+    "executions": 39
+  },
+  "provider": "deepseek",
+  "scheduled_trials": 3,
+  "schema_version": 1,
+  "stop_reasons": {
+    "agent_completed": 3
+  },
+  "success_at_budget": {
+    "rate": 1.0,
+    "successes": 3,
+    "valid_trials": 3
+  },
+  "successes": 3,
+  "time_to_success_seconds": {
+    "median": 405.24807015480474,
+    "successful_trials": 3,
+    "valid_trials": 3
+  },
+  "tokens": {
+    "cached_input_tokens": 39680,
+    "input_tokens": 53996,
+    "output_tokens": 1887,
+    "reasoning_tokens": null,
+    "total_tokens": 55883
+  },
+  "trial_runtime_snapshot_sha256": "c18203dbb4ea6611c97427db0683971c2c799c332ffd369cafd7f3862ff7fcd7",
+  "trials": [
+    {
+      "agent_wall_seconds": 208.5384537386708,
+      "completed": true,
+      "condition": "verdict",
+      "logical_query_cost": {
+        "by_tool": {
+          "evaluate": 1,
+          "trace": 0,
+          "verify": 1
+        },
+        "total": 2,
+        "unique_candidates": 1
+      },
+      "official_wall_seconds": 196.70961641613394,
+      "passed": true,
+      "path": "runs/verdict-r0",
+      "physical_evaluation_cost": {
+        "agent": {
+          "cuda_execution_seconds": 201.76074814796448,
+          "execution_wall_seconds": 201.76074814796448,
+          "executions": 7
+        },
+        "official": {
+          "cuda_execution_seconds": 196.66132426261902,
+          "execution_wall_seconds": 196.66132426261902,
+          "executions": 6
+        },
+        "total": {
+          "cuda_execution_seconds": 398.4220724105835,
+          "execution_wall_seconds": 398.4220724105835,
+          "executions": 13
+        }
+      },
+      "replicate": 0,
+      "stop_reason": "agent_completed",
+      "success": true,
+      "tokens": {
+        "cached_input_tokens": 12416,
+        "input_tokens": 16350,
+        "output_tokens": 607,
+        "reasoning_tokens": null,
+        "total_tokens": 16957
+      },
+      "total_wall_seconds": 405.24807015480474,
+      "trial_id": "verdict-r0",
+      "valid": true
+    },
+    {
+      "agent_wall_seconds": 210.87463941797614,
+      "completed": true,
+      "condition": "diagnostic",
+      "logical_query_cost": {
+        "by_tool": {
+          "evaluate": 1,
+          "trace": 0,
+          "verify": 1
+        },
+        "total": 2,
+        "unique_candidates": 1
+      },
+      "official_wall_seconds": 146.0729194539599,
+      "passed": true,
+      "path": "runs/diagnostic-r0",
+      "physical_evaluation_cost": {
+        "agent": {
+          "cuda_execution_seconds": 204.003591299057,
+          "execution_wall_seconds": 204.003591299057,
+          "executions": 7
+        },
+        "official": {
+          "cuda_execution_seconds": 146.0252571105957,
+          "execution_wall_seconds": 146.0252571105957,
+          "executions": 6
+        },
+        "total": {
+          "cuda_execution_seconds": 350.0288484096527,
+          "execution_wall_seconds": 350.0288484096527,
+          "executions": 13
+        }
+      },
+      "replicate": 0,
+      "stop_reason": "agent_completed",
+      "success": true,
+      "tokens": {
+        "cached_input_tokens": 13184,
+        "input_tokens": 16641,
+        "output_tokens": 656,
+        "reasoning_tokens": null,
+        "total_tokens": 17297
+      },
+      "total_wall_seconds": 356.94755887193605,
+      "trial_id": "diagnostic-r0",
+      "valid": true
+    },
+    {
+      "agent_wall_seconds": 206.3263119631447,
+      "completed": true,
+      "condition": "localized",
+      "logical_query_cost": {
+        "by_tool": {
+          "evaluate": 1,
+          "trace": 0,
+          "verify": 1
+        },
+        "total": 2,
+        "unique_candidates": 1
+      },
+      "official_wall_seconds": 199.37269476614892,
+      "passed": true,
+      "path": "runs/localized-r0",
+      "physical_evaluation_cost": {
+        "agent": {
+          "cuda_execution_seconds": 198.97427892684937,
+          "execution_wall_seconds": 198.97427892684937,
+          "executions": 7
+        },
+        "official": {
+          "cuda_execution_seconds": 199.32457423210144,
+          "execution_wall_seconds": 199.32457423210144,
+          "executions": 6
+        },
+        "total": {
+          "cuda_execution_seconds": 398.2988531589508,
+          "execution_wall_seconds": 398.2988531589508,
+          "executions": 13
+        }
+      },
+      "replicate": 0,
+      "stop_reason": "agent_completed",
+      "success": true,
+      "tokens": {
+        "cached_input_tokens": 14080,
+        "input_tokens": 21005,
+        "output_tokens": 624,
+        "reasoning_tokens": null,
+        "total_tokens": 21629
+      },
+      "total_wall_seconds": 405.6990067292936,
+      "trial_id": "localized-r0",
+      "valid": true
+    }
+  ],
+  "valid_trials": 3
+}

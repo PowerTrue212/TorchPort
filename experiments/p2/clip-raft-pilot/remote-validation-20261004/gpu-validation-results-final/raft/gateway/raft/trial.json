@@ -1,0 +1,17 @@
+{
+  "created_at": 1791042838.9091372,
+  "hidden_task": "/root/autodl-tmp/tp-p2-final-20261003/gpu-validation-v3/tasks/raft-localized-r0/public.json",
+  "initial_candidate_identity": "4b255fe07d8b543031c06a39712959e515bfef8af36ee3729b774a6ec184fe1e",
+  "protocol": {
+    "feedback": "localized",
+    "feedback_schema_version": 1,
+    "max_oracle_queries": 2,
+    "max_wall_seconds": 1800
+  },
+  "schema_version": 1,
+  "task": "/root/autodl-tmp/tp-p2-final-20261003/gpu-validation-v3/tasks/raft-localized-r0/public.json",
+  "task_digest": "dc759652f4e32db6e863fc75772d597ff9dbcf39f571bcf65232beb333be74ca",
+  "task_id": "raft-p2",
+  "trial_id": "raft-gpu-probe",
+  "workspace": "/root/autodl-tmp/tp-p2-final-20261003/gpu-validation-v3/workspaces/raft-localized-r0/repo"
+}

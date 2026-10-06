@@ -1,0 +1,46 @@
+{
+  "kind": "torchport.p2-run-state",
+  "plan_sha256": "1b87787d190564bcdac3c358138c8d7987f8b0d67b97a77a9d891986c8c9d578",
+  "schema_version": 1,
+  "trials": {
+    "camoformer-diagnostic-r0": {
+      "attempts": [
+        {
+          "attempt_id": "camoformer-diagnostic-r0",
+          "path": "runs/camoformer/diagnostic-r0/attempt-0",
+          "status": "complete",
+          "stop_reason": "token_budget_exhausted",
+          "success": false,
+          "valid": true
+        }
+      ],
+      "selected": "runs/camoformer/diagnostic-r0/attempt-0"
+    },
+    "camoformer-localized-r0": {
+      "attempts": [
+        {
+          "attempt_id": "camoformer-localized-r0",
+          "path": "runs/camoformer/localized-r0/attempt-0",
+          "status": "complete",
+          "stop_reason": "token_budget_exhausted",
+          "success": false,
+          "valid": true
+        }
+      ],
+      "selected": "runs/camoformer/localized-r0/attempt-0"
+    },
+    "camoformer-verdict-r0": {
+      "attempts": [
+        {
+          "attempt_id": "camoformer-verdict-r0",
+          "path": "runs/camoformer/verdict-r0/attempt-0",
+          "status": "complete",
+          "stop_reason": "token_budget_exhausted",
+          "success": false,
+          "valid": true
+        }
+      ],
+      "selected": "runs/camoformer/verdict-r0/attempt-0"
+    }
+  }
+}

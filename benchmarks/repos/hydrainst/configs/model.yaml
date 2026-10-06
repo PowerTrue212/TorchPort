@@ -1,4 +1,0 @@
-model:
-  _target_: model.Net
-  width: 4
-  hidden: 6

@@ -1,0 +1,59 @@
+{
+  "candidate_passed": false,
+  "experiment_id": "p2-clip-raft-pilot-20261003",
+  "infrastructure_passed": true,
+  "isolation": {
+    "formal_claims_allowed": false,
+    "host_filesystem_isolation": false,
+    "level": "trusted_candidate_pilot",
+    "network_isolation": false,
+    "reason": "The available GPU worker has no container or bubblewrap runtime."
+  },
+  "kind": "torchport.p2-clip-raft-gpu-validation",
+  "passed": true,
+  "schema_version": 1,
+  "tasks": {
+    "clip": {
+      "artifact": "/root/autodl-tmp/tp-p2-final-20261003/gpu-validation-results-final/clip/validation.json",
+      "hidden_evaluated": true,
+      "hidden_failure_code": null,
+      "hidden_passed": true,
+      "hidden_physical_cost": {
+        "cuda_execution_seconds": 47.92554473876953,
+        "execution_wall_seconds": 47.92554473876953,
+        "executions": 6
+      },
+      "probe_cuda_seconds": 92.81525301933289,
+      "probe_ok": true,
+      "public_evaluated": true,
+      "public_failure_code": null,
+      "public_passed": true,
+      "public_physical_cost": {
+        "cuda_execution_seconds": 153.16555094718933,
+        "execution_wall_seconds": 153.16555094718933,
+        "executions": 6
+      }
+    },
+    "raft": {
+      "artifact": "/root/autodl-tmp/tp-p2-final-20261003/gpu-validation-results-final/raft/validation.json",
+      "hidden_evaluated": true,
+      "hidden_failure_code": "PARITY_FAILED",
+      "hidden_passed": false,
+      "hidden_physical_cost": {
+        "cuda_execution_seconds": 17.120871543884277,
+        "execution_wall_seconds": 17.120871543884277,
+        "executions": 4
+      },
+      "probe_cuda_seconds": 92.9476969242096,
+      "probe_ok": true,
+      "public_evaluated": true,
+      "public_failure_code": "PARITY_FAILED",
+      "public_passed": false,
+      "public_physical_cost": {
+        "cuda_execution_seconds": 151.20682311058044,
+        "execution_wall_seconds": 151.20682311058044,
+        "executions": 4
+      }
+    }
+  }
+}

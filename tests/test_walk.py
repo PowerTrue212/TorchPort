@@ -4,8 +4,7 @@ import unittest
 
 import numpy as np
 
-from torchport.probe.data import pack_values, resolve_inputs
-from torchport.probe.walk import flatten
+from torchport.capture import flatten, pack_values
 
 
 class WalkTests(unittest.TestCase):
@@ -34,16 +33,6 @@ class WalkTests(unittest.TestCase):
 
         self.assertEqual(args, [(1, 2)])
         self.assertEqual(kwargs, {"scale": 3})
-
-    def test_slots(self) -> None:
-        with self.assertRaisesRegex(ValueError, "item 连续"):
-            resolve_inputs(
-                {},
-                [{"shape": [1], "pack": "list", "item": 1}],
-                None,
-                None,
-            )
-
 
 if __name__ == "__main__":
     unittest.main()

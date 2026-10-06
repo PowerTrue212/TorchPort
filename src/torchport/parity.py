@@ -18,6 +18,7 @@ def compare_tensor_archives(
     profile: str = "fp32-inference",
     rtol: float | None = None,
     atol: float | None = None,
+    require_all: bool = True,
 ) -> dict[str, Any]:
     """比较两个 NPZ 证据包，并按参考包顺序定位首次分歧。"""
     reference_path = Path(reference_path).expanduser().resolve()
@@ -43,12 +44,16 @@ def compare_tensor_archives(
     ) as candidate:
         reference_names = list(reference.files)
         candidate_names = list(candidate.files)
-        if profile == "fp32-inference" and "output" not in reference_names:
-            raise ValueError("fp32-inference 参考证据必须包含 output。")
+        if profile == "fp32-inference" and not any(
+            name == "output" or name.startswith("output.") for name in reference_names
+        ):
+            raise ValueError("fp32-inference 参考证据必须包含 output 或 output.*。")
         missing = [name for name in reference_names if name not in candidate]
         extra = [name for name in candidate_names if name not in reference]
 
         for position, name in enumerate(reference_names):
+            if not require_all and name not in candidate:
+                continue
             gating = (
                 profile == "operator-strict"
                 or name == "output"
@@ -61,6 +66,7 @@ def compare_tensor_archives(
                     "position": position,
                     "passed": False,
                     "reason": "候选证据缺少该张量",
+                    "reference_elements": int(reference[name].size),
                 }
             else:
                 item = compare_arrays(
@@ -85,19 +91,45 @@ def compare_tensor_archives(
                     "reason": item.get("reason", "数值超出容差"),
                 }
 
-    return {
+    report = {
         "schema_version": 1,
         "reference": str(reference_path),
         "candidate": str(candidate_path),
         "rtol": rtol,
         "atol": atol,
         "profile": profile,
-        "passed": first_gating_divergence is None,
+        "passed": first_gating_divergence is None and (require_all or bool(comparisons)),
+        "require_all": require_all,
         "first_divergence": first_divergence,
         "first_gating_divergence": first_gating_divergence,
         "missing_in_candidate": missing,
         "extra_in_candidate": extra,
         "tensors": comparisons,
+    }
+    report["metrics"] = comparison_metrics(report)
+    return report
+
+
+def comparison_metrics(report: dict[str, Any]) -> dict[str, Any]:
+    """把逐张量证据归约成稳定、可聚合的计数；结构不一致不伪造元素误差。"""
+    tensors = list(report.get("tensors") or [])
+    comparable = [item for item in tensors if "mismatched_elements" in item]
+    compared_elements = sum(int(item.get("elements", 0)) for item in comparable)
+    mismatched_elements = sum(int(item["mismatched_elements"]) for item in comparable)
+    return {
+        "compared_tensors": len(tensors),
+        "mismatched_tensors": sum(not bool(item.get("passed")) for item in tensors),
+        "compared_elements": compared_elements,
+        "mismatched_elements": mismatched_elements,
+        "mismatch_ratio": (
+            mismatched_elements / compared_elements if compared_elements else None
+        ),
+        "max_absolute_error": max(
+            (float(item["max_absolute_error"]) for item in comparable),
+            default=None,
+        ),
+        "missing_tensors": len(report.get("missing_in_candidate") or []),
+        "extra_tensors": len(report.get("extra_in_candidate") or []),
     }
 
 
@@ -146,6 +178,7 @@ def compare_arrays(
     return {
         **base,
         "passed": not bool(np.any(mismatch_mask)),
+        "elements": int(reference.size),
         "mismatched_elements": int(np.count_nonzero(mismatch_mask)),
         "mismatch_ratio": float(np.mean(mismatch_mask)) if mismatch_mask.size else 0.0,
         "max_absolute_error": float(absolute_error.max(initial=0.0)),

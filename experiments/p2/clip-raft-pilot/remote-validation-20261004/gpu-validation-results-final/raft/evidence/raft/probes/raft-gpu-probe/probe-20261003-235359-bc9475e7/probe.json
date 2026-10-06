@@ -1,0 +1,28 @@
+{
+  "args": [],
+  "candidate_identity": "4b255fe07d8b543031c06a39712959e515bfef8af36ee3729b774a6ec184fe1e",
+  "device": "cuda",
+  "execution": {
+    "cache": "/root/autodl-tmp/tp-p2-final-20261003/gpu-validation-results-final/raft/evidence/raft/cache/raft-gpu-probe/probe-target",
+    "command": [
+      "/root/autodl-tmp/jt-env/bin/python",
+      "_torchport_probe.py"
+    ],
+    "cwd": "/root/autodl-tmp/tp-p2-final-20261003/gpu-validation-v3/workspaces/raft-localized-r0/repo",
+    "exit_code": 0,
+    "finished": 1791042932.3975806,
+    "ok": true,
+    "seconds": 92.9476969242096,
+    "started": 1791042839.4498837,
+    "timeout": false
+  },
+  "kind": "torchport.probe",
+  "path": "_torchport_probe.py",
+  "physical_cost": {
+    "cuda_execution_seconds": 92.9476969242096,
+    "execution_wall_seconds": 92.9476969242096,
+    "executions": 1
+  },
+  "probe_id": "probe-20261003-235359-bc9475e7",
+  "schema_version": 1
+}

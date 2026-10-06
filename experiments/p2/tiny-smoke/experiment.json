@@ -1,0 +1,45 @@
+{
+  "schema_version": 1,
+  "experiment_id": "p2-tiny-smoke-deepseek-flash-20261002",
+  "purpose": "Validate the controlled P2 pipeline; do not infer migration efficacy from tiny.",
+  "provider": "deepseek",
+  "model": "deepseek-flash",
+  "temperature": 0.0,
+  "thinking": "disabled",
+  "trial_runtime_snapshot_sha256": "c18203dbb4ea6611c97427db0683971c2c799c332ffd369cafd7f3862ff7fcd7",
+  "prompt": "../../harness/prompt.example.md",
+  "task_template": "../../../benchmarks/tasks/tiny/task.yaml",
+  "hardware": {
+    "gpu": "NVIDIA GeForce RTX 3080 Ti",
+    "execution": "serial"
+  },
+  "budget": {
+    "oracle_queries": 5,
+    "wall_seconds": 1800,
+    "total_tokens": 30000,
+    "model_turns": 12
+  },
+  "replicates": 1,
+  "price_snapshot": null,
+  "performance_path": "performance.json",
+  "trials": [
+    {
+      "trial_id": "verdict-r0",
+      "condition": "verdict",
+      "replicate": 0,
+      "path": "runs/verdict-r0"
+    },
+    {
+      "trial_id": "diagnostic-r0",
+      "condition": "diagnostic",
+      "replicate": 0,
+      "path": "runs/diagnostic-r0"
+    },
+    {
+      "trial_id": "localized-r0",
+      "condition": "localized",
+      "replicate": 0,
+      "path": "runs/localized-r0"
+    }
+  ]
+}

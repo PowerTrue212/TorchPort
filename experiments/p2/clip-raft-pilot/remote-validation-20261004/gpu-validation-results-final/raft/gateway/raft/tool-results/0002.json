@@ -1,0 +1,32 @@
+{
+  "budget": {
+    "budget_stop_reason": null,
+    "logical_query_cost": {
+      "by_tool": {
+        "evaluate": 0,
+        "trace": 0,
+        "verify": 0
+      },
+      "total": 0,
+      "unique_candidates": 0
+    },
+    "max_oracle_queries": 2,
+    "max_wall_seconds": 1800,
+    "oracle_queries": 0,
+    "oracle_queries_remaining": 2,
+    "physical_evaluation_cost": {
+      "cuda_execution_seconds": 0.0,
+      "execution_wall_seconds": 0.0,
+      "executions": 0
+    },
+    "unique_candidate_queries": 0,
+    "wall_seconds": 0.46379467472434044,
+    "wall_seconds_remaining": 1799.5362053252757
+  },
+  "data": {
+    "action": "updated",
+    "candidate_identity": "4b255fe07d8b543031c06a39712959e515bfef8af36ee3729b774a6ec184fe1e",
+    "path": "_torchport_probe.py"
+  },
+  "ok": true
+}

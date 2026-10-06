@@ -2,7 +2,8 @@
     - id: torchport
       name: '@torchport/dsh-plugin'
       config:
-        python: !!js process.env.TORCHPORT_PYTHON || 'python'
-        pythonPath: !!js process.env.TORCHPORT_PYTHONPATH || ''
-        traceDir: !!js process.env.TORCHPORT_TRACE_DIR || '.torchport/dsh'
-        timeoutMs: 900000
+        python: !!js "process.env.TORCHPORT_PYTHON || 'python'"
+        pythonPath: !!js "process.env.TORCHPORT_PYTHONPATH || 'src'"
+        runner: !!js "process.env.TORCHPORT_RUNNER ?? 'scripts/remote/dsh_torchport.py'"
+        traceDir: !!js "process.env.TORCHPORT_TRACE_DIR || '.torchport/dsh'"
+        timeoutMs: 2100000

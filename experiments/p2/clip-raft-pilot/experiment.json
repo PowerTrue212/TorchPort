@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "experiment_id": "p2-clip-raft-pilot-20261003",
+  "purpose": "Validate controlled Agent migration on frozen CLIP and RAFT inference tasks.",
+  "provider": "deepseek",
+  "model": "deepseek-flash",
+  "temperature": 0.0,
+  "thinking": "disabled",
+  "prompt": "../../harness/prompt.example.md",
+  "hardware": {
+    "gpu": "NVIDIA GeForce RTX 3080 Ti",
+    "execution": "serial"
+  },
+  "budget": {
+    "oracle_queries": 10,
+    "wall_seconds": 5400,
+    "total_tokens": 80000,
+    "model_turns": 50
+  },
+  "replicates": 1,
+  "tasks": ["clip", "raft"],
+  "conditions": ["verdict", "diagnostic", "localized"],
+  "isolation": {
+    "level": "trusted_candidate_pilot",
+    "network_isolation": false,
+    "host_filesystem_isolation": false,
+    "formal_claims_allowed": false,
+    "reason": "The available GPU worker has no container or bubblewrap runtime."
+  },
+  "price_snapshot": null,
+  "trials": []
+}

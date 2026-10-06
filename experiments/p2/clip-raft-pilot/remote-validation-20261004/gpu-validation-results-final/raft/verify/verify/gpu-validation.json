@@ -1,0 +1,170 @@
+{
+  "aligned": false,
+  "failure_code": "PARITY_FAILED",
+  "kind": "torchport.verify",
+  "mismatch": {
+    "fp32": {
+      "compared_elements": 1579008,
+      "compared_tensors": 4,
+      "extra_tensors": 0,
+      "max_absolute_error": 0.014033913612365723,
+      "mismatch_ratio": 0.14543118210927367,
+      "mismatched_elements": 229637,
+      "mismatched_tensors": 2,
+      "missing_tensors": 0
+    },
+    "strict": {
+      "compared_elements": 1579008,
+      "compared_tensors": 4,
+      "extra_tensors": 0,
+      "max_absolute_error": 0.014033913612365723,
+      "mismatch_ratio": 0.24403296246757458,
+      "mismatched_elements": 385330,
+      "mismatched_tensors": 2,
+      "missing_tensors": 0
+    }
+  },
+  "next": "运行 torchport trace 定位首次分歧",
+  "oracle": "/root/autodl-tmp/tp-p2-final-20261003/gpu-validation-results-final/raft/verify/oracle/02d2afee2aa5bf62",
+  "passed": false,
+  "physical_cost": {
+    "cuda_execution_seconds": 17.120871543884277,
+    "execution_wall_seconds": 17.120871543884277,
+    "executions": 4
+  },
+  "repeats": {
+    "failure_code": "PARITY_FAILED",
+    "passed": false,
+    "passed_runs": 0,
+    "required": 3,
+    "runs": 1
+  },
+  "results": [
+    {
+      "aligned": false,
+      "artifacts": {
+        "candidate": "/root/autodl-tmp/tp-p2-final-20261003/gpu-validation-results-final/raft/verify/runs/gpu-validation/target-20261003-235816-2913a5db/outputs.npz",
+        "reference": "/root/autodl-tmp/tp-p2-final-20261003/gpu-validation-results-final/raft/verify/oracle/02d2afee2aa5bf62/outputs.npz"
+      },
+      "candidate_identity": "4b255fe07d8b543031c06a39712959e515bfef8af36ee3729b774a6ec184fe1e",
+      "evidence": {
+        "checkpoint": {
+          "complete": true,
+          "loaded": 162,
+          "missing": [],
+          "path": "/root/autodl-tmp/tp-p2-final-20261003/RAFT/shared/prepared/weights_fp32.npz",
+          "requested": true,
+          "sha256": "fa48172cd5c441aa49941d7177e4a36e0d43fe38bf8be6eb21ae76e090d936e8",
+          "total": 162,
+          "unexpected": []
+        },
+        "input_identical": true,
+        "mode": "normal",
+        "weights": {
+          "complete": true,
+          "extra": [],
+          "loaded": 162,
+          "missing": [],
+          "source": 162,
+          "target_total": 162,
+          "value_mismatch": []
+        }
+      },
+      "failure_code": "PARITY_FAILED",
+      "kind": "torchport.evaluation",
+      "mismatch": {
+        "fp32": {
+          "compared_elements": 1579008,
+          "compared_tensors": 4,
+          "extra_tensors": 0,
+          "max_absolute_error": 0.014033913612365723,
+          "mismatch_ratio": 0.14543118210927367,
+          "mismatched_elements": 229637,
+          "mismatched_tensors": 2,
+          "missing_tensors": 0
+        },
+        "strict": {
+          "compared_elements": 1579008,
+          "compared_tensors": 4,
+          "extra_tensors": 0,
+          "max_absolute_error": 0.014033913612365723,
+          "mismatch_ratio": 0.24403296246757458,
+          "mismatched_elements": 385330,
+          "mismatched_tensors": 2,
+          "missing_tensors": 0
+        }
+      },
+      "next": "运行 torchport trace 定位首次分歧",
+      "numerical": "fail",
+      "passed": false,
+      "problems": [
+        "首个分歧 output.0：数值超出容差，max_abs=0.00391，mismatch_ratio=0.199"
+      ],
+      "profiles": {
+        "fp32": {
+          "extra": [],
+          "first": {
+            "name": "output.0",
+            "position": 2,
+            "reason": "数值超出容差"
+          },
+          "first_any": {
+            "name": "output.0",
+            "position": 2,
+            "reason": "数值超出容差"
+          },
+          "metrics": {
+            "compared_elements": 1579008,
+            "compared_tensors": 4,
+            "extra_tensors": 0,
+            "max_absolute_error": 0.014033913612365723,
+            "mismatch_ratio": 0.14543118210927367,
+            "mismatched_elements": 229637,
+            "mismatched_tensors": 2,
+            "missing_tensors": 0
+          },
+          "missing": [],
+          "passed": false
+        },
+        "strict": {
+          "extra": [],
+          "first": {
+            "name": "output.0",
+            "position": 2,
+            "reason": "数值超出容差"
+          },
+          "first_any": {
+            "name": "output.0",
+            "position": 2,
+            "reason": "数值超出容差"
+          },
+          "metrics": {
+            "compared_elements": 1579008,
+            "compared_tensors": 4,
+            "extra_tensors": 0,
+            "max_absolute_error": 0.014033913612365723,
+            "mismatch_ratio": 0.24403296246757458,
+            "mismatched_elements": 385330,
+            "mismatched_tensors": 2,
+            "missing_tensors": 0
+          },
+          "missing": [],
+          "passed": false
+        }
+      },
+      "run_id": "target-20261003-235816-2913a5db",
+      "runnable": "pass",
+      "schema_version": 2,
+      "status": "failed",
+      "strict_aligned": false,
+      "structural": "pass",
+      "summary": "PARITY_FAILED: 首个分歧 output.0：数值超出容差，max_abs=0.00391，mismatch_ratio=0.199"
+    }
+  ],
+  "status": "failed",
+  "strict_aligned": false,
+  "summary": "PARITY_FAILED: 首个分歧 output.0：数值超出容差，max_abs=0.00391，mismatch_ratio=0.199",
+  "task_digest": "02d2afee2aa5bf62634a1d7e8654977b6a4c37edf55db13c1e1f7faa39c41b2b",
+  "task_id": "raft-p2",
+  "trial_id": "gpu-validation"
+}
