@@ -71,7 +71,7 @@ def run_side(
         artifacts["trace"] = str(run_dir / "trace.npz")
     if ok and (run_dir / "module_outputs.npz").is_file():
         artifacts["module_outputs"] = str(run_dir / "module_outputs.npz")
-    for name in ("module_fp64", "module_alt"):
+    for name in ("module_fp64", "module_alt", "module_repeat"):
         if ok and (run_dir / f"{name}.npz").is_file():
             artifacts[name] = str(run_dir / f"{name}.npz")
     if ok and (run_dir / "module_inputs.npz").is_file():

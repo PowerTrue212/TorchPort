@@ -108,6 +108,14 @@ def trace(task: dict[str, Any], root: Path, *, trial: str = "t0") -> dict[str, A
                         verification_repeatability
                     )
                 artifacts = source["artifacts"]
+                if artifacts.get("module_repeat"):
+                    # source 自身重复性，与 target 的 repeatability 对称，只作诊断证据。
+                    isolated["source_repeatability"] = compare_tensor_archives(
+                        artifacts["module_outputs"],
+                        artifacts["module_repeat"],
+                        profile="operator-strict",
+                        require_all=False,
+                    )
                 if artifacts.get("module_fp64") and artifacts.get("module_alt"):
                     calls = json.loads(Path(artifacts["module_calls"]).read_text("utf-8"))
                     leaves = {call["module"] for call in calls if call.get("leaf")}

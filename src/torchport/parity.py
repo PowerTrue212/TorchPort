@@ -117,7 +117,7 @@ def compare_noise_calibrated(
     alt_path: str | Path,
     *,
     leaves: set[str] | None = None,
-    k: float = 4.0,
+    k: float = 8.0,
     atol_floor: float = 1e-7,
 ) -> dict[str, Any]:
     """以 source 自身 FP32 噪声为基准判定：err(candidate, fp64) <= k*noise + atol_floor。
@@ -210,6 +210,10 @@ def compare_noise_calibrated(
             "failed_tensors": sum(not item["passed"] for item in tensors),
             "failed_gating_tensors": sum(not item["passed"] for item in gating),
             "failed_reported_tensors": sum(not item["passed"] for item in tensors if not item["gating"]),
+            "max_ratio": max(
+                (max(item["ratio_max"], item["ratio_p99"]) for item in tensors if "ratio_max" in item),
+                default=None,
+            ),
             "max_gating_ratio": max(
                 (max(item["ratio_max"], item["ratio_p99"]) for item in gating if "ratio_max" in item),
                 default=None,

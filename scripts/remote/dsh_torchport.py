@@ -88,6 +88,16 @@ def _build_bundle(task_path: Path, base: PurePosixPath) -> bytes:
         item["path"] = str(base / remote)
         inputs.append((local, remote))
 
+    # 权重与 inputs 同样打包；远端 task.py 会重算 weights_sha，oracle 身份随之变化。
+    if weights := rewritten.get("weights"):
+        local = Path(weights)
+        if not local.is_absolute():
+            local = task_path.parent / local
+        local = _inside_workspace(local)
+        remote = f"weights/{local.name}"
+        rewritten["weights"] = str(base / remote)
+        inputs.append((local, remote))
+
     stream = io.BytesIO()
     with tarfile.open(fileobj=stream, mode="w:gz") as package:
         _add_tree(package, source, "source")

@@ -615,6 +615,7 @@ def calibrate_source_modules(
     modules = dict(model.named_modules())
     fp64: dict[str, np.ndarray] = {}
     alt: dict[str, np.ndarray] = {}
+    repeat: dict[str, np.ndarray] = {}
     failed: list[dict[str, str]] = []
 
     def decode(call: dict[str, Any]) -> tuple[Any, Any]:
@@ -649,6 +650,8 @@ def calibrate_source_modules(
                     backends.cudnn.allow_tf32,
                     backends.cuda.matmul.allow_tf32,
                 ) = saved
+                # source 重复性：默认设置下同输入再跑一次，与 target 的 isolated_repeat 对称。
+                repeat.update(to_arrays(module(*args, **kwargs), "source", key))
                 double = deepcopy(module).double()
                 fp64.update(to_arrays(double(*_to_float64(args), **_to_float64(kwargs)), "source", key))
                 del double
@@ -663,7 +666,12 @@ def calibrate_source_modules(
                 ) = saved
     if device == "cuda":
         torch.cuda.synchronize()
-    return fp64, alt, {"fp64_tensors": len(fp64), "alt_tensors": len(alt), "failed": failed}
+    return fp64, alt, repeat, {
+        "fp64_tensors": len(fp64),
+        "alt_tensors": len(alt),
+        "repeat_tensors": len(repeat),
+        "failed": failed,
+    }
 
 
 def _move(value: Any, device: str) -> Any:
@@ -895,6 +903,9 @@ def capture(job: dict[str, Any]) -> dict[str, Any]:
             ops.stop()
         for handle in handles:
             handle.remove()
+    # Jittor 的 register_forward_hook 不返回句柄，hook 会一直留在模块上；
+    # 先冻结整网前向的 trace，避免后续隔离/重复运行继续写入。
+    trace_values = dict(trace_values)
     isolated_values: dict[str, np.ndarray] = {}
     isolated_repeats: dict[str, np.ndarray] = {}
     isolated = None
@@ -945,11 +956,12 @@ def capture(job: dict[str, Any]) -> dict[str, Any]:
     calibration = None
     if kind == "source" and mode != "normal":
         _mark_leaves(module_calls)
-        fp64_values, alt_values, calibration = calibrate_source_modules(
+        fp64_values, alt_values, repeat_values, calibration = calibrate_source_modules(
             model, module_calls, module_inputs, device
         )
         np.savez(out / "module_fp64.npz", **fp64_values)
         np.savez(out / "module_alt.npz", **alt_values)
+        np.savez(out / "module_repeat.npz", **repeat_values)
         np.savez(out / "module_outputs.npz", **module_values)
         np.savez(out / "module_inputs.npz", **module_inputs)
         (out / "module_calls.json").write_text(
