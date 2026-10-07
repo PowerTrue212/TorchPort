@@ -112,18 +112,37 @@ CamoFormer 候选已经可以完整运行，参数与结构检查通过，但冻
 关闭 source TF32 后失败元素大幅下降；这证明冻结 source 数值路径是主要影响因素之一，不能
 证明所有剩余误差都无害。
 
-最新模块隔离实验覆盖 260 次模块调用、271 个输出张量：
+模块隔离实验覆盖 260 次模块调用、271 个输出张量（source 关闭 TF32 的诊断协议）：
 
-- 271 个张量在当前 source 噪声标定规则下均未发现异常局部偏差。
-- target 用同一局部输入连续运行两次，在正式验收容差下仍有 7 个张量、572 个元素不同。
-- 相同 source 输入的多轮运行中 source 输出哈希稳定，target 输出哈希和最终失败元素数会变化。
-- `k=4` 噪声规则仍是探索参数，不能替代正式验收，也不能据此宣告迁移成功。
+- 噪声标定规则：`err(target, fp64) <= k * max(err(source, fp64), err(source, alt)) + 1e-7`，
+  按 max_abs 与 p99 分别判定，所有模块（含组合模块）参与判定，默认 `k=8`。
+- 正确候选：随机权重最大 ratio 1.84，PVTv2-B4 真实 encoder 权重（decoder 随机，
+  `complete=false`）最大 ratio 3.89，均通过。
+- 负对照：`ln_eps`、`gelu_tanh`、`mask_residual` 均失败（最小 ratio 约 27），首个失败模块与
+  注入位置一致；只看叶子模块会漏掉 `mask_residual`。`l2_eps` 在当前输入上无数值效果。
+- source（PyTorch 默认设置）同输入重复逐位一致；target（Jittor 1.3.9.14 / CUDA 12.8 / sm_86）
+  不确定：整网同进程重复约 98% 输出元素逐位不同，max_abs 约 3e-3~5e-3。`no_fuse`、
+  `enable_tuner=0`、`jit_search_kernel=0`、`use_tensorcore=0` 均无效；`conv_opt=0` 更差。
+  逐模块双跑时首个不确定模块是 `encoder.block1.0.attn.sr`（Conv）。kernel 名确认：
+  `conv_opt=1` 走 Jittor 自身 reindex + 非末维归约卷积（单卷积运行间 6e-7~1.4e-6）；
+  `conv_opt=0` 走 `cudnn_conv`（单卷积逐位确定，但整网反而更差，原因未查清）。是否为
+  原子加尚待读源码确认。
+- `k=8` 只用 2 种权重设置和 4 个负对照估计，仍是探索参数，不能替代正式验收。
+- V100（sm_70，无 TF32，PyTorch 2.5.1 / Jittor 1.3.9.14 + CUDA 11.3）复现：随机权重
+  最大 ratio 3.17 通过；`ln_eps`/`mask_residual`/`gelu_tanh` 失败（最小 ratio 25.97），`l2_eps`
+  仍无数值效果；source 逐位确定、target 不确定。随机权重整网 max_abs 达 1.03，见下条解释。
+- 任务指标（V100，官方完整 checkpoint，COD10K/CAMO/NC4K/CHAMELEON 共 6473 张，官方
+  `evaltools`）：PyTorch 复现论文；Jittor 1100/1100 参数加载，四数据集 S/wF/E/MAE 与
+  PyTorch 差值均约 1e-7，逐图最大差 1/255，阈值 128 翻转像素 < 1e-6。随机权重整网大误差
+  来自未训练网络的条件数放大，不是实现错误。Jittor 推理耗时约为 PyTorch 的 4.2 倍。
+  证据：`CamoFormer/outputs/task-metrics/`。
 
 完整说明和原始证据入口见 [CamoFormer 实验记录](CamoFormer/outputs/dsh-web-camoformer/README.md)
-以及最新的[模块隔离报告](CamoFormer/outputs/dsh-web-camoformer/probe/trace-noise-calibrated-repeat-tolerance-fp32.json)。
+和 `CamoFormer/outputs/dsh-web-camoformer/probe/` 下的 trace、negctl 与 `probe_jt_*` 证据。
 
-下一步应使用多个输入、真实 checkpoint 和必要的设备对照来标定噪声与重复性。若建立新容差
-或关闭 TF32 的新协议，必须作为新协议重新评测，不能改写原冻结协议的失败结果。
+仍未完成：Jittor 不确定性根因（源码级确认）、`conv_opt=0` 整网更差的原因、Jittor 推理
+性能差距、noise-calibrated 是否升级为正式协议。若建立新容差或关闭 TF32 的新协议，必须作为新协议
+重新评测，不能改写原冻结协议的失败结果。
 
 ## 不能破坏的实现规则
 

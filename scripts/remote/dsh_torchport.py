@@ -6,6 +6,7 @@ from __future__ import annotations
 import hashlib
 import io
 import json
+import os
 import shlex
 import sys
 import tarfile
@@ -14,11 +15,62 @@ from typing import Any
 
 from ssh_exec import connect
 
-REMOTE_ROOT = PurePosixPath("/root/autodl-tmp/tp-dsh-web")
-REMOTE_SOURCE_PYTHON = "/root/miniconda3/bin/python"
-REMOTE_TARGET_PYTHON = "/root/autodl-tmp/jt-env/bin/python"
-REMOTE_PYTHON_CONFIG = "/root/miniconda3/bin/python3.12-config"
-SYSTEM_LIBSTDCXX = "/usr/lib/x86_64-linux-gnu/libstdc++.so.6"
+REMOTE_ENV_NAMES = {
+    "TP_REMOTE_ROOT",
+    "TP_REMOTE_SOURCE_PYTHON",
+    "TP_REMOTE_TARGET_PYTHON",
+    "TP_REMOTE_PYTHON_CONFIG",
+    "TP_REMOTE_LIBSTDCXX",
+    "TP_REMOTE_TARGET_PATH",
+    "TP_REMOTE_NVCC_PATH",
+    "TP_REMOTE_USE_CUTT",
+    "TP_REMOTE_USE_MKL",
+}
+
+
+def load_env_file(path: str | Path | None = None) -> None:
+    """Load remote path settings without exposing unrelated values or secrets."""
+    path = Path(path or Path.home() / ".tp_ssh.env")
+    if not path.is_file():
+        return
+    for raw in path.read_text("utf-8-sig").splitlines():
+        line = raw.strip()
+        if not line or line.startswith("#"):
+            continue
+        if line.startswith("export "):
+            line = line[7:].lstrip()
+        if "=" not in line:
+            continue
+        name, value = line.split("=", 1)
+        name, value = name.strip(), value.strip()
+        if len(value) >= 2 and value[0] == value[-1] and value[0] in "\"'":
+            value = value[1:-1]
+        if name in REMOTE_ENV_NAMES:
+            os.environ.setdefault(name, value)
+
+
+load_env_file()
+REMOTE_ROOT = PurePosixPath(os.environ.get("TP_REMOTE_ROOT", "/root/autodl-tmp/tp-dsh-web"))
+REMOTE_SOURCE_PYTHON = os.environ.get("TP_REMOTE_SOURCE_PYTHON", "/root/miniconda3/bin/python")
+REMOTE_TARGET_PYTHON = os.environ.get(
+    "TP_REMOTE_TARGET_PYTHON", "/root/autodl-tmp/jt-env/bin/python"
+)
+REMOTE_PYTHON_CONFIG = os.environ.get(
+    "TP_REMOTE_PYTHON_CONFIG", "/root/miniconda3/bin/python3.12-config"
+)
+SYSTEM_LIBSTDCXX = os.environ.get(
+    "TP_REMOTE_LIBSTDCXX", "/usr/lib/x86_64-linux-gnu/libstdc++.so.6"
+)
+REMOTE_TARGET_PATH = os.environ.get(
+    "TP_REMOTE_TARGET_PATH",
+    "/usr/local/cuda/bin:/root/autodl-tmp/jt-env/bin:/usr/local/sbin:"
+    "/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+)
+REMOTE_TARGET_ENV_DEFAULTS = {
+    "use_cutt": os.environ.get("TP_REMOTE_USE_CUTT"),
+    "use_mkl": os.environ.get("TP_REMOTE_USE_MKL"),
+    "nvcc_path": os.environ.get("TP_REMOTE_NVCC_PATH"),
+}
 SKIP_PARTS = {".git", ".torchport", "__pycache__", ".pytest_cache", "node_modules"}
 TASK_COMMANDS = {"inspect", "run", "evaluate", "trace", "verify"}
 COMMANDS = TASK_COMMANDS | {"localize"}
@@ -71,14 +123,18 @@ def _build_bundle(task_path: Path, base: PurePosixPath) -> bytes:
     rewritten["target"]["repo"] = str(base / "target")
     rewritten["target"]["python"] = REMOTE_TARGET_PYTHON
     target_env = dict(rewritten["target"].get("env") or {})
-    target_env.update(
-        {
-            "LD_PRELOAD": SYSTEM_LIBSTDCXX,
-            "PATH": "/usr/local/cuda/bin:/root/autodl-tmp/jt-env/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
-            "python_config_path": REMOTE_PYTHON_CONFIG,
-            "use_cutlass": "0",
-        }
-    )
+    target_env.update({"PATH": REMOTE_TARGET_PATH, "use_cutlass": "0"})
+    for name, value in (
+        ("LD_PRELOAD", SYSTEM_LIBSTDCXX),
+        ("python_config_path", REMOTE_PYTHON_CONFIG),
+    ):
+        if value:
+            target_env[name] = value
+        else:
+            target_env.pop(name, None)
+    for name, value in REMOTE_TARGET_ENV_DEFAULTS.items():
+        if value:
+            target_env.setdefault(name, value)
     rewritten["target"]["env"] = target_env
 
     inputs: list[tuple[Path, str]] = []
@@ -168,11 +224,15 @@ def main(arguments: list[str] | None = None) -> int:
             _sync(client, task_path, base)
         remote_args = _remote_arguments(arguments, base)
         quoted = " ".join(shlex.quote(value) for value in remote_args)
-        command = (
-            f"cd {shlex.quote(str(base))} && "
-            f"export PYTHONPATH={shlex.quote(str(base / 'src'))} && "
-            f"export LD_PRELOAD={shlex.quote(SYSTEM_LIBSTDCXX)} && "
-            f"{REMOTE_SOURCE_PYTHON} -m torchport {quoted}"
+        exports = [f"export PYTHONPATH={shlex.quote(str(base / 'src'))}"]
+        if SYSTEM_LIBSTDCXX:
+            exports.append(f"export LD_PRELOAD={shlex.quote(SYSTEM_LIBSTDCXX)}")
+        command = " && ".join(
+            [
+                f"cd {shlex.quote(str(base))}",
+                *exports,
+                f"{REMOTE_SOURCE_PYTHON} -m torchport {quoted}",
+            ]
         )
         code, out, err = _run(client, command)
         sys.stdout.write(out)
