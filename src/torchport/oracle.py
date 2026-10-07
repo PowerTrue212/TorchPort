@@ -80,6 +80,8 @@ def run_side(
         artifacts["module_calls"] = str(run_dir / "module_calls.json")
     if ok and (run_dir / "isolated.npz").is_file():
         artifacts["isolated"] = str(run_dir / "isolated.npz")
+    if ok and (run_dir / "isolated_repeat.npz").is_file():
+        artifacts["isolated_repeat"] = str(run_dir / "isolated_repeat.npz")
     manifest = {
         "kind": "torchport.run",
         "run_id": run_dir.name,

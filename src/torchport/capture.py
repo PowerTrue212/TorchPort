@@ -685,15 +685,16 @@ def run_isolated_modules(
     oracle: Path,
     kind: str,
     device: str,
-) -> tuple[dict[str, np.ndarray], dict[str, Any]]:
+) -> tuple[dict[str, np.ndarray], dict[str, np.ndarray], dict[str, Any]]:
     """用 source 的真实局部输入逐个运行同名 target 模块。"""
     calls_path = oracle / "module_calls.json"
     inputs_path = oracle / "module_inputs.npz"
     if not calls_path.is_file() or not inputs_path.is_file():
-        return {}, {"available": False, "reason": "source 没有模块输入证据"}
+        return {}, {}, {"available": False, "reason": "source 没有模块输入证据"}
     calls = json.loads(calls_path.read_text("utf-8"))
     modules = dict(model.named_modules())
     values: dict[str, np.ndarray] = {}
+    repeats: dict[str, np.ndarray] = {}
     missing: list[str] = []
     unsupported: list[dict[str, str]] = []
     failed: list[dict[str, str]] = []
@@ -714,10 +715,16 @@ def run_isolated_modules(
                 output = module(*args, **kwargs)
                 _synchronize(kind, device, output)
                 values.update(to_arrays(output, kind, key))
+                # 使用重新解码的同一份 source 输入再跑一次，单独测 target 自身波动。
+                repeat_args = _decode_call_value(call["args"], arrays, kind)
+                repeat_kwargs = _decode_call_value(call["kwargs"], arrays, kind)
+                repeat = module(*repeat_args, **repeat_kwargs)
+                _synchronize(kind, device, repeat)
+                repeats.update(to_arrays(repeat, kind, key))
                 succeeded += 1
             except Exception as exc:  # noqa: BLE001 - 每个模块单独留下可审计失败
                 failed.append({"key": key, "reason": f"{type(exc).__name__}: {exc}"[:500]})
-    return values, {
+    return values, repeats, {
         "available": True,
         "recorded": len(calls),
         "succeeded": succeeded,
@@ -889,9 +896,12 @@ def capture(job: dict[str, Any]) -> dict[str, Any]:
         for handle in handles:
             handle.remove()
     isolated_values: dict[str, np.ndarray] = {}
+    isolated_repeats: dict[str, np.ndarray] = {}
     isolated = None
     if mode != "normal" and kind == "target":
-        isolated_values, isolated = run_isolated_modules(model, Path(job["oracle"]), kind, device)
+        isolated_values, isolated_repeats, isolated = run_isolated_modules(
+            model, Path(job["oracle"]), kind, device
+        )
     performance = None
     if requested := job.get("performance"):
         if mode != "normal":
@@ -948,6 +958,8 @@ def capture(job: dict[str, Any]) -> dict[str, Any]:
         )
     if isolated_values:
         np.savez(out / "isolated.npz", **isolated_values)
+    if isolated_repeats:
+        np.savez(out / "isolated_repeat.npz", **isolated_repeats)
     report = {
         "kind": kind,
         "mode": mode,

@@ -123,7 +123,7 @@ def compare_noise_calibrated(
     """以 source 自身 FP32 噪声为基准判定：err(candidate, fp64) <= k*noise + atol_floor。
 
     noise = max(err(reference, fp64), err(reference, alt))，按 max_abs 与 p99 分别判定。
-    leaves 给定时只有叶子模块参与判定，组合模块只报告。
+    leaves 只标记叶子模块，便于分别统计；任何已标定模块超出噪声范围都会让报告失败。
     """
     if k <= 0 or atol_floor < 0:
         raise ValueError("k 必须为正数，atol_floor 必须非负。")
@@ -141,6 +141,7 @@ def compare_noise_calibrated(
     tensors: list[dict[str, Any]] = []
     missing: list[str] = []
     uncalibrated: list[str] = []
+    first_divergence: dict[str, Any] | None = None
     first_gating_divergence: dict[str, Any] | None = None
     reference, candidate, fp64, alt = (np.load(p, allow_pickle=False) for p in paths)
     try:
@@ -176,6 +177,12 @@ def compare_noise_calibrated(
                 }
             item["gating"] = leaves is None or _leaf_key(name, leaves)
             tensors.append(item)
+            if first_divergence is None and not item["passed"]:
+                first_divergence = {
+                    "name": name,
+                    "position": position,
+                    "reason": item.get("reason", "超出 source 噪声底"),
+                }
             if first_gating_divergence is None and item["gating"] and not item["passed"]:
                 first_gating_divergence = {
                     "name": name,
@@ -192,13 +199,15 @@ def compare_noise_calibrated(
         "profile": "noise-calibrated",
         "k": k,
         "atol_floor": atol_floor,
-        "passed": first_gating_divergence is None and bool(gating),
+        "passed": first_divergence is None and bool(tensors),
+        "first_divergence": first_divergence,
         "first_gating_divergence": first_gating_divergence,
         "missing_in_candidate": missing,
         "uncalibrated": uncalibrated,
         "metrics": {
             "compared_tensors": len(tensors),
             "gating_tensors": len(gating),
+            "failed_tensors": sum(not item["passed"] for item in tensors),
             "failed_gating_tensors": sum(not item["passed"] for item in gating),
             "failed_reported_tensors": sum(not item["passed"] for item in tensors if not item["gating"]),
             "max_gating_ratio": max(

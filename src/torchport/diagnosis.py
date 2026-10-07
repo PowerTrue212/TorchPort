@@ -8,7 +8,7 @@ from typing import Any
 
 from .execution import add_physical_cost, read_json, run_physical_cost, write_json
 from .oracle import run_side
-from .parity import compare_noise_calibrated, compare_tensor_archives
+from .parity import TOLERANCE_PROFILES, compare_noise_calibrated, compare_tensor_archives
 
 
 def inspect_task(task: dict[str, Any]) -> dict[str, Any]:
@@ -88,6 +88,25 @@ def trace(task: dict[str, Any], root: Path, *, trial: str = "t0") -> dict[str, A
                     require_all=False,
                 )
                 isolated["capture"] = (target.get("capture") or {}).get("isolated")
+                if target["artifacts"].get("isolated_repeat"):
+                    isolated["repeatability"] = compare_tensor_archives(
+                        target["artifacts"]["isolated"],
+                        target["artifacts"]["isolated_repeat"],
+                        profile="operator-strict",
+                    )
+                    profile = task["protocol"]["profile"]
+                    rtol, atol = TOLERANCE_PROFILES[profile]
+                    verification_repeatability = compare_tensor_archives(
+                        target["artifacts"]["isolated"],
+                        target["artifacts"]["isolated_repeat"],
+                        profile="operator-strict",
+                        rtol=rtol,
+                        atol=atol,
+                    )
+                    verification_repeatability["tolerance_basis"] = profile
+                    isolated["repeatability_at_verification_tolerance"] = (
+                        verification_repeatability
+                    )
                 artifacts = source["artifacts"]
                 if artifacts.get("module_fp64") and artifacts.get("module_alt"):
                     calls = json.loads(Path(artifacts["module_calls"]).read_text("utf-8"))

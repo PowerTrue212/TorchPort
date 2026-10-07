@@ -242,6 +242,30 @@ class NoiseCalibratedTests(unittest.TestCase):
         self.assertEqual(report["first_gating_divergence"]["name"], "leaf#2")
         self.assertEqual(report["metrics"]["failed_reported_tensors"], 1)
 
+    def test_composite_module_outlier_also_fails_report(self) -> None:
+        from torchport.parity import compare_noise_calibrated
+
+        baseline = np.linspace(-1, 1, 100)
+        reference = baseline.astype(np.float32)
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            root = Path(temporary_directory)
+            paths = self._write(
+                root,
+                reference={"leaf": reference, "parent": reference},
+                candidate={
+                    "leaf": (baseline + 1e-7).astype(np.float32),
+                    "parent": (baseline + 1e-3).astype(np.float32),
+                },
+                fp64={"leaf": baseline, "parent": baseline},
+                alt={"leaf": reference, "parent": reference},
+            )
+            report = compare_noise_calibrated(*paths, leaves={"leaf"})
+
+        self.assertFalse(report["passed"])
+        self.assertEqual(report["first_divergence"]["name"], "parent")
+        self.assertIsNone(report["first_gating_divergence"])
+        self.assertEqual(report["metrics"]["failed_tensors"], 1)
+
     def test_leaf_key_strips_call_index_and_output_index(self) -> None:
         from torchport.parity import _leaf_key
 

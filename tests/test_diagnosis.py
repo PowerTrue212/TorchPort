@@ -64,6 +64,10 @@ class DiagnosisTests(unittest.TestCase):
                 target_dir / "isolated.npz",
                 layer=np.asarray([1.0, 2.0], dtype=np.float32),
             )
+            np.savez(
+                target_dir / "isolated_repeat.npz",
+                layer=np.asarray([1.0, 2.00005], dtype=np.float32),
+            )
 
             def fake_run(_task_value, kind, _root, **_kwargs):
                 directory = source_dir if kind == "source" else target_dir
@@ -76,7 +80,10 @@ class DiagnosisTests(unittest.TestCase):
                         **(
                             {"module_outputs": str(directory / "module_outputs.npz")}
                             if kind == "source"
-                            else {"isolated": str(directory / "isolated.npz")}
+                            else {
+                                "isolated": str(directory / "isolated.npz"),
+                                "isolated_repeat": str(directory / "isolated_repeat.npz"),
+                            }
                         ),
                     },
                     "capture": {"isolated": {"succeeded": 1}} if kind == "target" else {},
@@ -91,6 +98,16 @@ class DiagnosisTests(unittest.TestCase):
         self.assertTrue(report["isolated"]["passed"])
         self.assertEqual(report["isolated"]["missing_in_candidate"], ["source_only"])
         self.assertEqual(report["isolated"]["capture"]["succeeded"], 1)
+        self.assertFalse(report["isolated"]["repeatability"]["passed"])
+        self.assertEqual(
+            report["isolated"]["repeatability"]["first_divergence"]["name"],
+            "layer",
+        )
+        verification_repeatability = report["isolated"][
+            "repeatability_at_verification_tolerance"
+        ]
+        self.assertTrue(verification_repeatability["passed"])
+        self.assertEqual(verification_repeatability["tolerance_basis"], "fp32-inference")
         self.assertEqual(location["stage"], "trace")
         self.assertEqual(location["first_divergence"]["name"], "layer")
         self.assertEqual(location["scope"], "layer")
