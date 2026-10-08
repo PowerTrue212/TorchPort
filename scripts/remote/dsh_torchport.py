@@ -71,6 +71,8 @@ REMOTE_TARGET_ENV_DEFAULTS = {
     "use_mkl": os.environ.get("TP_REMOTE_USE_MKL"),
     "nvcc_path": os.environ.get("TP_REMOTE_NVCC_PATH"),
 }
+# 权重按内容哈希共享，避免每次 trace/verify 重传数百 MB。
+WEIGHTS_CACHE = REMOTE_ROOT / "weights-cache"
 SKIP_PARTS = {".git", ".torchport", "__pycache__", ".pytest_cache", "node_modules"}
 TASK_COMMANDS = {"inspect", "run", "evaluate", "trace", "verify"}
 COMMANDS = TASK_COMMANDS | {"localize"}
@@ -109,6 +111,51 @@ def _add_tree(package: tarfile.TarFile, path: Path, arcname: str) -> None:
     package.add(path, arcname=arcname, recursive=True, filter=allowed)
 
 
+def _local_weights(task_path: Path, task: dict[str, Any]) -> tuple[Path, str] | None:
+    """返回 (本地权重路径, sha256)；任务没有权重时返回 None。"""
+    weights = task.get("weights")
+    if not weights:
+        return None
+    local = Path(weights)
+    if not local.is_absolute():
+        local = task_path.parent / local
+    local = _inside_workspace(local)
+    sha = hashlib.sha256()
+    with local.open("rb") as stream:
+        for block in iter(lambda: stream.read(1 << 20), b""):
+            sha.update(block)
+    return local, sha.hexdigest()
+
+
+def _cached_weights_path(local: Path, sha: str) -> PurePosixPath:
+    # 目录名是内容哈希，文件名保留原名（load_checkpoint 按后缀选择读取方式）。
+    return WEIGHTS_CACHE / sha / local.name
+
+
+def _ensure_weights(client: Any, local: Path, sha: str) -> None:
+    """远端缓存命中则跳过；未命中时上传到临时文件，核对 sha256 后再原子改名。"""
+    remote = _cached_weights_path(local, sha)
+    code, _, _ = _run(client, f"test -f {shlex.quote(str(remote))}", 60)
+    if code == 0:
+        return
+    partial = f"{remote}.partial"
+    code, _, err = _run(client, f"mkdir -p {shlex.quote(str(remote.parent))}", 60)
+    if code:
+        raise RuntimeError(err)
+    sftp = client.open_sftp()
+    try:
+        sftp.put(str(local), partial)
+    finally:
+        sftp.close()
+    code, out, err = _run(client, f"sha256sum {shlex.quote(partial)}", 600)
+    if code or out.split()[:1] != [sha]:
+        _run(client, f"rm -f {shlex.quote(partial)}", 60)
+        raise RuntimeError(f"远端权重校验失败：{err or out}")
+    code, _, err = _run(client, f"mv -f {shlex.quote(partial)} {shlex.quote(str(remote))}", 60)
+    if code:
+        raise RuntimeError(err)
+
+
 def _build_bundle(task_path: Path, base: PurePosixPath) -> bytes:
     task: dict[str, Any] = json.loads(task_path.read_text("utf-8"))
     source = _inside_workspace(task["source"]["repo"])
@@ -144,15 +191,10 @@ def _build_bundle(task_path: Path, base: PurePosixPath) -> bytes:
         item["path"] = str(base / remote)
         inputs.append((local, remote))
 
-    # 权重与 inputs 同样打包；远端 task.py 会重算 weights_sha，oracle 身份随之变化。
-    if weights := rewritten.get("weights"):
-        local = Path(weights)
-        if not local.is_absolute():
-            local = task_path.parent / local
-        local = _inside_workspace(local)
-        remote = f"weights/{local.name}"
-        rewritten["weights"] = str(base / remote)
-        inputs.append((local, remote))
+    # 权重不进 bundle：按内容哈希放在远端共享缓存，由 _sync 保证存在；
+    # 远端 task.py 仍会重算 weights_sha，oracle 身份不依赖缓存路径。
+    if weights := _local_weights(task_path, rewritten):
+        rewritten["weights"] = str(_cached_weights_path(*weights))
 
     stream = io.BytesIO()
     with tarfile.open(fileobj=stream, mode="w:gz") as package:
@@ -176,6 +218,9 @@ def _run(client: Any, command: str, timeout: float = 1900) -> tuple[int, str, st
 
 
 def _sync(client: Any, task_path: Path, base: PurePosixPath) -> None:
+    task: dict[str, Any] = json.loads(task_path.read_text("utf-8"))
+    if weights := _local_weights(task_path, task):
+        _ensure_weights(client, *weights)
     archive = _build_bundle(task_path, base)
     remote_archive = str(base) + ".tar.gz"
     code, _, err = _run(client, f"mkdir -p {shlex.quote(str(REMOTE_ROOT))}", 60)

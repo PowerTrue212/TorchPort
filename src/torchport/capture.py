@@ -22,7 +22,20 @@ import numpy as np
 from .execution import read_json, write_json
 from .task import file_hash
 
-MODES = ("normal", "trace")
+MODES = ("normal", "trace", "layers")
+# source 合法变体允许改动的开关；未列出的键一律拒绝，避免变体悄悄改变模型语义。
+VARIANT_KEYS = {
+    "name",
+    "allow_tf32",
+    "cudnn_benchmark",
+    "cudnn_deterministic",
+    "dtype",
+    "device",
+    "channels_last",
+    "batch",
+}
+# layers 模式按张量做 CountSketch：线性，差值范数无偏，m=65536 时相对标准差约 0.55%。
+SKETCH_DIM = 1 << 16
 OP_NAMES = (
     "relu",
     "gelu",
@@ -820,6 +833,110 @@ def _synchronize(kind: str, device: str, result: Any) -> None:
     tensor.sync()
 
 
+def apply_variant(model: Any, variant: dict[str, Any] | None) -> dict[str, Any] | None:
+    """在 source 端施加一个合法运行变体，返回实际生效的后端设置。"""
+    if not variant:
+        return None
+    unknown = set(variant) - VARIANT_KEYS
+    if unknown:
+        raise ValueError(f"未知的 source 变体字段：{', '.join(sorted(unknown))}")
+    import torch
+
+    backends = torch.backends
+    if "allow_tf32" in variant:
+        backends.cudnn.allow_tf32 = backends.cuda.matmul.allow_tf32 = bool(variant["allow_tf32"])
+    if "cudnn_benchmark" in variant:
+        backends.cudnn.benchmark = bool(variant["cudnn_benchmark"])
+    if "cudnn_deterministic" in variant:
+        backends.cudnn.deterministic = bool(variant["cudnn_deterministic"])
+    dtype = variant.get("dtype")
+    if dtype not in (None, "float32", "float64"):
+        raise ValueError(f"source 变体 dtype 只允许 float32/float64：{dtype}")
+    if dtype == "float64":
+        model.double()
+    device = variant.get("device")
+    if device not in (None, "cpu", "cuda"):
+        raise ValueError(f"source 变体 device 只允许 cpu/cuda：{device}")
+    if device == "cpu":
+        model.cpu()
+    channels_last = bool(variant.get("channels_last", False))
+    if channels_last:
+        model.to(memory_format=torch.channels_last)
+    batch = int(variant.get("batch", 1))
+    if batch < 1:
+        raise ValueError("source 变体 batch 必须为正整数")
+    return {
+        "name": variant.get("name"),
+        "dtype": dtype or "float32",
+        "device": device,
+        "channels_last": channels_last,
+        "batch": batch,
+        "cudnn_allow_tf32": backends.cudnn.allow_tf32,
+        "matmul_allow_tf32": backends.cuda.matmul.allow_tf32,
+        "cudnn_benchmark": backends.cudnn.benchmark,
+        "cudnn_deterministic": backends.cudnn.deterministic,
+    }
+
+
+def _variant_inputs(tensors: list[Any], variant: dict[str, Any] | None) -> list[Any]:
+    """按变体调整 source 输入：dtype、内存布局、批内复制。"""
+    if not variant:
+        return tensors
+    import torch
+
+    result = []
+    for tensor in tensors:
+        if variant["dtype"] == "float64" and tensor.is_floating_point():
+            tensor = tensor.double()
+        if variant["batch"] > 1:
+            tensor = torch.cat([tensor] * variant["batch"], dim=0)
+        if variant["channels_last"] and tensor.dim() == 4:
+            tensor = tensor.contiguous(memory_format=torch.channels_last)
+        result.append(tensor)
+    return result
+
+
+def _unbatch(values: dict[str, np.ndarray], batch: int) -> dict[str, np.ndarray]:
+    """批内复制变体只保留第一份；拆不开或各份不一致的张量丢弃（只少证据，不放宽包络）。"""
+    if batch == 1:
+        return values
+    kept: dict[str, np.ndarray] = {}
+    for name, value in values.items():
+        if value.ndim == 0 or value.shape[0] % batch:
+            continue
+        parts = np.split(value, batch, axis=0)
+        if all(np.allclose(parts[0], part, rtol=1e-4, atol=1e-6) for part in parts[1:]):
+            kept[name] = parts[0]
+    return kept
+
+
+_SKETCH_CACHE: dict[int, tuple[np.ndarray, np.ndarray]] = {}
+
+
+def sketch_layers(values: dict[str, np.ndarray]) -> dict[str, np.ndarray]:
+    """把每个张量压成固定维度的 CountSketch；原形状另存 `__shape__/<name>`。
+
+    哈希只由元素数决定，双端同名同形状的张量落在同一投影上；投影线性，
+    sketch(a) - sketch(b) = sketch(a - b)，差值范数无偏估计。小张量原样保存。
+    """
+    result: dict[str, np.ndarray] = {}
+    for name, value in values.items():
+        flat = np.asarray(value, dtype=np.float64).reshape(-1)
+        result[f"__shape__/{name}"] = np.asarray(value.shape, dtype=np.int64)
+        if flat.size <= SKETCH_DIM:
+            result[name] = flat
+            continue
+        if flat.size not in _SKETCH_CACHE:
+            rng = np.random.default_rng(flat.size)
+            _SKETCH_CACHE[flat.size] = (
+                rng.integers(0, SKETCH_DIM, flat.size),
+                rng.choice(np.asarray([-1.0, 1.0]), flat.size),
+            )
+        bucket, sign = _SKETCH_CACHE[flat.size]
+        result[name] = np.bincount(bucket, weights=sign * flat, minlength=SKETCH_DIM)
+    return result
+
+
 def _call_model(model: Any, args: list[Any], kwargs: dict[str, Any], kind: str) -> Any:
     if kind == "source":
         with _fw(kind).no_grad():
@@ -866,16 +983,26 @@ def capture(job: dict[str, Any]) -> dict[str, Any]:
         state = load_state(model, oracle / "state.npz")
         checkpoint = None
 
+    if job.get("variant") and kind != "source":
+        raise ValueError("合法变体只施加在 source 端")
+    variant = apply_variant(model, job.get("variant")) if kind == "source" else None
+    if variant and variant["device"] == "cpu":
+        device = "cpu"
     tensors = [_from_numpy(arrays[input_key(i, s)], kind) for i, s in enumerate(job["inputs"])]
     if kind == "source" and device == "cuda":
         tensors = [tensor.cuda() for tensor in tensors]
+    tensors = _variant_inputs(tensors, variant)
     args, kwargs = pack_values(tensors, job["inputs"])
     trace_values: dict[str, np.ndarray] = {}
     module_values: dict[str, np.ndarray] = {}
     module_calls: list[dict[str, Any]] = []
     module_inputs: dict[str, np.ndarray] = {}
-    handles = (
-        add_hooks(
+    layer_values: dict[str, np.ndarray] = {}
+    if mode == "layers":
+        # E1 只要整网前向中每个模块的真实输出；不做算子包装和模块隔离。
+        handles = add_hooks(model, kind, layer_values)
+    elif mode == "trace":
+        handles = add_hooks(
             model,
             kind,
             trace_values,
@@ -884,12 +1011,11 @@ def capture(job: dict[str, Any]) -> dict[str, Any]:
             probe_calls=module_calls,
             probe_inputs=module_inputs,
         )
-        if mode != "normal"
-        else []
-    )
+    else:
+        handles = []
     ops = (
         OpTrace(kind, trace_values, [scope, *func_scopes(model, kind)])
-        if mode != "normal"
+        if mode == "trace"
         else None
     )
     if ops:
@@ -906,10 +1032,11 @@ def capture(job: dict[str, Any]) -> dict[str, Any]:
     # Jittor 的 register_forward_hook 不返回句柄，hook 会一直留在模块上；
     # 先冻结整网前向的 trace，避免后续隔离/重复运行继续写入。
     trace_values = dict(trace_values)
+    layer_values = dict(layer_values)
     isolated_values: dict[str, np.ndarray] = {}
     isolated_repeats: dict[str, np.ndarray] = {}
     isolated = None
-    if mode != "normal" and kind == "target":
+    if mode == "trace" and kind == "target":
         isolated_values, isolated_repeats, isolated = run_isolated_modules(
             model, Path(job["oracle"]), kind, device
         )
@@ -953,8 +1080,12 @@ def capture(job: dict[str, Any]) -> dict[str, Any]:
     np.savez(out / "outputs.npz", **arrays, **outputs)
     if trace_values:
         np.savez(out / "trace.npz", **trace_values)
+    if mode == "layers":
+        # 最终输出也进入 E1：中间层可以因命名不同而只报告，output.* 必须参与判定。
+        batch = variant["batch"] if variant else 1
+        np.savez(out / "layers.npz", **sketch_layers(_unbatch({**layer_values, **outputs}, batch)))
     calibration = None
-    if kind == "source" and mode != "normal":
+    if kind == "source" and mode == "trace":
         _mark_leaves(module_calls)
         fp64_values, alt_values, repeat_values, calibration = calibrate_source_modules(
             model, module_calls, module_inputs, device
@@ -988,7 +1119,11 @@ def capture(job: dict[str, Any]) -> dict[str, Any]:
             "state": file_hash(out / "state.npz") if kind == "source" else None,
         },
     }
-    if kind == "source" and mode != "normal":
+    if variant is not None:
+        report["variant"] = variant
+    if mode == "layers":
+        report["layers"] = len(layer_values)
+    if kind == "source" and mode == "trace":
         report["module_probe"] = {
             "calls": len(module_calls),
             "input_tensors": len(module_inputs),

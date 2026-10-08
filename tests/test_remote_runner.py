@@ -260,3 +260,44 @@ def test_empty_remote_target_env_defaults_are_omitted(
     assert "use_cutt" not in task["target"]["env"]
     assert "use_mkl" not in task["target"]["env"]
     assert "nvcc_path" not in task["target"]["env"]
+
+
+def test_weights_are_referenced_from_remote_cache_not_bundled(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    runner = _load_runner(monkeypatch, tmp_path, {"TP_REMOTE_ROOT": "/remote/root"})
+    monkeypatch.chdir(tmp_path)
+    task_path = _write_task(tmp_path)
+    weights = tmp_path / "model.pth"
+    weights.write_bytes(b"weights-content")
+    raw = json.loads(task_path.read_text("utf-8"))
+    raw["weights"] = "model.pth"
+    task_path.write_text(json.dumps(raw), encoding="utf-8")
+
+    archive = runner._build_bundle(task_path, runner._remote_base(task_path))
+    with tarfile.open(fileobj=io.BytesIO(archive), mode="r:gz") as package:
+        names = package.getnames()
+        task_file = package.extractfile("task.json")
+        assert task_file is not None
+        task = json.load(task_file)
+
+    import hashlib
+
+    sha = hashlib.sha256(b"weights-content").hexdigest()
+    assert task["weights"] == f"/remote/root/weights-cache/{sha}/model.pth"
+    assert not any(name.startswith("weights/") or name.endswith("model.pth") for name in names)
+
+
+def test_ensure_weights_skips_upload_on_cache_hit(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    runner = _load_runner(monkeypatch, tmp_path, {"TP_REMOTE_ROOT": "/remote/root"})
+    commands: list[str] = []
+    monkeypatch.setattr(runner, "_run", lambda client, command, timeout=0: (commands.append(command), (0, "", ""))[1])
+
+    class NoSftp:
+        def open_sftp(self) -> None:
+            raise AssertionError("cache hit must not upload")
+
+    runner._ensure_weights(NoSftp(), tmp_path / "model.pth", "abc")
+    assert commands == ["test -f /remote/root/weights-cache/abc/model.pth"]

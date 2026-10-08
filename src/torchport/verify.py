@@ -48,8 +48,14 @@ def judge(
     fp32: dict[str, Any] | None,
     strict: dict[str, Any] | None,
     protocol: dict[str, Any] | None = None,
+    *,
+    numerical: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
-    """返回 EvaluationResult；passed 只由本函数推导。"""
+    """返回 EvaluationResult；passed 只由本函数推导。
+
+    numerical 给定时（协议 v2 的 noise-envelope 报告），数值判定改由它决定；
+    fp32 报告仍用于结构检查（输出键、形状、dtype）。
+    """
     protocol = protocol or {}
     result: dict[str, Any] = {
         "schema_version": 2,
@@ -68,7 +74,11 @@ def judge(
         return _finish(result)
     result["runnable"] = PASS
 
-    modes = {info.get("mode", "normal") for info in (source_info, target_info)}
+    # 协议 v2 的 target 用 layers 模式采集整网激活；它不包装算子、不做隔离，按普通运行计。
+    modes = {
+        "normal" if numerical is not None and info.get("mode") == "layers" else info.get("mode", "normal")
+        for info in (source_info, target_info)
+    }
     source_input = source_info.get("hashes", {}).get("input")
     target_input = target_info.get("hashes", {}).get("input")
     checkpoint = source_info.get("checkpoint", {"requested": False, "complete": True})
@@ -115,6 +125,25 @@ def judge(
     result["problems"].extend(problems)
     if problems:
         result["failure_code"] = result["failure_code"] or "STRUCTURE_MISMATCH"
+    if numerical is not None:
+        result["numerical"] = PASS if numerical.get("passed") else FAIL
+        result["aligned"] = bool(numerical.get("passed"))
+        result["strict_aligned"] = None
+        if result["numerical"] == FAIL:
+            result["failure_code"] = result["failure_code"] or "PARITY_FAILED"
+            first = numerical.get("first_divergence") or {}
+            item = next((t for t in numerical.get("tensors", []) if t.get("name") == first.get("name")), {})
+            detail = f"首个超出噪声包络 {first.get('name')}：{first.get('reason', '超出噪声包络')}"
+            if "ratio" in item:
+                detail += f"，rel={item['relative_error']:.3g}，limit={item['limit']:.3g}"
+            result["problems"].append(detail)
+        result["envelope_metrics"] = numerical.get("metrics")
+        result["passed"] = (
+            result["failure_code"] is None
+            and result["structural"] == PASS
+            and result["numerical"] == PASS
+        )
+        return _finish(result)
     result["numerical"] = PASS if fp32.get("passed") else FAIL
     result["aligned"] = bool(fp32.get("passed"))
     result["strict_aligned"] = bool(strict.get("passed")) if strict is not None else None
