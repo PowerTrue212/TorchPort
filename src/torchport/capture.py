@@ -33,7 +33,11 @@ VARIANT_KEYS = {
     "device",
     "channels_last",
     "batch",
+    "batch_mode",
 }
+# batch_mode：copy = 同一输入复制（协议 v2 冻结语义，检测不出批内统计）；
+# distinct = 第 i 份为原输入沿宽度翻转 i 次（只有第 0 份是原输入），用于检验批量无关性。
+BATCH_MODES = ("copy", "distinct")
 # layers 模式按张量做 CountSketch：线性，差值范数无偏，m=65536 时相对标准差约 0.55%。
 SKETCH_DIM = 1 << 16
 OP_NAMES = (
@@ -106,9 +110,11 @@ def _tensor_type(kind: str) -> type:
 
 
 def _to_numpy(tensor: Any, kind: str) -> np.ndarray:
+    # 必须复制：CPU 张量的 .cpu().numpy() 与张量共享内存，hook 记录后模型里的
+    # 原地运算（ReLU(inplace=True)、out += ...）会改写已记录的值。
     if kind == "source":
-        return np.asarray(tensor.detach().cpu().numpy())
-    return np.asarray(tensor.numpy())
+        return np.array(tensor.detach().cpu().numpy(), copy=True)
+    return np.array(tensor.numpy(), copy=True)
 
 
 def _from_numpy(value: np.ndarray, kind: str) -> Any:
@@ -865,12 +871,16 @@ def apply_variant(model: Any, variant: dict[str, Any] | None) -> dict[str, Any] 
     batch = int(variant.get("batch", 1))
     if batch < 1:
         raise ValueError("source 变体 batch 必须为正整数")
+    batch_mode = variant.get("batch_mode", "copy")
+    if batch_mode not in BATCH_MODES:
+        raise ValueError(f"source 变体 batch_mode 只允许 {'/'.join(BATCH_MODES)}：{batch_mode}")
     return {
         "name": variant.get("name"),
         "dtype": dtype or "float32",
         "device": device,
         "channels_last": channels_last,
         "batch": batch,
+        "batch_mode": batch_mode,
         "cudnn_allow_tf32": backends.cudnn.allow_tf32,
         "matmul_allow_tf32": backends.cuda.matmul.allow_tf32,
         "cudnn_benchmark": backends.cudnn.benchmark,
@@ -889,15 +899,27 @@ def _variant_inputs(tensors: list[Any], variant: dict[str, Any] | None) -> list[
         if variant["dtype"] == "float64" and tensor.is_floating_point():
             tensor = tensor.double()
         if variant["batch"] > 1:
-            tensor = torch.cat([tensor] * variant["batch"], dim=0)
+            if variant.get("batch_mode", "copy") == "distinct" and tensor.dim() >= 2:
+                # 第 0 份是原输入，其余份内容不同：批内统计或跨样本计算会改变第 0 份的结果
+                others = [
+                    torch.roll(torch.flip(tensor, dims=[-1]), shifts=i, dims=-1)
+                    for i in range(variant["batch"] - 1)
+                ]
+                tensor = torch.cat([tensor, *others], dim=0)
+            else:
+                tensor = torch.cat([tensor] * variant["batch"], dim=0)
         if variant["channels_last"] and tensor.dim() == 4:
             tensor = tensor.contiguous(memory_format=torch.channels_last)
         result.append(tensor)
     return result
 
 
-def _unbatch(values: dict[str, np.ndarray], batch: int) -> dict[str, np.ndarray]:
-    """批内复制变体只保留第一份；拆不开或各份不一致的张量丢弃（只少证据，不放宽包络）。"""
+def _unbatch(values: dict[str, np.ndarray], batch: int, mode: str = "copy") -> dict[str, np.ndarray]:
+    """批量变体只保留第一份；拆不开的张量丢弃（只少证据，不放宽包络）。
+
+    copy：各份必须一致才保留。distinct：各份输入本就不同，只取第 0 份，
+    批量无关性由 E1 v3 比较第 0 份与其他变体的距离来检验。
+    """
     if batch == 1:
         return values
     kept: dict[str, np.ndarray] = {}
@@ -905,7 +927,9 @@ def _unbatch(values: dict[str, np.ndarray], batch: int) -> dict[str, np.ndarray]
         if value.ndim == 0 or value.shape[0] % batch:
             continue
         parts = np.split(value, batch, axis=0)
-        if all(np.allclose(parts[0], part, rtol=1e-4, atol=1e-6) for part in parts[1:]):
+        if mode == "distinct" or all(
+            np.allclose(parts[0], part, rtol=1e-4, atol=1e-6) for part in parts[1:]
+        ):
             kept[name] = parts[0]
     return kept
 
@@ -913,17 +937,23 @@ def _unbatch(values: dict[str, np.ndarray], batch: int) -> dict[str, np.ndarray]
 _SKETCH_CACHE: dict[int, tuple[np.ndarray, np.ndarray]] = {}
 
 
-def sketch_layers(values: dict[str, np.ndarray]) -> dict[str, np.ndarray]:
+def _is_output_name(name: str) -> bool:
+    return name == "output" or name.startswith("output.")
+
+
+def sketch_layers(
+    values: dict[str, np.ndarray], keep: set[str] | frozenset[str] = frozenset()
+) -> dict[str, np.ndarray]:
     """把每个张量压成固定维度的 CountSketch；原形状另存 `__shape__/<name>`。
 
     哈希只由元素数决定，双端同名同形状的张量落在同一投影上；投影线性，
-    sketch(a) - sketch(b) = sketch(a - b)，差值范数无偏估计。小张量原样保存。
+    sketch(a) - sketch(b) = sketch(a - b)，差值范数无偏估计。小张量与 keep 中的张量原样保存。
     """
     result: dict[str, np.ndarray] = {}
     for name, value in values.items():
         flat = np.asarray(value, dtype=np.float64).reshape(-1)
         result[f"__shape__/{name}"] = np.asarray(value.shape, dtype=np.int64)
-        if flat.size <= SKETCH_DIM:
+        if flat.size <= SKETCH_DIM or name in keep:
             result[name] = flat
             continue
         if flat.size not in _SKETCH_CACHE:
@@ -1083,7 +1113,11 @@ def capture(job: dict[str, Any]) -> dict[str, Any]:
     if mode == "layers":
         # 最终输出也进入 E1：中间层可以因命名不同而只报告，output.* 必须参与判定。
         batch = variant["batch"] if variant else 1
-        np.savez(out / "layers.npz", **sketch_layers(_unbatch({**layer_values, **outputs}, batch)))
+        batch_mode = variant.get("batch_mode", "copy") if variant else "copy"
+        layers = _unbatch({**layer_values, **outputs}, batch, batch_mode)
+        # v3 的输出逐元素比较：output.* 不压缩
+        exact = {name for name in layers if job.get("exact_outputs") and _is_output_name(name)}
+        np.savez(out / "layers.npz", **sketch_layers(layers, keep=exact))
     calibration = None
     if kind == "source" and mode == "trace":
         _mark_leaves(module_calls)

@@ -305,6 +305,31 @@ def test_ensure_weights_skips_upload_on_cache_hit(
     assert commands == ["test -f /remote/root/weights-cache/abc/model.pth"]
 
 
+def test_extra_roots_allow_workspace_outside_repo(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    outside = tmp_path / "runs"
+    outside.mkdir()
+    monkeypatch.setenv("TP_EXTRA_ROOTS", str(outside))
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    runner = _load_runner(monkeypatch, repo)
+    # _load_runner 把 TP_PROJECT_ROOT 设为 repo；工作区在 repo 之外但在额外根下
+    assert runner._inside_workspace(outside / "ws" / "submission.py") == (outside / "ws" / "submission.py").resolve()
+    with pytest.raises(PermissionError):
+        runner._inside_workspace(tmp_path / "elsewhere" / "x.py")
+
+
+def test_extra_roots_default_to_repo_only(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    monkeypatch.delenv("TP_EXTRA_ROOTS", raising=False)
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    runner = _load_runner(monkeypatch, repo)
+    assert runner.EXTRA_ROOTS == ()
+    with pytest.raises(PermissionError):
+        runner._inside_workspace(tmp_path / "runs" / "x.py")
+
+
 def _v2_report() -> dict[str, Any]:
     return {
         "kind": "torchport.verify",
@@ -334,6 +359,8 @@ def test_diagnostic_view_has_no_location(monkeypatch: pytest.MonkeyPatch, tmp_pa
     view = runner.diagnostic_view(_v2_report())
     assert view == {
         "passed": False,
+        # v2 报告没有三档状态
+        "e1_status": None,
         "stage": "numerical",
         "failure_code": "PARITY_FAILED",
         "structural": "pass",

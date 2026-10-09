@@ -17,7 +17,7 @@ from .execution import (
     run_physical_cost,
     write_json,
 )
-from .parity import compare_envelope, compare_tensor_archives
+from .parity import ENVELOPE_V3, compare_envelope, compare_envelope_v3, compare_tensor_archives
 from .task import file_hash
 from .verify import judge, judge_repeats
 
@@ -46,6 +46,8 @@ def run_side(
     side = task[kind]
     run_dir = new_run_dir(root / "runs", trial, kind)
     job = {
+        # v3：layers 证据中的 output.* 不压缩，供逐元素比较
+        "exact_outputs": task["protocol"]["profile"] == ENVELOPE_V3,
         "kind": kind,
         "side": side,
         "inputs": task["inputs"],
@@ -285,12 +287,26 @@ def verify_envelope(task: dict[str, Any], root: Path, *, trial: str = "t0") -> d
             bad = next(run for run in target_runs if not run["ok"] or "layers" not in run["artifacts"])
             result = evaluate(oracle, {**bad, "ok": False}, protocol, task["target_identity"])
         else:
-            report_e1 = compare_envelope(
-                envelope["reference"],
-                envelope["variants"],
-                first["artifacts"]["layers"],
-                [run["artifacts"]["layers"] for run in target_runs[1:]],
-            )
+            if protocol["profile"] == ENVELOPE_V3:
+                variants = list(protocol.get("variants") or [])
+                report_e1 = compare_envelope_v3(
+                    envelope["reference"],
+                    envelope["variants"],
+                    [run["artifacts"]["layers"] for run in target_runs],
+                    pass_k=float(protocol.get("pass_k", 2.0)),
+                    floor_k=float(protocol.get("floor_k", 3.0)),
+                    noise_floor=float(protocol.get("noise_floor", 0.0)),
+                    batch_variants=tuple(
+                        i for i, v in enumerate(variants) if int(v.get("batch", 1)) > 1
+                    ),
+                )
+            else:
+                report_e1 = compare_envelope(
+                    envelope["reference"],
+                    envelope["variants"],
+                    first["artifacts"]["layers"],
+                    [run["artifacts"]["layers"] for run in target_runs[1:]],
+                )
             structure = compare_tensor_archives(
                 Path(oracle["dir"]) / "outputs.npz", first["artifacts"]["outputs"], profile="fp32-inference"
             )
@@ -302,7 +318,9 @@ def verify_envelope(task: dict[str, Any], root: Path, *, trial: str = "t0") -> d
     )
     report = {
         "kind": "torchport.verify",
-        "protocol": "noise-envelope",
+        "protocol": protocol["profile"],
+        # v3 三档：pass / marginal / fail；v2 只有 passed
+        "e1_status": (report_e1 or {}).get("status"),
         "task_id": task["task_id"],
         "task_digest": task["digest"],
         "trial_id": trial,
@@ -327,7 +345,7 @@ def verify_envelope(task: dict[str, Any], root: Path, *, trial: str = "t0") -> d
 
 def verify(task: dict[str, Any], root: Path, *, trial: str = "t0") -> dict[str, Any]:
     """正式验收：冻结 oracle，candidate 正常运行 repeats 次，全部通过才算通过。"""
-    if task["protocol"]["profile"] == "noise-envelope":
+    if task["protocol"]["profile"] in ("noise-envelope", ENVELOPE_V3):
         return verify_envelope(task, root, trial=trial)
     root = Path(root).resolve()
     oracle = build_oracle(task, root)

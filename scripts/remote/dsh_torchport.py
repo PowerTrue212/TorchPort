@@ -83,15 +83,20 @@ LOCALIZING_COMMANDS = {"trace", "localize"}
 # DSH 从 Agent 工作区调用本脚本，cwd 是工作区而不是 TorchPort 仓库；
 # 打包路径校验和 torchport 源码位置都以仓库根为准。
 PROJECT_ROOT = Path(os.environ.get("TP_PROJECT_ROOT") or Path(__file__).resolve().parents[2]).resolve()
+# Agent 工作区可放在仓库之外（避免 DSH 注入仓库 AGENTS.md、用相对路径翻到 TorchPort 源码）；
+# 这些目录只扩大可打包范围，torchport 源码位置仍以 PROJECT_ROOT 为准。
+EXTRA_ROOTS = tuple(
+    Path(item).resolve() for item in os.environ.get("TP_EXTRA_ROOTS", "").split(os.pathsep) if item
+)
 
 
 def _inside_workspace(path: str | Path) -> Path:
-    root = PROJECT_ROOT
     value = Path(path)
-    value = value.resolve() if value.is_absolute() else (root / value).resolve()
-    if value != root and root not in value.parents:
-        raise PermissionError(f"路径不在 TorchPort 工作区内：{value}")
-    return value
+    value = value.resolve() if value.is_absolute() else (PROJECT_ROOT / value).resolve()
+    for root in (PROJECT_ROOT, *EXTRA_ROOTS):
+        if value == root or root in value.parents:
+            return value
+    raise PermissionError(f"路径不在 TorchPort 工作区内：{value}")
 
 
 def _remote_base(task_path: Path) -> PurePosixPath:
@@ -286,6 +291,8 @@ def diagnostic_view(report: dict[str, Any]) -> dict[str, Any]:
         stage = "verification"
     return {
         "passed": bool(report.get("passed")),
+        # v3 三档（pass / marginal / fail），不含位置信息
+        "e1_status": report.get("e1_status"),
         "stage": stage,
         "failure_code": report.get("failure_code"),
         "structural": result.get("structural", "not_run"),

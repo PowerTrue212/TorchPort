@@ -6,8 +6,15 @@ from pathlib import Path
 
 import numpy as np
 
-from torchport.parity import compare_envelope, compare_metric_envelope
+from torchport.parity import _l2, compare_envelope, compare_metric_envelope
 from torchport.verify import judge
+
+
+def test_l2_matches_linalg_norm() -> None:
+    rng = np.random.default_rng(3)
+    for x in (rng.standard_normal(65536).astype(np.float32), rng.standard_normal((4, 5, 6)), np.zeros(7)):
+        expected = float(np.linalg.norm(x.astype(np.float64).reshape(-1)))
+        assert abs(_l2(x) - expected) <= 1e-12 * max(expected, 1.0)
 
 
 def _save(path: Path, **arrays: np.ndarray) -> Path:
@@ -69,6 +76,99 @@ class EnvelopeTests(unittest.TestCase):
         reference = self._archive("ref", 0.0, 1)
         with self.assertRaises(ValueError):
             compare_envelope(reference, [], reference)
+
+
+class EnvelopeV3Tests(unittest.TestCase):
+    def setUp(self) -> None:
+        self._dir = tempfile.TemporaryDirectory()
+        self.root = Path(self._dir.name)
+        self.base = np.random.default_rng(0).standard_normal(1000)
+
+    def tearDown(self) -> None:
+        self._dir.cleanup()
+
+    def _save(self, name: str, noise: float, seed: int, *, output_noise: float | None = None) -> Path:
+        rng = np.random.default_rng(seed)
+        layer = self.base + noise * rng.standard_normal(1000)
+        out_noise = noise if output_noise is None else output_noise
+        output = (self.base + out_noise * rng.standard_normal(1000)).astype(np.float32)
+        return _save(self.root / f"{name}.npz", **{"block.0": layer, "output.0": output})
+
+    def _envelope(self) -> tuple[Path, list[Path]]:
+        return self._save("ref", 0.0, 1), [self._save(f"v{i}", 1e-6, 10 + i) for i in range(3)]
+
+    def test_order_of_target_runs_does_not_change_verdict(self) -> None:
+        from torchport.parity import compare_envelope_v3
+
+        reference, variants = self._envelope()
+        good, bad = self._save("good", 5e-7, 20), self._save("bad", 1e-4, 21)
+        forward = compare_envelope_v3(reference, variants, [good, bad])
+        backward = compare_envelope_v3(reference, variants, [bad, good])
+        self.assertEqual(forward["status"], "fail")
+        self.assertEqual(backward["status"], "fail")
+        self.assertEqual(forward["metrics"]["max_ratio"], backward["metrics"]["max_ratio"])
+
+    def test_target_noise_is_reported_not_added_to_limit(self) -> None:
+        from torchport.parity import compare_envelope_v3
+
+        reference, variants = self._envelope()
+        # v2 会因两次 target 互相差很远而放宽上限；v3 只报告 unstable
+        runs = [self._save("t0", 3e-5, 30), self._save("t1", 3e-5, 31)]
+        report = compare_envelope_v3(reference, variants, runs)
+        self.assertEqual(report["status"], "fail")
+        self.assertGreater(report["metrics"]["unstable_tensors"], 0)
+
+    def test_three_bands(self) -> None:
+        from torchport.parity import compare_envelope_v3
+
+        reference, variants = self._envelope()
+        d = compare_envelope_v3(reference, variants, [reference])["tensors"][0]["source_noise"]
+        self.assertEqual(compare_envelope_v3(reference, variants, [reference])["status"], "pass")
+
+        def scaled(name: str, factor: float) -> Path:
+            ref = np.load(reference)
+            direction = np.random.default_rng(7).standard_normal(1000)
+            direction *= factor * d * np.linalg.norm(self.base) / np.linalg.norm(direction)
+            return _save(self.root / f"{name}.npz", **{"block.0": ref["block.0"] + direction, "output.0": ref["output.0"]})
+
+        self.assertEqual(compare_envelope_v3(reference, variants, [scaled("m", 2.5)])["status"], "marginal")
+        self.assertEqual(compare_envelope_v3(reference, variants, [scaled("f", 4.0)])["status"], "fail")
+
+    def test_output_elementwise_catches_local_error(self) -> None:
+        from torchport.parity import compare_envelope_v3
+
+        reference, variants = self._envelope()
+        ref = np.load(reference)
+        output = ref["output.0"].copy()
+        output[0] += 1e-3  # 单元素大错：L2 相对误差很小，逐元素比值很大
+        local = _save(self.root / "local.npz", **{"block.0": ref["block.0"], "output.0": output})
+        report = compare_envelope_v3(reference, variants, [local])
+        item = next(t for t in report["tensors"] if t["name"] == "output.0")
+        self.assertGreater(item["abs_ratio"], item["l2_ratio"])
+        self.assertEqual(report["status"], "fail")
+
+    def test_noise_floor_raises_basis_without_using_candidate_noise(self) -> None:
+        from torchport.parity import compare_envelope_v3
+
+        reference, variants = self._envelope()
+        # 层误差约 1e-5，约为 D 的 7 倍；输出不加噪声，只考察层判定
+        candidate = self._save("cand", 1e-5, 50, output_noise=0.0)
+        self.assertEqual(compare_envelope_v3(reference, variants, [candidate])["status"], "fail")
+        floored = compare_envelope_v3(reference, variants, [candidate], noise_floor=2e-5)
+        layer = next(t for t in floored["tensors"] if t["name"] == "block.0")
+        self.assertTrue(layer["floor_applied"])
+        self.assertEqual(floored["status"], "pass")
+        self.assertEqual(floored["noise_floor"], 2e-5)
+
+    def test_batch_variant_far_from_others_is_excluded(self) -> None:
+        from torchport.parity import compare_envelope_v3
+
+        reference, variants = self._envelope()
+        batch = self._save("batch", 1e-2, 40)  # 批内相关导致的大差异不能撑大包络
+        candidate = self._save("cand", 1e-3, 41)
+        report = compare_envelope_v3(reference, [*variants, batch], [candidate], batch_variants=(3,))
+        self.assertEqual(report["status"], "fail")
+        self.assertGreater(report["metrics"]["batch_excluded_tensors"], 0)
 
 
 class SketchTests(unittest.TestCase):

@@ -225,8 +225,15 @@ def compare_noise_calibrated(
     }
 
 
+def _l2(x: np.ndarray) -> float:
+    # 不走 np.linalg.norm：它调用多线程 BLAS dot，在 65536 维 sketch 上线程调度开销
+    # 比计算本身大约 4500 倍（48 线程实测 7e-2 s 对 1.6e-5 s）。ufunc 求和不进 BLAS。
+    flat = x.astype(np.float64, copy=False).reshape(-1)
+    return float(np.sqrt(np.sum(flat * flat)))
+
+
 def _rel(a: np.ndarray, b: np.ndarray, scale: float) -> float:
-    return float(np.linalg.norm((a.astype(np.float64) - b.astype(np.float64)).reshape(-1))) / scale
+    return _l2(a.astype(np.float64) - b.astype(np.float64)) / scale
 
 
 def _diameter(arrays: list[np.ndarray], scale: float) -> float:
@@ -313,7 +320,7 @@ def compare_envelope(
             elif not group:
                 item = {"name": name, "position": position, "passed": False, "reason": "缺少 source 变体"}
             else:
-                scale = max(float(np.linalg.norm(ref.astype(np.float64).reshape(-1))), np.finfo(np.float64).tiny)
+                scale = max(_l2(ref), np.finfo(np.float64).tiny)
                 error = _rel(cand, ref, scale)
                 source_noise = _diameter([ref, *group], scale)
                 target_noise = _diameter([cand, *others], scale)
@@ -353,6 +360,204 @@ def compare_envelope(
             "max_ratio": max(ratios, default=None),
             "missing_tensors": len(missing),
             "extra_tensors": len(extra),
+        },
+        "tensors": tensors,
+    }
+
+
+ENVELOPE_V3 = "noise-envelope-v3"
+
+
+def _is_output(name: str) -> bool:
+    return name == "output" or name.startswith("output.")
+
+
+def _max_abs(a: np.ndarray, b: np.ndarray) -> float:
+    return float(np.max(np.abs(a.astype(np.float64) - b.astype(np.float64)), initial=0.0))
+
+
+def _band(ratio: float, pass_k: float, floor_k: float) -> str:
+    return "pass" if ratio <= pass_k else ("marginal" if ratio <= floor_k else "fail")
+
+
+def compare_envelope_v3(
+    reference_path: str | Path,
+    variant_paths: list[str | Path],
+    candidate_paths: list[str | Path],
+    *,
+    pass_k: float = 2.0,
+    floor_k: float = 3.0,
+    batch_variants: tuple[int, ...] = (),
+    noise_floor: float = 0.0,
+) -> dict[str, Any]:
+    """E1 协议 v3：每次 target 运行都必须落在 k 倍 source 合法变体包络之内。
+
+    对每个张量：D = {R, 有效变体} 两两最大 rel；ratio = max_i rel(T_i, R) / max(D, noise_floor)。
+    noise_floor 是冻结在协议里的 target 环境噪声下限（按算子实测的运行间波动取最大值），
+    与候选无关，属于可调超参。
+    与 v2 的区别：
+      - 所有 target 运行逐次参与判定（取最大），结果与运行顺序无关；
+      - target 自身波动 N 只报告（N > D 记为 unstable），不放宽上限；
+      - 判定分三档：ratio <= pass_k 通过，<= floor_k 为 marginal（可提交、需看 E2），否则失败；
+      - output.* 不压缩，另按逐元素最大绝对误差 / 变体最大绝对差计比值，取两者较大；
+      - 批量变体在某张量上比其他变体大 floor_k 倍以上时视为模型批内相关，从 D 中剔除并报告；
+      - 报告覆盖率与每个张量实际产生差异的变体数（少于 2 记为 thin）。
+    """
+    if not variant_paths:
+        raise ValueError("noise-envelope-v3 至少需要一个 source 合法变体")
+    if not candidate_paths:
+        raise ValueError("noise-envelope-v3 至少需要一次 target 运行")
+    paths = [Path(p).expanduser().resolve() for p in (reference_path, *variant_paths, *candidate_paths)]
+    for path in paths:
+        if not path.is_file():
+            raise ValueError(f"证据不存在：{path}")
+    archives = [np.load(p, allow_pickle=False) for p in paths]
+    members = [set(archive.files) for archive in archives]
+    variant_index = list(range(1, 1 + len(variant_paths)))
+    candidate_index = list(range(1 + len(variant_paths), len(archives)))
+    batch = {variant_index[i] for i in batch_variants if 0 <= i < len(variant_index)}
+
+    def names_of(index: int) -> list[str]:
+        return [
+            n for n in archives[index].files
+            if not (n == "input" or n.startswith(("input.", SHAPE_PREFIX)))
+        ]
+
+    def load(index: int, name: str) -> tuple[np.ndarray, tuple[int, ...]] | None:
+        if name not in members[index]:
+            return None
+        value = archives[index][name]
+        key = SHAPE_PREFIX + name
+        shape = tuple(int(x) for x in archives[index][key]) if key in members[index] else value.shape
+        return value, shape
+
+    tensors: list[dict[str, Any]] = []
+    first: dict[str, Any] | None = None
+    first_marginal: dict[str, Any] | None = None
+    try:
+        names = names_of(0)
+        missing = [n for n in names if any(n not in members[i] for i in candidate_index)]
+        extra = sorted({n for i in candidate_index for n in names_of(i) if n not in members[0]})
+        for position, name in enumerate(names):
+            is_output = _is_output(name)
+            if name in missing:
+                if is_output:
+                    item = {"name": name, "position": position, "status": "fail", "reason": "候选缺少输出"}
+                    tensors.append(item)
+                    first = first or {"name": name, "position": position, "reason": item["reason"]}
+                continue
+            ref, ref_shape = load(0, name)
+            cands = [load(i, name) for i in candidate_index]
+            # 变体形状与参考不同（例如批量变体拆不开）只少一份证据，不判候选失败
+            variants = {
+                i: entry for i in variant_index
+                if (entry := load(i, name)) is not None and entry[1] == ref_shape and entry[0].shape == ref.shape
+            }
+            shapes = {ref_shape, *(s for _, s in cands)}
+            stored = {ref.shape, *(c.shape for c, _ in cands)}
+            values = [ref, *(v for v, _ in variants.values()), *(c for c, _ in cands)]
+            reason = None
+            if len(shapes) != 1 or len(stored) != 1:
+                reason = "张量形状不同"
+            elif is_output and any(c.dtype != ref.dtype for c, _ in cands):
+                reason = "输出 dtype 不同"
+            elif not all(np.all(np.isfinite(x)) for x in values):
+                reason = "张量包含 NaN 或无穷值"
+            elif not variants:
+                reason = "缺少 source 变体"
+            if reason:
+                item = {"name": name, "position": position, "status": "fail", "reason": reason}
+                tensors.append(item)
+                first = first or {"name": name, "position": position, "reason": reason}
+                continue
+            scale = max(_l2(ref), np.finfo(np.float64).tiny)
+            distance = {i: _rel(v, ref, scale) for i, (v, _) in variants.items()}
+            others = [d for i, d in distance.items() if i not in batch]
+            suspect = [
+                i for i in batch
+                if i in distance and others and max(others) > 0 and distance[i] > floor_k * max(others)
+            ]
+            included = [i for i in variants if i not in suspect]
+            group = [variants[i][0] for i in included]
+            source_noise = _diameter([ref, *group], scale)
+            run_errors = [_rel(c, ref, scale) for c, _ in cands]
+            error = max(run_errors)
+            target_noise = _diameter([c for c, _ in cands], scale)
+            # 上限基数取 D 与 target 环境噪声下限的较大者；下限与候选无关，不随候选自身波动变宽
+            basis = max(source_noise, noise_floor)
+            ratio = error / basis if basis > 0 else (0.0 if error == 0 else float("inf"))
+            item = {
+                "name": name,
+                "position": position,
+                "elements": int(np.prod(ref_shape)) if ref_shape else 1,
+                "relative_error": error,
+                "run_errors": run_errors,
+                "source_noise": source_noise,
+                "target_noise": target_noise,
+                "floor_applied": noise_floor > source_noise,
+                "limit": pass_k * basis,
+                "l2_ratio": ratio,
+                "variant_errors": [distance.get(i) for i in variant_index],
+                "effective_variants": sum(distance[i] > 0 for i in included),
+                "batch_excluded": len(suspect),
+                "unstable": target_noise > source_noise,
+            }
+            exact = int(ref.size) == item["elements"]
+            if is_output and exact:
+                # 输出逐元素：最大绝对误差相对 source 变体间最大绝对差
+                source_abs = max((_max_abs(v, ref) for v in group), default=0.0)
+                target_abs = max(_max_abs(c, ref) for c, _ in cands)
+                abs_ratio = (
+                    target_abs / source_abs if source_abs > 0 else (0.0 if target_abs == 0 else float("inf"))
+                )
+                item.update(max_abs_error=target_abs, source_max_abs=source_abs, abs_ratio=abs_ratio)
+                ratio = max(ratio, abs_ratio)
+            item["ratio"] = ratio
+            item["status"] = _band(ratio, pass_k, floor_k)
+            tensors.append(item)
+            if item["status"] == "fail" and first is None:
+                first = {"name": name, "position": position, "reason": "超出 floor_k 倍噪声包络"}
+            if item["status"] == "marginal" and first_marginal is None:
+                first_marginal = {"name": name, "position": position, "reason": "介于 pass_k 与 floor_k 之间"}
+    finally:
+        for archive in archives:
+            archive.close()
+    has_output = any(_is_output(item["name"]) and "ratio" in item for item in tensors)
+    statuses = {item["status"] for item in tensors}
+    if first is not None or "fail" in statuses or not has_output:
+        status = "fail"
+    elif "marginal" in statuses:
+        status = "marginal"
+    else:
+        status = "pass"
+    ratios = [item["ratio"] for item in tensors if "ratio" in item]
+    compared = len(tensors)
+    return {
+        "schema_version": 1,
+        "profile": ENVELOPE_V3,
+        "pass_k": pass_k,
+        "floor_k": floor_k,
+        "noise_floor": noise_floor,
+        "variants": len(variant_paths),
+        "target_runs": len(candidate_paths),
+        "status": status,
+        "passed": status == "pass",
+        "first_divergence": first if status == "fail" else None,
+        "first_marginal": first_marginal,
+        "missing_in_candidate": missing,
+        "extra_in_candidate": extra,
+        "metrics": {
+            "compared_tensors": compared,
+            "failed_tensors": sum(item["status"] == "fail" for item in tensors),
+            "marginal_tensors": sum(item["status"] == "marginal" for item in tensors),
+            "max_ratio": max(ratios, default=None),
+            "missing_tensors": len(missing),
+            "extra_tensors": len(extra),
+            "coverage": compared / len(names) if names else 0.0,
+            "unstable_tensors": sum(bool(item.get("unstable")) for item in tensors),
+            "thin_envelope_tensors": sum(item.get("effective_variants", 2) < 2 for item in tensors),
+            "batch_excluded_tensors": sum(bool(item.get("batch_excluded")) for item in tensors),
+            "floor_applied_tensors": sum(bool(item.get("floor_applied")) for item in tensors),
         },
         "tensors": tensors,
     }

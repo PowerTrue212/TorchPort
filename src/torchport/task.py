@@ -107,8 +107,16 @@ def digest(value: Any) -> str:
     return hashlib.sha256(data).hexdigest()
 
 
+# 证据采集语义的版本。capture 的改动若会改变已记录的数值（例如 2026-10-09 修复 hook 记录与
+# 原地运算共享内存），必须递增，使旧 oracle/envelope 失效重建。
+CAPTURE_VERSION = 2
+# 只影响判定、不影响 source 证据的协议参数；调整它们不应使 oracle/envelope 失效重建。
+# 实际取值仍完整写入每份 verify 报告。
+JUDGE_KEYS = ("pass_k", "floor_k", "noise_floor")
+
+
 def oracle_key(task: dict[str, Any]) -> str:
-    """oracle 身份：source 代码内容/配置/解释器、checkpoint 内容、输入与协议；target 不参与。"""
+    """oracle 身份：source 代码内容/配置/解释器、checkpoint 内容、输入、协议与采集版本；target 不参与。"""
     portable_inputs = [
         {key: value for key, value in spec.items() if key != "path"}
         for spec in task["inputs"]
@@ -119,7 +127,8 @@ def oracle_key(task: dict[str, Any]) -> str:
             "inputs": portable_inputs,
             "weights_sha": task["weights_sha"],
             "seed": task["seed"],
-            "protocol": task["protocol"],
+            "protocol": {k: v for k, v in task["protocol"].items() if k not in JUDGE_KEYS},
+            "capture_version": CAPTURE_VERSION,
         }
     )
 

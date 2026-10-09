@@ -129,7 +129,12 @@ def judge(
         result["numerical"] = PASS if numerical.get("passed") else FAIL
         result["aligned"] = bool(numerical.get("passed"))
         result["strict_aligned"] = None
-        if result["numerical"] == FAIL:
+        if result["numerical"] == FAIL and numerical.get("status") == "marginal":
+            # v3：介于 pass_k 与 floor_k 之间，不是正式通过，但可提交、结论以 E2 为准
+            result["failure_code"] = result["failure_code"] or "PARITY_MARGINAL"
+            first = numerical.get("first_marginal") or {}
+            result["problems"].append(f"首个介于 pass_k 与 floor_k 之间 {first.get('name')}")
+        elif result["numerical"] == FAIL:
             result["failure_code"] = result["failure_code"] or "PARITY_FAILED"
             first = numerical.get("first_divergence") or {}
             item = next((t for t in numerical.get("tensors", []) if t.get("name") == first.get("name")), {})
@@ -198,6 +203,7 @@ _NEXT = {
     "WEIGHT_LOAD_FAILED": "检查参数名映射和形状",
     "STRUCTURE_MISMATCH": "对齐输出容器、键、形状和 dtype",
     "PARITY_FAILED": "运行 torchport trace 定位首次分歧",
+    "PARITY_MARGINAL": "已达可提交底线；可继续减小误差，最终以任务指标为准",
     "NOT_COMPARED": "先完成两端运行",
 }
 

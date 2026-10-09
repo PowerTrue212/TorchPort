@@ -15,6 +15,7 @@ from torchport.capture import (
     _decode_call_value,
     _encode_call_value,
     _matched,
+    _to_numpy,
     load_state,
     make_data,
     save_state,
@@ -258,6 +259,15 @@ class BridgeTests(unittest.TestCase):
         with patch.dict(sys.modules, {"jittor": module}):
             with self.assertRaisesRegex(ValueError, "NumPy"):
                 _check_bridge("target")
+
+
+class ToNumpyCopyTests(unittest.TestCase):
+    def test_recorded_value_survives_inplace_update(self) -> None:
+        # 原地运算（ReLU(inplace=True)、out += ...）会改写共享内存；记录值必须是副本。
+        shared = np.zeros(3, dtype=np.float32)
+        recorded = _to_numpy(SimpleNamespace(numpy=lambda: shared), "target")
+        shared += 1
+        np.testing.assert_array_equal(recorded, np.zeros(3, dtype=np.float32))
 
 
 if __name__ == "__main__":
