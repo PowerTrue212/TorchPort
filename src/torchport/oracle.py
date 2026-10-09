@@ -17,6 +17,7 @@ from .execution import (
     run_physical_cost,
     write_json,
 )
+from .noise import calibrate as calibrate_noise
 from .parity import (
     ENVELOPE_V3,
     called_modules,
@@ -284,11 +285,27 @@ def verify_envelope(task: dict[str, Any], root: Path, *, trial: str = "t0") -> d
     result: dict[str, Any]
     report_e1 = None
     module_report = None
+    # noise_floor="auto"：按 target 环境实测 N_env（与候选无关，按环境缓存）；数值则直接使用
+    noise: dict[str, Any] = {"physical_cost": empty_physical_cost()}
+    noise_floor = 0.0
+    if protocol["profile"] == ENVELOPE_V3 and protocol.get("noise_floor") == "auto":
+        noise = calibrate_noise(task, root) if oracle.get("ok") and envelope.get("ok") else noise
+        noise_floor = float(noise.get("noise_floor") or 0.0)
+    elif protocol["profile"] == ENVELOPE_V3:
+        noise_floor = float(protocol.get("noise_floor", 0.0))
     if not oracle.get("ok"):
         result = evaluate(oracle, {}, protocol)
     elif not envelope.get("ok"):
         result = judge(oracle["capture"], None, None, None, protocol)
         result.update(failure_code="SOURCE_RUN_FAILED", summary="SOURCE_RUN_FAILED: source 合法变体运行失败")
+    elif noise.get("ok") is False:
+        # 标定失败不能默认 N_env=0 继续判定，也不能默认放宽；直接失败并给出原因
+        result = judge(oracle["capture"], None, None, None, protocol)
+        tail = (noise.get("stderr_tail") or "").strip().splitlines() or ["无 stderr"]
+        result.update(
+            failure_code="NOISE_PROBE_FAILED",
+            summary=f"NOISE_PROBE_FAILED: target 环境噪声标定失败：{tail[-1][-500:]}",
+        )
     else:
         for _ in range(max(int(protocol["repeats"]), 2)):
             target_runs.append(
@@ -307,7 +324,7 @@ def verify_envelope(task: dict[str, Any], root: Path, *, trial: str = "t0") -> d
                     [run["artifacts"]["layers"] for run in target_runs],
                     pass_k=float(protocol.get("pass_k", 2.0)),
                     floor_k=float(protocol.get("floor_k", 3.0)),
-                    noise_floor=float(protocol.get("noise_floor", 0.0)),
+                    noise_floor=noise_floor,
                     batch_variants=tuple(
                         i for i, v in enumerate(variants) if int(v.get("batch", 1)) > 1
                     ),
@@ -353,8 +370,11 @@ def verify_envelope(task: dict[str, Any], root: Path, *, trial: str = "t0") -> d
         "e1": report_e1,
         "module_config": module_report,
         "physical_cost": add_physical_cost(
-            oracle.get("physical_cost"), envelope.get("physical_cost"), target_physical
+            oracle.get("physical_cost"), envelope.get("physical_cost"), noise.get("physical_cost"), target_physical
         ),
+        "noise": {k: noise.get(k) for k in ("noise_floor", "dominant_op", "per_op", "jittor", "gpu", "reused")}
+        if noise.get("ok")
+        else None,
         "oracle": oracle.get("dir"),
         "envelope": {k: envelope.get(k) for k in ("reference", "variants", "applied")},
         "results": [result],

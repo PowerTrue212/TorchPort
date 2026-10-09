@@ -62,6 +62,8 @@ def build_parser() -> argparse.ArgumentParser:
 
     internal = subparsers.add_parser("_capture", help=argparse.SUPPRESS)
     internal.add_argument("job", type=Path)
+    noise = subparsers.add_parser("_noise", help=argparse.SUPPRESS)
+    noise.add_argument("job", type=Path)
     return parser
 
 
@@ -101,6 +103,11 @@ def main(argv: Sequence[str] | None = None) -> int:
             from .capture import main as capture_main
 
             return capture_main(str(args.job))
+
+        if args.command == "_noise":
+            from .noise import main as noise_main
+
+            return noise_main(str(args.job))
 
         if args.command in {"run", "evaluate", "trace", "verify"}:
             report, code = _harness(args)
