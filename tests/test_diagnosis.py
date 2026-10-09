@@ -136,6 +136,42 @@ class DiagnosisTests(unittest.TestCase):
         self.assertIn("No space left on device", report["reason"])
         self.assertIn("No space left on device", location["reason"])
 
+    def test_focus_modules_window_around_first_divergence(self) -> None:
+        from torchport.execution import write_json
+
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            self.assertIsNone(diagnosis.focus_modules(root, "t0"))
+            tensors = [{"name": f"m{i}", "position": i} for i in range(20)]
+            tensors += [
+                {"name": "blk.0", "position": 20},
+                {"name": "output.0", "position": 21},
+            ]
+            e1 = {"first_divergence": {"name": "blk.0", "position": 20}, "tensors": tensors}
+            write_json(root / "verify" / "t0.json", {"e1": e1})
+            focus = diagnosis.focus_modules(root, "t0", window=3)
+
+        # 窗口内的模块，多输出张量 `blk.0` 同时带上模块 `blk`；输出张量与窗口外的不进入
+        self.assertEqual(focus, ["blk", "blk.0", "m17", "m18", "m19"])
+
+    def test_trace_refuses_to_start_when_disk_is_low(self) -> None:
+        from collections import namedtuple
+
+        usage = namedtuple("usage", "total used free")
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            task = _task(root / "repos")
+            never = lambda *_a, **_k: (_ for _ in ()).throw(AssertionError("must not run"))  # noqa: E731
+            with (
+                patch.object(diagnosis.shutil, "disk_usage", lambda _p: usage(10, 9, 1024)),
+                patch.object(diagnosis, "run_side", never),
+            ):
+                report = diagnosis.trace(task, root / "evidence", trial="t0")
+            location = diagnosis.localize(report)
+
+        self.assertEqual(report["failure_code"], "DISK_LOW")
+        self.assertIn("可用空间", location["reason"])
+
 
 if __name__ == "__main__":
     unittest.main()

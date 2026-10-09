@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import shutil
 from pathlib import Path
 from typing import Any
 
@@ -44,10 +45,64 @@ def inspect_task(task: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+# trace 聚焦：首次分歧及其之前 FOCUS_WINDOW 个张量所属模块；磁盘余量低于下限时不启动。
+FOCUS_WINDOW = 8
+MIN_FREE_BYTES = 2 * 1024**3
+
+
+def focus_modules(root: Path, trial: str, window: int = FOCUS_WINDOW) -> list[str] | None:
+    """从同一 trial 最近一次 verify 的 E1 报告取首次分歧附近的模块名；没有可用报告时返回 None。"""
+    path = Path(root) / "verify" / f"{trial}.json"
+    if not path.is_file():
+        return None
+    e1 = read_json(path).get("e1") or {}
+    first = e1.get("first_divergence") or e1.get("first_marginal")
+    position = (first or {}).get("position")
+    if not isinstance(position, int):
+        return None
+    modules: set[str] = set()
+    for item in e1.get("tensors") or []:
+        index = item.get("position")
+        name = str(item.get("name") or "")
+        if not isinstance(index, int) or not position - window <= index <= position or name.startswith("output"):
+            continue
+        base = name.split("#", 1)[0]
+        modules.add(base)
+        head, _, tail = base.rpartition(".")
+        if head and tail.isdigit():
+            modules.add(head)
+    return sorted(modules) or None
+
+
 def trace(task: dict[str, Any], root: Path, *, trial: str = "t0") -> dict[str, Any]:
-    """以同一输入和状态运行双端 trace，保存完整比较报告。"""
+    """以同一输入和状态运行双端 trace，保存完整比较报告。
+
+    有同 trial 的 verify 报告时只记录首次分歧附近的模块（产物从 GB 级降到 MB 级）；否则全量记录。
+    """
     root = Path(root).resolve()
-    source = run_side(task, "source", root, trial=f"{trial}-trace-source", mode="trace")
+    root.mkdir(parents=True, exist_ok=True)
+    free = shutil.disk_usage(root).free
+    if free < MIN_FREE_BYTES:
+        report = {
+            "kind": "torchport.trace",
+            "task_id": task["task_id"],
+            "task_digest": task["digest"],
+            "trial_id": trial,
+            "passed": False,
+            "status": "run_failed",
+            "failure_code": "DISK_LOW",
+            "stage": "preflight",
+            "reason": f"证据目录可用空间 {free / 1024**3:.1f} GiB，低于 trace 下限 {MIN_FREE_BYTES / 1024**3:.0f} GiB",
+            "source_run": None,
+            "target_run": None,
+            "physical_cost": add_physical_cost(),
+        }
+        out = root / "trace" / f"{trial}.json"
+        write_json(out, report)
+        report["artifacts"] = {"report": str(out)}
+        return report
+    focus = focus_modules(root, trial)
+    source = run_side(task, "source", root, trial=f"{trial}-trace-source", mode="trace", focus=focus)
     if not source["ok"]:
         report = _failed_trace(task, trial, "source", source)
     else:
@@ -58,6 +113,7 @@ def trace(task: dict[str, Any], root: Path, *, trial: str = "t0") -> dict[str, A
             trial=f"{trial}-trace-target",
             mode="trace",
             oracle=Path(source["dir"]),
+            focus=focus,
         )
         if not target["ok"]:
             report = _failed_trace(task, trial, "target", target, source)
@@ -153,6 +209,8 @@ def trace(task: dict[str, Any], root: Path, *, trial: str = "t0") -> dict[str, A
                 "isolated": isolated,
                 # 同名模块构造超参差异（诊断证据，不参与判定）
                 "module_config": module_report,
+                # None 表示全量记录；否则只记录了这些模块
+                "focus": focus,
                 "source_run": source,
                 "target_run": target,
             }

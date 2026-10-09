@@ -547,13 +547,17 @@ def add_hooks(
     probe_values: dict[str, np.ndarray] | None = None,
     probe_calls: list[dict[str, Any]] | None = None,
     probe_inputs: dict[str, np.ndarray] | None = None,
+    focus: set[str] | None = None,
 ) -> list[Any]:
+    """focus 给定时只记录这些模块的输出与局部输入（trace 聚焦首次分歧附近，避免 GB 级产物）。"""
     counts: Counter[str] = Counter()
     handles = []
 
     def make(name: str, selected: bool) -> Callable:
         def record(_module: Any, inputs: Any, kwargs: dict[str, Any], output: Any) -> None:
             counts[name] += 1
+            if focus is not None and name not in focus:
+                return
             key = name if counts[name] == 1 else f"{name}#{counts[name]}"
             output_arrays = to_arrays(output, kind, key)
             values.update(output_arrays)
@@ -589,7 +593,7 @@ def add_hooks(
             continue
         selected = kind == "source" and root is not None and (
             _defined_in_repo(module, root) or _has_local_state(module)
-        )
+        ) and (focus is None or name in focus)
         hook = make(name, selected)
         if kind == "source":
             handle = module.register_forward_hook(hook, with_kwargs=True)
@@ -1065,6 +1069,7 @@ def capture(job: dict[str, Any]) -> dict[str, Any]:
         tensors = [tensor.cuda() for tensor in tensors]
     tensors = _variant_inputs(tensors, variant)
     args, kwargs = pack_values(tensors, job["inputs"])
+    focus = set(job["focus"]) if job.get("focus") else None
     trace_values: dict[str, np.ndarray] = {}
     module_values: dict[str, np.ndarray] = {}
     module_calls: list[dict[str, Any]] = []
@@ -1082,12 +1087,14 @@ def capture(job: dict[str, Any]) -> dict[str, Any]:
             probe_values=module_values,
             probe_calls=module_calls,
             probe_inputs=module_inputs,
+            focus=focus,
         )
     else:
         handles = []
+    # 聚焦 trace 不包装函数式算子：op.* 无法归属到模块，全量记录正是产物膨胀的来源之一
     ops = (
         OpTrace(kind, trace_values, [scope, *func_scopes(model, kind)])
-        if mode == "trace"
+        if mode == "trace" and focus is None
         else None
     )
     if ops:

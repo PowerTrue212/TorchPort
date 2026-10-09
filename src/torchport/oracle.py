@@ -49,11 +49,16 @@ def run_side(
     oracle: Path | None = None,
     performance: dict[str, int] | None = None,
     variant: dict[str, Any] | None = None,
+    focus: list[str] | None = None,
 ) -> dict[str, Any]:
-    """执行一端，返回 RunManifest；manifest 在全部产物写完后原子提交。"""
+    """执行一端，返回 RunManifest；manifest 在全部产物写完后原子提交。
+
+    focus 只用于 trace：只记录这些模块的输出与局部输入。
+    """
     side = task[kind]
     run_dir = new_run_dir(root / "runs", trial, kind)
     job = {
+        "focus": focus,
         # v3：layers 证据中的 output.* 不压缩，供逐元素比较
         "exact_outputs": task["protocol"]["profile"] == ENVELOPE_V3,
         "kind": kind,
