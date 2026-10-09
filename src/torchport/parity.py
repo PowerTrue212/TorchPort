@@ -563,6 +563,77 @@ def compare_envelope_v3(
     }
 
 
+def _same_config(a: Any, b: Any) -> bool:
+    # int 与等值整数列表视为相同（PyTorch Conv 存 (1, 1)，部分实现存 1）
+    if isinstance(a, list) and not isinstance(b, list):
+        return all(_same_config(item, b) for item in a)
+    if isinstance(b, list) and not isinstance(a, list):
+        return all(_same_config(a, item) for item in b)
+    if isinstance(a, list):
+        return len(a) == len(b) and all(_same_config(x, y) for x, y in zip(a, b))
+    if isinstance(a, float) or isinstance(b, float):
+        if isinstance(a, bool) or isinstance(b, bool) or a is None or b is None:
+            return a == b
+        return abs(float(a) - float(b)) <= 1e-12 * max(abs(float(a)), abs(float(b)), 1e-300)
+    return a == b
+
+
+def compare_module_config(
+    source: dict[str, dict[str, Any]],
+    target: dict[str, dict[str, Any]],
+    called: set[str] | None = None,
+) -> dict[str, Any]:
+    """同名模块的构造超参逐键比较；只比较两端都记录了的键，只作诊断证据，不参与判定。
+
+    called 给定时（source 前向中实际被调用的模块名），未被调用模块上的差异标为 used=False：
+    它们是死代码里的差异，不影响数值。
+    """
+    mismatches = []
+    compared = 0
+    for name, entry in source.items():
+        other = target.get(name)
+        if other is None:
+            continue
+        for key, value in entry.items():
+            if key == "class" or key not in other:
+                continue
+            compared += 1
+            if not _same_config(value, other[key]):
+                mismatches.append({
+                    "module": name,
+                    "key": key,
+                    "source": value,
+                    "target": other[key],
+                    "source_class": entry.get("class"),
+                    "target_class": other.get("class"),
+                    "used": None if called is None else name in called,
+                })
+    return {
+        "schema_version": 1,
+        "kind": "torchport.module_config",
+        "compared_keys": compared,
+        "common_modules": len(set(source) & set(target)),
+        "source_only_modules": len(set(source) - set(target)),
+        "used_mismatches": sum(item["used"] is not False for item in mismatches),
+        "mismatches": mismatches,
+    }
+
+
+def called_modules(layers_path: str | Path) -> set[str]:
+    """从 layers 证据的张量名还原前向中实际被调用的模块名（去掉 `#n` 调用序号与输出下标）。"""
+    with np.load(layers_path, allow_pickle=False) as archive:
+        names = [n for n in archive.files if not n.startswith(SHAPE_PREFIX)]
+    called: set[str] = set()
+    for name in names:
+        base = name.split("#", 1)[0]
+        called.add(base)
+        # 多输出模块的张量名形如 `<module>.0`；把去掉末段数字的前缀也算作被调用
+        head, _, tail = base.rpartition(".")
+        if head and tail.isdigit():
+            called.add(head)
+    return called
+
+
 def compare_metric_envelope(
     reference: dict[str, float],
     variants: list[dict[str, float]],

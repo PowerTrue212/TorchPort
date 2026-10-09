@@ -8,7 +8,13 @@ from typing import Any
 
 from .execution import add_physical_cost, read_json, run_physical_cost, write_json
 from .oracle import run_side
-from .parity import TOLERANCE_PROFILES, compare_noise_calibrated, compare_tensor_archives
+from .parity import (
+    TOLERANCE_PROFILES,
+    called_modules,
+    compare_module_config,
+    compare_noise_calibrated,
+    compare_tensor_archives,
+)
 
 
 def inspect_task(task: dict[str, Any]) -> dict[str, Any]:
@@ -126,6 +132,15 @@ def trace(task: dict[str, Any], root: Path, *, trial: str = "t0") -> dict[str, A
                         artifacts["module_alt"],
                         leaves=leaves,
                     )
+            configs = [run["artifacts"].get("module_config") for run in (source, target)]
+            module_report = (
+                compare_module_config(
+                    *(read_json(Path(path)) for path in configs),
+                    called_modules(source["artifacts"]["trace"]),
+                )
+                if all(configs)
+                else None
+            )
             report = {
                 "kind": "torchport.trace",
                 "task_id": task["task_id"],
@@ -136,6 +151,8 @@ def trace(task: dict[str, Any], root: Path, *, trial: str = "t0") -> dict[str, A
                 "output": outputs,
                 "strict": strict,
                 "isolated": isolated,
+                # 同名模块构造超参差异（诊断证据，不参与判定）
+                "module_config": module_report,
                 "source_run": source,
                 "target_run": target,
             }

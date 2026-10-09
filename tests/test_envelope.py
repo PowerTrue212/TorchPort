@@ -225,6 +225,60 @@ class MetricEnvelopeTests(unittest.TestCase):
         self.assertFalse(bad["passed"])
 
 
+class ModuleConfigTests(unittest.TestCase):
+    def test_reports_eps_swap_and_ignores_class_and_int_tuple_forms(self) -> None:
+        from torchport.parity import compare_module_config
+
+        # PlantCamo 实例：backbone.norm1 源为 1e-6、候选写成 1e-5；类名不同不算差异；
+        # Conv 的 (1, 1) 与 1 视为相同。
+        source = {
+            "backbone.norm1": {"class": "LayerNorm", "eps": 1e-6, "normalized_shape": [64]},
+            "backbone.block1.0.attn.norm": {"class": "LayerNorm", "eps": 1e-5},
+            "cr4.0": {"class": "Conv2d", "stride": [1, 1], "padding": [0, 0]},
+            "source_only": {"class": "Identity"},
+        }
+        target = {
+            "backbone.norm1": {"class": "_LayerNorm", "eps": 1e-5, "normalized_shape": [64]},
+            "backbone.block1.0.attn.norm": {"class": "_LayerNorm", "eps": 1e-5},
+            "cr4.0": {"class": "Conv", "stride": 1, "padding": 0},
+        }
+        report = compare_module_config(source, target)
+        self.assertEqual(
+            [(m["module"], m["key"], m["source"], m["target"]) for m in report["mismatches"]],
+            [("backbone.norm1", "eps", 1e-6, 1e-5)],
+        )
+        self.assertEqual(report["source_only_modules"], 1)
+
+    def test_module_config_records_scalar_hyperparameters_only(self) -> None:
+        from torchport.capture import module_config
+
+        class Norm:
+            eps = 1e-6
+            normalized_shape = (8,)
+            weight = np.zeros(8)  # 张量属性不进入记录
+
+        class Model:
+            def named_modules(self):
+                return [("", self), ("norm", Norm())]
+
+        config = module_config(Model())
+        self.assertEqual(config, {"norm": {"class": "Norm", "eps": 1e-6, "normalized_shape": [8]}})
+
+    def test_mismatch_in_uncalled_module_is_marked_unused(self) -> None:
+        from torchport.parity import called_modules, compare_module_config
+
+        # PlantCamo 实例：fm1..4 定义了但前向中没有调用，其 align_corners 差异是死代码
+        with tempfile.TemporaryDirectory() as temporary:
+            layers = Path(temporary) / "layers.npz"
+            np.savez(layers, **{"norm1": np.zeros(2), "head.0": np.zeros(2), "__shape__/norm1": np.asarray([2])})
+            called = called_modules(layers)
+        self.assertEqual(called, {"norm1", "head.0", "head"})
+        source = {"norm1": {"eps": 1e-6}, "fm1.up": {"align_corners": True}}
+        target = {"norm1": {"eps": 1e-5}, "fm1.up": {"align_corners": False}}
+        used = {m["module"]: m["used"] for m in compare_module_config(source, target, called)["mismatches"]}
+        self.assertEqual(used, {"norm1": True, "fm1.up": False})
+
+
 class JudgeNumericalTests(unittest.TestCase):
     def _infos(self) -> tuple[dict, dict]:
         source = {"mode": "normal", "hashes": {"input": "x"}, "weights": 2, "checkpoint": {"complete": True}}

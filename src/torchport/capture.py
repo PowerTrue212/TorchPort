@@ -936,6 +936,48 @@ def _unbatch(values: dict[str, np.ndarray], batch: int, mode: str = "copy") -> d
 
 _SKETCH_CACHE: dict[int, tuple[np.ndarray, np.ndarray]] = {}
 
+# 模块构造超参：两端同名模块逐键比较，直接报出 eps / padding / align_corners 等事实性差异。
+# 只记录标量或标量元组；张量属性（weight/bias 本身）不进入。
+CONFIG_KEYS = (
+    "eps", "momentum", "affine", "track_running_stats", "normalized_shape", "elementwise_affine",
+    "num_groups", "num_features", "in_channels", "out_channels", "in_features", "out_features",
+    "kernel_size", "stride", "padding", "dilation", "groups", "output_padding", "padding_mode",
+    "output_size", "scale_factor", "mode", "align_corners", "ceil_mode", "count_include_pad",
+    "approximate", "negative_slope", "num_heads",
+)
+_MISSING = object()
+
+
+def _config_value(value: Any) -> Any:
+    if isinstance(value, (bool, int, float, str)) or value is None:
+        return value
+    if isinstance(value, (list, tuple)) and all(
+        isinstance(item, (bool, int, float, str)) or item is None for item in value
+    ):
+        return list(value)
+    return _MISSING
+
+
+def module_config(model: Any) -> dict[str, dict[str, Any]]:
+    """每个子模块的类名与构造超参；只取标量，缺失或非标量的属性不记录。
+
+    类名只作报告（两端类名本来就不同），比较只看同名模块都有的超参键。
+    """
+    result: dict[str, dict[str, Any]] = {}
+    for name, module in model.named_modules():
+        if not name:
+            continue
+        entry: dict[str, Any] = {"class": type(module).__name__}
+        for key in CONFIG_KEYS:
+            try:
+                value = _config_value(getattr(module, key, _MISSING))
+            except Exception:  # 个别模块的 __getattr__ 会抛非 AttributeError
+                continue
+            if value is not _MISSING:
+                entry[key] = value
+        result[name] = entry
+    return result
+
 
 def _is_output_name(name: str) -> bool:
     return name == "output" or name.startswith("output.")
@@ -1155,6 +1197,9 @@ def capture(job: dict[str, Any]) -> dict[str, Any]:
     }
     if variant is not None:
         report["variant"] = variant
+    if mode in ("layers", "trace"):
+        # 构造超参只作诊断证据（两端同名模块逐键比较），不进入判定
+        write_json(out / "module_config.json", module_config(model))
     if mode == "layers":
         report["layers"] = len(layer_values)
     if kind == "source" and mode == "trace":

@@ -17,7 +17,14 @@ from .execution import (
     run_physical_cost,
     write_json,
 )
-from .parity import ENVELOPE_V3, compare_envelope, compare_envelope_v3, compare_tensor_archives
+from .parity import (
+    ENVELOPE_V3,
+    called_modules,
+    compare_envelope,
+    compare_envelope_v3,
+    compare_module_config,
+    compare_tensor_archives,
+)
 from .task import file_hash
 from .verify import judge, judge_repeats
 
@@ -82,6 +89,8 @@ def run_side(
             artifacts[name] = str(run_dir / f"{name}.npz")
     if ok and (run_dir / "module_inputs.npz").is_file():
         artifacts["module_inputs"] = str(run_dir / "module_inputs.npz")
+    if ok and (run_dir / "module_config.json").is_file():
+        artifacts["module_config"] = str(run_dir / "module_config.json")
     if ok and (run_dir / "module_calls.json").is_file():
         artifacts["module_calls"] = str(run_dir / "module_calls.json")
     if ok and (run_dir / "isolated.npz").is_file():
@@ -257,6 +266,8 @@ def build_envelope(task: dict[str, Any], root: Path, oracle: dict[str, Any]) -> 
         "reference": runs[0]["artifacts"]["layers"],
         "variants": [run["artifacts"]["layers"] for run in runs[1:]],
         "applied": [run["capture"].get("variant") for run in runs[1:]],
+        # 参考运行的模块构造超参，供 verify 与 target 同名模块逐键比较（诊断证据）
+        "module_config": runs[0]["artifacts"].get("module_config"),
         "build_physical_cost": physical,
     }
     write_json(meta_path, meta)
@@ -272,6 +283,7 @@ def verify_envelope(task: dict[str, Any], root: Path, *, trial: str = "t0") -> d
     target_runs: list[dict[str, Any]] = []
     result: dict[str, Any]
     report_e1 = None
+    module_report = None
     if not oracle.get("ok"):
         result = evaluate(oracle, {}, protocol)
     elif not envelope.get("ok"):
@@ -313,6 +325,15 @@ def verify_envelope(task: dict[str, Any], root: Path, *, trial: str = "t0") -> d
             result = judge(oracle["capture"], first["capture"], structure, None, protocol, numerical=report_e1)
             result["run_id"] = first["run_id"]
             result["candidate_identity"] = first["side_identity"]
+            source_config = envelope.get("module_config")
+            target_config = first["artifacts"].get("module_config")
+            if source_config and target_config and Path(source_config).is_file():
+                # 诊断证据：同名模块构造超参（eps、padding、align_corners 等）逐键比较，不参与判定
+                module_report = compare_module_config(
+                    read_json(Path(source_config)),
+                    read_json(Path(target_config)),
+                    called_modules(envelope["reference"]),
+                )
     target_physical = add_physical_cost(
         *(run_physical_cost(run, task["target"]["device"]) for run in target_runs)
     )
@@ -330,6 +351,7 @@ def verify_envelope(task: dict[str, Any], root: Path, *, trial: str = "t0") -> d
         "summary": result.get("summary"),
         "next": result.get("next"),
         "e1": report_e1,
+        "module_config": module_report,
         "physical_cost": add_physical_cost(
             oracle.get("physical_cost"), envelope.get("physical_cost"), target_physical
         ),
