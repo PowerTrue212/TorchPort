@@ -41,6 +41,8 @@ def _load_runner(
         (home / ".tp_ssh.env").write_text(env_file, encoding="utf-8")
     for name, value in (env or {}).items():
         monkeypatch.setenv(name, value)
+    # 打包根目录固定为测试临时目录，与 DSH 调用时的 cwd 无关。
+    monkeypatch.setenv("TP_PROJECT_ROOT", str(tmp_path))
 
     ssh_exec = types.ModuleType("ssh_exec")
     ssh_exec.connect = lambda: None
@@ -301,3 +303,70 @@ def test_ensure_weights_skips_upload_on_cache_hit(
 
     runner._ensure_weights(NoSftp(), tmp_path / "model.pth", "abc")
     assert commands == ["test -f /remote/root/weights-cache/abc/model.pth"]
+
+
+def _v2_report() -> dict[str, Any]:
+    return {
+        "kind": "torchport.verify",
+        "trial_id": "t0",
+        "passed": False,
+        "failure_code": "PARITY_FAILED",
+        "summary": "PARITY_FAILED: 首个超出噪声包络 model.decoder.MSA5.F_TA.norm1.body",
+        "e1": {
+            "first_divergence": {"name": "model.decoder.MSA5.F_TA.norm1.body", "position": 896},
+            "tensors": [{"name": "model.decoder.MSA5.F_TA.norm1.body", "ratio": 10.7}],
+            "metrics": {"compared_tensors": 860, "failed_tensors": 244, "max_ratio": 78.2},
+        },
+        "results": [
+            {
+                "runnable": "pass",
+                "structural": "pass",
+                "numerical": "fail",
+                "problems": ["首个超出噪声包络 model.decoder.MSA5.F_TA.norm1.body"],
+                "evidence": {"weights": {"complete": True}},
+            }
+        ],
+    }
+
+
+def test_diagnostic_view_has_no_location(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    runner = _load_runner(monkeypatch, tmp_path)
+    view = runner.diagnostic_view(_v2_report())
+    assert view == {
+        "passed": False,
+        "stage": "numerical",
+        "failure_code": "PARITY_FAILED",
+        "structural": "pass",
+        "weight_load": "pass",
+        "compared_tensors": 860,
+        "failed_tensors": 244,
+        "max_ratio": 78.2,
+    }
+    assert "MSA5" not in json.dumps(view)
+
+
+def test_diagnostic_filter_replaces_full_report(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    runner = _load_runner(monkeypatch, tmp_path)
+    monkeypatch.setattr(runner, "FEEDBACK", "diagnostic")
+    out = runner._filter("verify", json.dumps(_v2_report()))
+    assert "MSA5" not in out and "first_divergence" not in out
+    monkeypatch.setattr(runner, "FEEDBACK", "localized")
+    assert "MSA5" in runner._filter("verify", json.dumps(_v2_report()))
+
+
+@pytest.mark.parametrize(
+    "arguments",
+    [
+        ["trace", "task.json"],
+        ["localize", "/remote/root/x/evidence/trace/t0.json"],
+        ["run", "task.json", "target", "--mode", "trace"],
+    ],
+)
+def test_diagnostic_blocks_localizing_commands(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path, capsys: pytest.CaptureFixture[str], arguments: list[str]
+) -> None:
+    runner = _load_runner(monkeypatch, tmp_path)
+    monkeypatch.setattr(runner, "FEEDBACK", "diagnostic")
+    monkeypatch.setattr(runner, "connect", lambda: (_ for _ in ()).throw(AssertionError("must not connect")))
+    assert runner.main(arguments) == 2
+    assert "不可用" in capsys.readouterr().out

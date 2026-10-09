@@ -76,10 +76,17 @@ WEIGHTS_CACHE = REMOTE_ROOT / "weights-cache"
 SKIP_PARTS = {".git", ".torchport", "__pycache__", ".pytest_cache", "node_modules"}
 TASK_COMMANDS = {"inspect", "run", "evaluate", "trace", "verify"}
 COMMANDS = TASK_COMMANDS | {"localize"}
+# diagnostic：只返回阶段、失败类别与聚合数值，不返回层名、张量名或首次分歧；
+# localized：返回完整报告。完整报告只留在远端 evidence 下。
+FEEDBACK = os.environ.get("TP_FEEDBACK", "localized")
+LOCALIZING_COMMANDS = {"trace", "localize"}
+# DSH 从 Agent 工作区调用本脚本，cwd 是工作区而不是 TorchPort 仓库；
+# 打包路径校验和 torchport 源码位置都以仓库根为准。
+PROJECT_ROOT = Path(os.environ.get("TP_PROJECT_ROOT") or Path(__file__).resolve().parents[2]).resolve()
 
 
 def _inside_workspace(path: str | Path) -> Path:
-    root = Path.cwd().resolve()
+    root = PROJECT_ROOT
     value = Path(path)
     value = value.resolve() if value.is_absolute() else (root / value).resolve()
     if value != root and root not in value.parents:
@@ -160,7 +167,7 @@ def _build_bundle(task_path: Path, base: PurePosixPath) -> bytes:
     task: dict[str, Any] = json.loads(task_path.read_text("utf-8"))
     source = _inside_workspace(task["source"]["repo"])
     target = _inside_workspace(task["target"]["repo"])
-    package_root = Path.cwd().resolve() / "src" / "torchport"
+    package_root = PROJECT_ROOT / "src" / "torchport"
     if not package_root.is_dir():
         raise FileNotFoundError(package_root)
 
@@ -257,10 +264,62 @@ def _remote_arguments(arguments: list[str], base: PurePosixPath) -> list[str]:
     return values
 
 
+def diagnostic_view(report: dict[str, Any]) -> dict[str, Any]:
+    """verify/evaluate 报告的 diagnostic 视图：阶段、失败类别、聚合数值、结构与权重状态。
+
+    不含任何模块名、张量名、文件、行号、首次分歧或逐张量列表。
+    """
+    result = (report.get("results") or [report])[-1]
+    evidence = result.get("evidence") or {}
+    weights = evidence.get("weights") or {}
+    e1 = report.get("e1") or {}
+    metrics = e1.get("metrics") or {}
+    if result.get("runnable") == "fail":
+        stage = "runnable"
+    elif result.get("structural") == "fail":
+        stage = "structural"
+    elif result.get("numerical") == "fail":
+        stage = "numerical"
+    elif report.get("passed"):
+        stage = "passed"
+    else:
+        stage = "verification"
+    return {
+        "passed": bool(report.get("passed")),
+        "stage": stage,
+        "failure_code": report.get("failure_code"),
+        "structural": result.get("structural", "not_run"),
+        "weight_load": "pass" if weights.get("complete") else ("fail" if weights else "not_run"),
+        "compared_tensors": metrics.get("compared_tensors"),
+        "failed_tensors": metrics.get("failed_tensors"),
+        "max_ratio": metrics.get("max_ratio"),
+    }
+
+
+def _filter(command: str, out: str) -> str:
+    """diagnostic 条件下只把 diagnostic 视图交给 Agent；完整报告只留在远端 evidence 下。"""
+    if FEEDBACK == "localized" or command not in {"verify", "evaluate"}:
+        return out
+    try:
+        report = json.loads(out)
+    except json.JSONDecodeError:
+        return json.dumps({"passed": False, "stage": "verification", "failure_code": "UNPARSEABLE"})
+    # 完整报告只留在远端 evidence/verify 下供事后评测，不在本机落盘（Agent 本机可读）。
+    return json.dumps(diagnostic_view(report), ensure_ascii=False, indent=2)
+
+
 def main(arguments: list[str] | None = None) -> int:
     arguments = list(arguments or sys.argv[1:])
     if not arguments or arguments[0] not in COMMANDS:
         raise SystemExit("仅支持 inspect/run/evaluate/trace/localize/verify")
+    if FEEDBACK not in {"diagnostic", "localized"}:
+        raise SystemExit(f"未知反馈条件：{FEEDBACK}")
+    # run --mode trace 会产出逐层证据，与 trace 命令同属定位能力。
+    mode = arguments[arguments.index("--mode") + 1] if "--mode" in arguments[:-1] else "normal"
+    localizing = arguments[0] in LOCALIZING_COMMANDS or (arguments[0] == "run" and mode != "normal")
+    if FEEDBACK == "diagnostic" and localizing:
+        sys.stdout.write(json.dumps({"error": f"{arguments[0]} 在本实验条件下不可用"}, ensure_ascii=False))
+        return 2
     task_path = _inside_workspace(arguments[1]) if arguments[0] in TASK_COMMANDS else None
     base = _remote_base(task_path) if task_path else _report_base(arguments[1])
     client = connect()
@@ -280,7 +339,7 @@ def main(arguments: list[str] | None = None) -> int:
             ]
         )
         code, out, err = _run(client, command)
-        sys.stdout.write(out)
+        sys.stdout.write(_filter(arguments[0], out))
         sys.stderr.write(err)
         return code
     finally:
