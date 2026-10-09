@@ -116,5 +116,26 @@ class DiagnosisTests(unittest.TestCase):
         self.assertEqual(tuple(location), LOCALIZATION_FIELDS)
 
 
+    def test_failed_source_trace_reports_reason_and_run(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            task = _task(root / "repos")
+            failed = {
+                "ok": False,
+                "dir": str(root / "source-run"),
+                "artifacts": {},
+                "execution": {"stderr_tail": "warning: noise\ntorchport: [Errno 28] No space left on device"},
+            }
+            with patch.object(diagnosis, "run_side", lambda *_a, **_k: failed):
+                report = diagnosis.trace(task, root / "evidence", trial="trace-0")
+            location = diagnosis.localize(report)
+
+        self.assertEqual(report["failure_code"], "RUN_FAILED")
+        self.assertEqual(report["stage"], "source")
+        self.assertIs(report["source_run"], failed)
+        self.assertIn("No space left on device", report["reason"])
+        self.assertIn("No space left on device", location["reason"])
+
+
 if __name__ == "__main__":
     unittest.main()

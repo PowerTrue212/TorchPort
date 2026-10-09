@@ -156,6 +156,10 @@ def _failed_trace(
     run: dict[str, Any],
     source: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
+    # 失败的那一端必须进入报告，并给出 stderr 最后一行；否则 Agent 只能看到 RUN_FAILED。
+    execution = run.get("execution") or {}
+    tail = (execution.get("stderr_tail") or "").strip()
+    reason = "子进程超时" if execution.get("timeout") else (tail.splitlines() or ["无 stderr"])[-1]
     return {
         "kind": "torchport.trace",
         "task_id": task["task_id"],
@@ -165,7 +169,9 @@ def _failed_trace(
         "status": "run_failed",
         "failure_code": "RUN_FAILED",
         "stage": stage,
-        "source_run": source,
+        "reason": f"{stage} 运行失败：{reason[-500:]}",
+        "stderr_tail": tail,
+        "source_run": run if stage == "source" else source,
         "target_run": run if stage == "target" else None,
     }
 
@@ -178,6 +184,7 @@ def localize(report: dict[str, Any]) -> dict[str, Any]:
             "passed": False,
             "stage": report.get("stage"),
             "failure_code": report.get("failure_code"),
+            "reason": report.get("reason"),
             "first_divergence": None,
         }
     strict = report.get("strict") or {}
