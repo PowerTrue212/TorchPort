@@ -18,6 +18,12 @@ from .parity import (
 )
 
 
+def _tolerance_profile(task: dict[str, Any]) -> str:
+    """trace 的输出与重复性比较用固定容差；噪声包络协议（v2/v3）没有固定容差，退回 fp32-inference。"""
+    profile = task["protocol"]["profile"]
+    return profile if profile in TOLERANCE_PROFILES else "fp32-inference"
+
+
 def inspect_task(task: dict[str, Any]) -> dict[str, Any]:
     """返回公开任务契约，不读取或生成 oracle。"""
     def side(name: str) -> dict[str, Any]:
@@ -134,7 +140,7 @@ def trace(task: dict[str, Any], root: Path, *, trial: str = "t0") -> dict[str, A
             outputs = compare_tensor_archives(
                 source["artifacts"]["outputs"],
                 target["artifacts"]["outputs"],
-                profile=task["protocol"]["profile"],
+                profile=_tolerance_profile(task),
             )
             strict = compare_tensor_archives(
                 source["artifacts"]["trace"],
@@ -156,7 +162,7 @@ def trace(task: dict[str, Any], root: Path, *, trial: str = "t0") -> dict[str, A
                         target["artifacts"]["isolated_repeat"],
                         profile="operator-strict",
                     )
-                    profile = task["protocol"]["profile"]
+                    profile = _tolerance_profile(task)
                     rtol, atol = TOLERANCE_PROFILES[profile]
                     verification_repeatability = compare_tensor_archives(
                         target["artifacts"]["isolated"],

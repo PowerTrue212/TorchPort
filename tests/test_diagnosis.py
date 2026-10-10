@@ -175,3 +175,10 @@ class DiagnosisTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+def test_trace_tolerance_falls_back_for_envelope_profiles() -> None:
+    # 噪声包络协议没有固定容差；trace 的输出比较不能因此抛 "未知容差配置"
+    for profile in ("noise-envelope", "noise-envelope-v3"):
+        assert diagnosis._tolerance_profile({"protocol": {"profile": profile}}) == "fp32-inference"
+    assert diagnosis._tolerance_profile({"protocol": {"profile": "operator-strict"}}) == "operator-strict"
