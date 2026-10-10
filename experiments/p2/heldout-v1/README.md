@@ -73,15 +73,21 @@ benchmark / fp64 / cpu / channels_last / batch2(distinct)。停止规则见 `pro
 `e1_status` 为 `pass` 或 `marginal` 才可提交。之前的运行（birefnet-none-r0、plantcamo-full-r0）
 在 v2 下进行，只能用 v3 事后重验，不能与 v3 运行混在同一效率统计中。
 
-冻结依据（校准集，远端 `tp-work/v3all`，报告副本见 `results/`）：
+冻结依据（校准集第四轮，`floor_k=4`，远端 `tp-work/v3all`，报告副本见 `results/v3-calibration/`）：
 
 | 候选 | 预期 | v3 结果 | max_ratio |
 | --- | --- | --- | --- |
-| PlantCamo Agent 原候选（17 处 eps 写反） | fail | fail，首次 `backbone.norm1` | 10.9 |
-| PlantCamo eps 修正版 | pass | pass | 1.64 |
-| CamoFormer 正例 | pass | pass | 0.66 |
+| PlantCamo Agent 原候选（17 处 eps 写反） | fail | fail，首个 fail `block2.1.attn.norm`，首个 marginal `backbone.norm1` | 11.1 |
+| PlantCamo eps 修正版 | pass | pass | 1.97 |
+| CamoFormer 正例 | pass | pass | 0.65 |
 | CamoFormer gelu_tanh / ln_eps / mask_residual | fail | fail，首次均为注入点 | 107 / 62 / 4.7e5 |
-| BiRefNet none-r0（E2 326 张指标差 ~1e-8） | pass/marginal | marginal | 2.86 |
+| BiRefNet none-r0（E2 326 张指标差 ~1e-8） | pass/marginal | marginal | 2.99 |
+
+第三轮（`floor_k=3`）BiRefNet 为 2.86，第二轮为 3.095：同一正确候选在运行间波动约 ±0.1。
+
+trace（第五轮，PlantCamo 原候选，聚焦）：隔离比较按模块类取逐算子 N_env 后，localize 指向
+`block2.1.attn.norm`（marginal，比值 2.88）；`module_config` 报出全部 17 处 eps 差异。产物 source 172M /
+target 59M（聚焦前 6.1G）。全局最大 N_env 用于隔离比较时比值被压到 0.11，定位为空——这是逐算子修复的原因。
 
 已知边界：k 只用这 7 个候选估计；3 到 60 之间没有负对照；覆盖率 67%~94%；单张输入；
 函数式全局归约（`x.mean((2,3))`）不进入 N_env 形状推断。

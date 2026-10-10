@@ -1,0 +1,2152 @@
+{
+  "focus": [
+    "model.backbone.block2",
+    "model.backbone.block2.0",
+    "model.backbone.block2.0.mlp",
+    "model.backbone.block2.0.mlp.drop",
+    "model.backbone.block2.0.mlp.fc2",
+    "model.backbone.block2.1.attn.norm",
+    "model.backbone.block2.1.attn.q",
+    "model.backbone.block2.1.attn.sr",
+    "model.backbone.block2.1.norm1"
+  ],
+  "isolated": {
+    "atol": 1e-06,
+    "calibrated": {
+      "atol_floor": 1e-07,
+      "first_divergence": null,
+      "first_gating_divergence": null,
+      "k": 8.0,
+      "metrics": {
+        "compared_tensors": 7,
+        "failed_gating_tensors": 0,
+        "failed_reported_tensors": 0,
+        "failed_tensors": 0,
+        "gating_tensors": 5,
+        "max_gating_ratio": 2.3560675824038046,
+        "max_ratio": 2.3560675824038046
+      },
+      "missing_in_candidate": [],
+      "passed": true,
+      "profile": "noise-calibrated",
+      "schema_version": 1,
+      "tensors": [
+        {
+          "candidate_max_abs": 5.243574228153136e-07,
+          "candidate_p99_abs": 1.3552817289791407e-07,
+          "elements": 991232,
+          "gating": true,
+          "name": "model.backbone.block2.0.mlp.fc2",
+          "noise_max_abs": 1.8632674552154782e-06,
+          "noise_p99_abs": 2.75930041526151e-07,
+          "passed": true,
+          "position": 0,
+          "ratio_max": 0.28141822653939613,
+          "ratio_p99": 0.4911686025498225
+        },
+        {
+          "candidate_max_abs": 6.017909144340194e-07,
+          "candidate_p99_abs": 2.04629765745562e-07,
+          "elements": 991232,
+          "gating": false,
+          "name": "model.backbone.block2.0.mlp",
+          "noise_max_abs": 1.7514543626528933e-06,
+          "noise_p99_abs": 3.0647164086280987e-07,
+          "passed": true,
+          "position": 1,
+          "ratio_max": 0.343594972992901,
+          "ratio_p99": 0.6676955987492599
+        },
+        {
+          "candidate_max_abs": 8.833469826718954e-07,
+          "candidate_p99_abs": 3.038059651500056e-07,
+          "elements": 991232,
+          "gating": false,
+          "name": "model.backbone.block2.0",
+          "noise_max_abs": 1.740046770115633e-06,
+          "noise_p99_abs": 3.482918562194842e-07,
+          "passed": true,
+          "position": 2,
+          "ratio_max": 0.5076570341917841,
+          "ratio_p99": 0.8722740992214163
+        },
+        {
+          "candidate_max_abs": 1.0721235375044103e-06,
+          "candidate_p99_abs": 2.901806233079885e-07,
+          "elements": 991232,
+          "gating": true,
+          "name": "model.backbone.block2.1.norm1",
+          "noise_max_abs": 1.0332122815093214e-06,
+          "noise_p99_abs": 2.6428494486641075e-07,
+          "passed": true,
+          "position": 3,
+          "ratio_max": 1.0376604659966364,
+          "ratio_p99": 1.097983933419542
+        },
+        {
+          "candidate_max_abs": 2.2674129263045018e-06,
+          "candidate_p99_abs": 5.555982321547856e-07,
+          "elements": 991232,
+          "gating": true,
+          "name": "model.backbone.block2.1.attn.q",
+          "noise_max_abs": 2.2674129263045018e-06,
+          "noise_p99_abs": 5.555982321547856e-07,
+          "passed": true,
+          "position": 4,
+          "ratio_max": 1.0,
+          "ratio_p99": 1.0
+        },
+        {
+          "candidate_max_abs": 1.2563828668987753e-05,
+          "candidate_p99_abs": 3.956740166302096e-06,
+          "elements": 61952,
+          "gating": true,
+          "name": "model.backbone.block2.1.attn.sr",
+          "noise_max_abs": 5.168503947317049e-05,
+          "noise_p99_abs": 1.3779166491918442e-05,
+          "passed": true,
+          "position": 5,
+          "ratio_max": 0.24308443598093002,
+          "ratio_p99": 0.2871538106911435
+        },
+        {
+          "candidate_max_abs": 6.805015084765387e-07,
+          "candidate_p99_abs": 2.518611390001085e-07,
+          "elements": 61952,
+          "gating": true,
+          "name": "model.backbone.block2.1.attn.norm",
+          "noise_max_abs": 3.9441183741217856e-07,
+          "noise_p99_abs": 1.0689894503923538e-07,
+          "passed": true,
+          "position": 6,
+          "ratio_max": 1.7253577198429346,
+          "ratio_p99": 2.3560675824038046
+        }
+      ],
+      "uncalibrated": []
+    },
+    "candidate": "/root/autodl-tmp/tp-work/v3all/pc/evidence/runs/agent-trace-target/target-20261010-125007-9976f9de/isolated.npz",
+    "capture": {
+      "available": true,
+      "failed_modules": [],
+      "missing_modules": [],
+      "recorded": 7,
+      "succeeded": 7,
+      "unsupported_inputs": []
+    },
+    "envelope_v3": {
+      "first_divergence": null,
+      "first_marginal": {
+        "name": "model.backbone.block2.1.attn.norm",
+        "position": 6,
+        "reason": "介于 pass_k 与 floor_k 之间"
+      },
+      "floor_k": 4.0,
+      "metrics": {
+        "compared_tensors": 7,
+        "failed_tensors": 0,
+        "marginal_tensors": 1,
+        "max_ratio": 2.8783364217672194,
+        "unstable_tensors": 0
+      },
+      "missing_in_candidate": [],
+      "noise_floor": 1.8462111546759774e-06,
+      "pass_k": 2.0,
+      "passed": true,
+      "per_op_floor": true,
+      "profile": "isolated-envelope-v3",
+      "schema_version": 1,
+      "tensors": [
+        {
+          "floor_applied": false,
+          "name": "model.backbone.block2.0.mlp.fc2",
+          "noise_floor": 0.0,
+          "position": 0,
+          "ratio": 1.0712476647507363,
+          "relative_error": 4.5455583297206177e-07,
+          "source_noise": 4.2432375624158793e-07,
+          "status": "pass",
+          "target_noise": 0.0,
+          "unstable": false
+        },
+        {
+          "floor_applied": true,
+          "name": "model.backbone.block2.0.mlp",
+          "noise_floor": 1.8462111546759774e-06,
+          "position": 1,
+          "ratio": 0.2572464333644719,
+          "relative_error": 4.749312347780985e-07,
+          "source_noise": 5.115618837302195e-07,
+          "status": "pass",
+          "target_noise": 0.0,
+          "unstable": false
+        },
+        {
+          "floor_applied": true,
+          "name": "model.backbone.block2.0",
+          "noise_floor": 1.8462111546759774e-06,
+          "position": 2,
+          "ratio": 0.1335967152105526,
+          "relative_error": 2.46647745849792e-07,
+          "source_noise": 2.3237960807797312e-07,
+          "status": "pass",
+          "target_noise": 1.304060829741188e-07,
+          "unstable": false
+        },
+        {
+          "floor_applied": false,
+          "name": "model.backbone.block2.1.norm1",
+          "noise_floor": 0.0,
+          "position": 3,
+          "ratio": 1.4242508666192166,
+          "relative_error": 9.748041419500988e-08,
+          "source_noise": 6.844328936685278e-08,
+          "status": "pass",
+          "target_noise": 0.0,
+          "unstable": false
+        },
+        {
+          "floor_applied": false,
+          "name": "model.backbone.block2.1.attn.q",
+          "noise_floor": 0.0,
+          "position": 4,
+          "ratio": 0.0,
+          "relative_error": 0.0,
+          "source_noise": 1.5665969108141757e-07,
+          "status": "pass",
+          "target_noise": 0.0,
+          "unstable": false
+        },
+        {
+          "floor_applied": false,
+          "name": "model.backbone.block2.1.attn.sr",
+          "noise_floor": 1.8131767117627429e-07,
+          "position": 5,
+          "ratio": 1.0403131071043656,
+          "relative_error": 6.924463103767314e-07,
+          "source_noise": 6.656133674063806e-07,
+          "status": "pass",
+          "target_noise": 2.148739432958302e-07,
+          "unstable": false
+        },
+        {
+          "floor_applied": false,
+          "name": "model.backbone.block2.1.attn.norm",
+          "noise_floor": 0.0,
+          "position": 6,
+          "ratio": 2.8783364217672194,
+          "relative_error": 1.988616086975872e-07,
+          "source_noise": 6.908907770256113e-08,
+          "status": "marginal",
+          "target_noise": 0.0,
+          "unstable": false
+        }
+      ],
+      "uncalibrated": []
+    },
+    "extra_in_candidate": [],
+    "first_divergence": {
+      "name": "model.backbone.block2.0",
+      "position": 2,
+      "reason": "数值超出容差"
+    },
+    "first_gating_divergence": {
+      "name": "model.backbone.block2.0",
+      "position": 2,
+      "reason": "数值超出容差"
+    },
+    "metrics": {
+      "compared_elements": 5080064,
+      "compared_tensors": 7,
+      "extra_tensors": 0,
+      "max_absolute_error": 4.76837158203125e-05,
+      "mismatch_ratio": 0.00013287234176577304,
+      "mismatched_elements": 675,
+      "mismatched_tensors": 2,
+      "missing_tensors": 0,
+      "skipped_sketched_tensors": 0
+    },
+    "missing_in_candidate": [],
+    "passed": false,
+    "profile": "operator-strict",
+    "reference": "/root/autodl-tmp/tp-work/v3all/pc/evidence/runs/agent-trace-source/source-20261010-124959-4aa1e33e/module_outputs.npz",
+    "repeatability": {
+      "atol": 1e-06,
+      "candidate": "/root/autodl-tmp/tp-work/v3all/pc/evidence/runs/agent-trace-target/target-20261010-125007-9976f9de/isolated_repeat.npz",
+      "extra_in_candidate": [],
+      "first_divergence": {
+        "name": "model.backbone.block2.1.attn.sr",
+        "position": 5,
+        "reason": "数值超出容差"
+      },
+      "first_gating_divergence": {
+        "name": "model.backbone.block2.1.attn.sr",
+        "position": 5,
+        "reason": "数值超出容差"
+      },
+      "metrics": {
+        "compared_elements": 5080064,
+        "compared_tensors": 7,
+        "extra_tensors": 0,
+        "max_absolute_error": 1.1444091796875e-05,
+        "mismatch_ratio": 7.873916549082847e-06,
+        "mismatched_elements": 40,
+        "mismatched_tensors": 1,
+        "missing_tensors": 0,
+        "skipped_sketched_tensors": 0
+      },
+      "missing_in_candidate": [],
+      "passed": false,
+      "profile": "operator-strict",
+      "reference": "/root/autodl-tmp/tp-work/v3all/pc/evidence/runs/agent-trace-target/target-20261010-125007-9976f9de/isolated.npz",
+      "require_all": true,
+      "rtol": 1e-05,
+      "schema_version": 1,
+      "skipped_sketched": [],
+      "tensors": [
+        {
+          "candidate_dtype": "float32",
+          "candidate_shape": [
+            1,
+            7744,
+            128
+          ],
+          "cosine_similarity": 1.0,
+          "elements": 991232,
+          "gating": true,
+          "max_absolute_error": 0.0,
+          "max_relative_error": 0.0,
+          "mean_absolute_error": 0.0,
+          "mismatch_ratio": 0.0,
+          "mismatched_elements": 0,
+          "name": "model.backbone.block2.0.mlp.fc2",
+          "original_shape": [
+            1,
+            7744,
+            128
+          ],
+          "p99_absolute_error": 0.0,
+          "passed": true,
+          "position": 0,
+          "reference_dtype": "float32",
+          "reference_shape": [
+            1,
+            7744,
+            128
+          ],
+          "storage": "exact"
+        },
+        {
+          "candidate_dtype": "float32",
+          "candidate_shape": [
+            1,
+            7744,
+            128
+          ],
+          "cosine_similarity": 1.0,
+          "elements": 991232,
+          "gating": true,
+          "max_absolute_error": 0.0,
+          "max_relative_error": 0.0,
+          "mean_absolute_error": 0.0,
+          "mismatch_ratio": 0.0,
+          "mismatched_elements": 0,
+          "name": "model.backbone.block2.0.mlp",
+          "original_shape": [
+            1,
+            7744,
+            128
+          ],
+          "p99_absolute_error": 0.0,
+          "passed": true,
+          "position": 1,
+          "reference_dtype": "float32",
+          "reference_shape": [
+            1,
+            7744,
+            128
+          ],
+          "storage": "exact"
+        },
+        {
+          "candidate_dtype": "float32",
+          "candidate_shape": [
+            1,
+            7744,
+            128
+          ],
+          "cosine_similarity": 0.9999999999999922,
+          "elements": 991232,
+          "gating": true,
+          "max_absolute_error": 5.960464477539062e-07,
+          "max_relative_error": 0.09433962264150944,
+          "mean_absolute_error": 5.1117694496016224e-08,
+          "mismatch_ratio": 0.0,
+          "mismatched_elements": 0,
+          "name": "model.backbone.block2.0",
+          "original_shape": [
+            1,
+            7744,
+            128
+          ],
+          "p99_absolute_error": 1.7881393432617188e-07,
+          "passed": true,
+          "position": 2,
+          "reference_dtype": "float32",
+          "reference_shape": [
+            1,
+            7744,
+            128
+          ],
+          "storage": "exact"
+        },
+        {
+          "candidate_dtype": "float32",
+          "candidate_shape": [
+            1,
+            7744,
+            128
+          ],
+          "cosine_similarity": 1.0,
+          "elements": 991232,
+          "gating": true,
+          "max_absolute_error": 0.0,
+          "max_relative_error": 0.0,
+          "mean_absolute_error": 0.0,
+          "mismatch_ratio": 0.0,
+          "mismatched_elements": 0,
+          "name": "model.backbone.block2.1.norm1",
+          "original_shape": [
+            1,
+            7744,
+            128
+          ],
+          "p99_absolute_error": 0.0,
+          "passed": true,
+          "position": 3,
+          "reference_dtype": "float32",
+          "reference_shape": [
+            1,
+            7744,
+            128
+          ],
+          "storage": "exact"
+        },
+        {
+          "candidate_dtype": "float32",
+          "candidate_shape": [
+            1,
+            7744,
+            128
+          ],
+          "cosine_similarity": 0.9999999999999999,
+          "elements": 991232,
+          "gating": true,
+          "max_absolute_error": 0.0,
+          "max_relative_error": 0.0,
+          "mean_absolute_error": 0.0,
+          "mismatch_ratio": 0.0,
+          "mismatched_elements": 0,
+          "name": "model.backbone.block2.1.attn.q",
+          "original_shape": [
+            1,
+            7744,
+            128
+          ],
+          "p99_absolute_error": 0.0,
+          "passed": true,
+          "position": 4,
+          "reference_dtype": "float32",
+          "reference_shape": [
+            1,
+            7744,
+            128
+          ],
+          "storage": "exact"
+        },
+        {
+          "candidate_dtype": "float32",
+          "candidate_shape": [
+            1,
+            128,
+            22,
+            22
+          ],
+          "cosine_similarity": 0.9999999999999769,
+          "elements": 61952,
+          "gating": true,
+          "max_absolute_error": 1.1444091796875e-05,
+          "max_relative_error": 0.002036659877800407,
+          "mean_absolute_error": 8.646751035289639e-07,
+          "mismatch_ratio": 0.0006456611570247934,
+          "mismatched_elements": 40,
+          "name": "model.backbone.block2.1.attn.sr",
+          "original_shape": [
+            1,
+            128,
+            22,
+            22
+          ],
+          "p99_absolute_error": 4.291534423828125e-06,
+          "passed": false,
+          "position": 5,
+          "reference_dtype": "float32",
+          "reference_shape": [
+            1,
+            128,
+            22,
+            22
+          ],
+          "storage": "exact"
+        },
+        {
+          "candidate_dtype": "float32",
+          "candidate_shape": [
+            1,
+            484,
+            128
+          ],
+          "cosine_similarity": 1.0,
+          "elements": 61952,
+          "gating": true,
+          "max_absolute_error": 0.0,
+          "max_relative_error": 0.0,
+          "mean_absolute_error": 0.0,
+          "mismatch_ratio": 0.0,
+          "mismatched_elements": 0,
+          "name": "model.backbone.block2.1.attn.norm",
+          "original_shape": [
+            1,
+            484,
+            128
+          ],
+          "p99_absolute_error": 0.0,
+          "passed": true,
+          "position": 6,
+          "reference_dtype": "float32",
+          "reference_shape": [
+            1,
+            484,
+            128
+          ],
+          "storage": "exact"
+        }
+      ]
+    },
+    "repeatability_at_verification_tolerance": {
+      "atol": 0.0001,
+      "candidate": "/root/autodl-tmp/tp-work/v3all/pc/evidence/runs/agent-trace-target/target-20261010-125007-9976f9de/isolated_repeat.npz",
+      "extra_in_candidate": [],
+      "first_divergence": null,
+      "first_gating_divergence": null,
+      "metrics": {
+        "compared_elements": 5080064,
+        "compared_tensors": 7,
+        "extra_tensors": 0,
+        "max_absolute_error": 1.1444091796875e-05,
+        "mismatch_ratio": 0.0,
+        "mismatched_elements": 0,
+        "mismatched_tensors": 0,
+        "missing_tensors": 0,
+        "skipped_sketched_tensors": 0
+      },
+      "missing_in_candidate": [],
+      "passed": true,
+      "profile": "operator-strict",
+      "reference": "/root/autodl-tmp/tp-work/v3all/pc/evidence/runs/agent-trace-target/target-20261010-125007-9976f9de/isolated.npz",
+      "require_all": true,
+      "rtol": 0.0001,
+      "schema_version": 1,
+      "skipped_sketched": [],
+      "tensors": [
+        {
+          "candidate_dtype": "float32",
+          "candidate_shape": [
+            1,
+            7744,
+            128
+          ],
+          "cosine_similarity": 1.0,
+          "elements": 991232,
+          "gating": true,
+          "max_absolute_error": 0.0,
+          "max_relative_error": 0.0,
+          "mean_absolute_error": 0.0,
+          "mismatch_ratio": 0.0,
+          "mismatched_elements": 0,
+          "name": "model.backbone.block2.0.mlp.fc2",
+          "original_shape": [
+            1,
+            7744,
+            128
+          ],
+          "p99_absolute_error": 0.0,
+          "passed": true,
+          "position": 0,
+          "reference_dtype": "float32",
+          "reference_shape": [
+            1,
+            7744,
+            128
+          ],
+          "storage": "exact"
+        },
+        {
+          "candidate_dtype": "float32",
+          "candidate_shape": [
+            1,
+            7744,
+            128
+          ],
+          "cosine_similarity": 1.0,
+          "elements": 991232,
+          "gating": true,
+          "max_absolute_error": 0.0,
+          "max_relative_error": 0.0,
+          "mean_absolute_error": 0.0,
+          "mismatch_ratio": 0.0,
+          "mismatched_elements": 0,
+          "name": "model.backbone.block2.0.mlp",
+          "original_shape": [
+            1,
+            7744,
+            128
+          ],
+          "p99_absolute_error": 0.0,
+          "passed": true,
+          "position": 1,
+          "reference_dtype": "float32",
+          "reference_shape": [
+            1,
+            7744,
+            128
+          ],
+          "storage": "exact"
+        },
+        {
+          "candidate_dtype": "float32",
+          "candidate_shape": [
+            1,
+            7744,
+            128
+          ],
+          "cosine_similarity": 0.9999999999999922,
+          "elements": 991232,
+          "gating": true,
+          "max_absolute_error": 5.960464477539062e-07,
+          "max_relative_error": 0.09433962264150944,
+          "mean_absolute_error": 5.1117694496016224e-08,
+          "mismatch_ratio": 0.0,
+          "mismatched_elements": 0,
+          "name": "model.backbone.block2.0",
+          "original_shape": [
+            1,
+            7744,
+            128
+          ],
+          "p99_absolute_error": 1.7881393432617188e-07,
+          "passed": true,
+          "position": 2,
+          "reference_dtype": "float32",
+          "reference_shape": [
+            1,
+            7744,
+            128
+          ],
+          "storage": "exact"
+        },
+        {
+          "candidate_dtype": "float32",
+          "candidate_shape": [
+            1,
+            7744,
+            128
+          ],
+          "cosine_similarity": 1.0,
+          "elements": 991232,
+          "gating": true,
+          "max_absolute_error": 0.0,
+          "max_relative_error": 0.0,
+          "mean_absolute_error": 0.0,
+          "mismatch_ratio": 0.0,
+          "mismatched_elements": 0,
+          "name": "model.backbone.block2.1.norm1",
+          "original_shape": [
+            1,
+            7744,
+            128
+          ],
+          "p99_absolute_error": 0.0,
+          "passed": true,
+          "position": 3,
+          "reference_dtype": "float32",
+          "reference_shape": [
+            1,
+            7744,
+            128
+          ],
+          "storage": "exact"
+        },
+        {
+          "candidate_dtype": "float32",
+          "candidate_shape": [
+            1,
+            7744,
+            128
+          ],
+          "cosine_similarity": 0.9999999999999999,
+          "elements": 991232,
+          "gating": true,
+          "max_absolute_error": 0.0,
+          "max_relative_error": 0.0,
+          "mean_absolute_error": 0.0,
+          "mismatch_ratio": 0.0,
+          "mismatched_elements": 0,
+          "name": "model.backbone.block2.1.attn.q",
+          "original_shape": [
+            1,
+            7744,
+            128
+          ],
+          "p99_absolute_error": 0.0,
+          "passed": true,
+          "position": 4,
+          "reference_dtype": "float32",
+          "reference_shape": [
+            1,
+            7744,
+            128
+          ],
+          "storage": "exact"
+        },
+        {
+          "candidate_dtype": "float32",
+          "candidate_shape": [
+            1,
+            128,
+            22,
+            22
+          ],
+          "cosine_similarity": 0.9999999999999769,
+          "elements": 61952,
+          "gating": true,
+          "max_absolute_error": 1.1444091796875e-05,
+          "max_relative_error": 0.002036659877800407,
+          "mean_absolute_error": 8.646751035289639e-07,
+          "mismatch_ratio": 0.0,
+          "mismatched_elements": 0,
+          "name": "model.backbone.block2.1.attn.sr",
+          "original_shape": [
+            1,
+            128,
+            22,
+            22
+          ],
+          "p99_absolute_error": 4.291534423828125e-06,
+          "passed": true,
+          "position": 5,
+          "reference_dtype": "float32",
+          "reference_shape": [
+            1,
+            128,
+            22,
+            22
+          ],
+          "storage": "exact"
+        },
+        {
+          "candidate_dtype": "float32",
+          "candidate_shape": [
+            1,
+            484,
+            128
+          ],
+          "cosine_similarity": 1.0,
+          "elements": 61952,
+          "gating": true,
+          "max_absolute_error": 0.0,
+          "max_relative_error": 0.0,
+          "mean_absolute_error": 0.0,
+          "mismatch_ratio": 0.0,
+          "mismatched_elements": 0,
+          "name": "model.backbone.block2.1.attn.norm",
+          "original_shape": [
+            1,
+            484,
+            128
+          ],
+          "p99_absolute_error": 0.0,
+          "passed": true,
+          "position": 6,
+          "reference_dtype": "float32",
+          "reference_shape": [
+            1,
+            484,
+            128
+          ],
+          "storage": "exact"
+        }
+      ],
+      "tolerance_basis": "fp32-inference"
+    },
+    "require_all": false,
+    "rtol": 1e-05,
+    "schema_version": 1,
+    "skipped_sketched": [],
+    "source_repeatability": {
+      "atol": 1e-06,
+      "candidate": "/root/autodl-tmp/tp-work/v3all/pc/evidence/runs/agent-trace-source/source-20261010-124959-4aa1e33e/module_repeat.npz",
+      "extra_in_candidate": [],
+      "first_divergence": null,
+      "first_gating_divergence": null,
+      "metrics": {
+        "compared_elements": 5080064,
+        "compared_tensors": 7,
+        "extra_tensors": 0,
+        "max_absolute_error": 0.0,
+        "mismatch_ratio": 0.0,
+        "mismatched_elements": 0,
+        "mismatched_tensors": 0,
+        "missing_tensors": 0,
+        "skipped_sketched_tensors": 0
+      },
+      "missing_in_candidate": [],
+      "passed": true,
+      "profile": "operator-strict",
+      "reference": "/root/autodl-tmp/tp-work/v3all/pc/evidence/runs/agent-trace-source/source-20261010-124959-4aa1e33e/module_outputs.npz",
+      "require_all": false,
+      "rtol": 1e-05,
+      "schema_version": 1,
+      "skipped_sketched": [],
+      "tensors": [
+        {
+          "candidate_dtype": "float32",
+          "candidate_shape": [
+            1,
+            7744,
+            128
+          ],
+          "cosine_similarity": 0.9999999999999998,
+          "elements": 991232,
+          "gating": true,
+          "max_absolute_error": 0.0,
+          "max_relative_error": 0.0,
+          "mean_absolute_error": 0.0,
+          "mismatch_ratio": 0.0,
+          "mismatched_elements": 0,
+          "name": "model.backbone.block2.0.mlp.fc2",
+          "original_shape": [
+            1,
+            7744,
+            128
+          ],
+          "p99_absolute_error": 0.0,
+          "passed": true,
+          "position": 0,
+          "reference_dtype": "float32",
+          "reference_shape": [
+            1,
+            7744,
+            128
+          ],
+          "storage": "exact"
+        },
+        {
+          "candidate_dtype": "float32",
+          "candidate_shape": [
+            1,
+            7744,
+            128
+          ],
+          "cosine_similarity": 0.9999999999999998,
+          "elements": 991232,
+          "gating": true,
+          "max_absolute_error": 0.0,
+          "max_relative_error": 0.0,
+          "mean_absolute_error": 0.0,
+          "mismatch_ratio": 0.0,
+          "mismatched_elements": 0,
+          "name": "model.backbone.block2.0.mlp",
+          "original_shape": [
+            1,
+            7744,
+            128
+          ],
+          "p99_absolute_error": 0.0,
+          "passed": true,
+          "position": 1,
+          "reference_dtype": "float32",
+          "reference_shape": [
+            1,
+            7744,
+            128
+          ],
+          "storage": "exact"
+        },
+        {
+          "candidate_dtype": "float32",
+          "candidate_shape": [
+            1,
+            7744,
+            128
+          ],
+          "cosine_similarity": 1.0,
+          "elements": 991232,
+          "gating": true,
+          "max_absolute_error": 0.0,
+          "max_relative_error": 0.0,
+          "mean_absolute_error": 0.0,
+          "mismatch_ratio": 0.0,
+          "mismatched_elements": 0,
+          "name": "model.backbone.block2.0",
+          "original_shape": [
+            1,
+            7744,
+            128
+          ],
+          "p99_absolute_error": 0.0,
+          "passed": true,
+          "position": 2,
+          "reference_dtype": "float32",
+          "reference_shape": [
+            1,
+            7744,
+            128
+          ],
+          "storage": "exact"
+        },
+        {
+          "candidate_dtype": "float32",
+          "candidate_shape": [
+            1,
+            7744,
+            128
+          ],
+          "cosine_similarity": 1.0,
+          "elements": 991232,
+          "gating": true,
+          "max_absolute_error": 0.0,
+          "max_relative_error": 0.0,
+          "mean_absolute_error": 0.0,
+          "mismatch_ratio": 0.0,
+          "mismatched_elements": 0,
+          "name": "model.backbone.block2.1.norm1",
+          "original_shape": [
+            1,
+            7744,
+            128
+          ],
+          "p99_absolute_error": 0.0,
+          "passed": true,
+          "position": 3,
+          "reference_dtype": "float32",
+          "reference_shape": [
+            1,
+            7744,
+            128
+          ],
+          "storage": "exact"
+        },
+        {
+          "candidate_dtype": "float32",
+          "candidate_shape": [
+            1,
+            7744,
+            128
+          ],
+          "cosine_similarity": 0.9999999999999999,
+          "elements": 991232,
+          "gating": true,
+          "max_absolute_error": 0.0,
+          "max_relative_error": 0.0,
+          "mean_absolute_error": 0.0,
+          "mismatch_ratio": 0.0,
+          "mismatched_elements": 0,
+          "name": "model.backbone.block2.1.attn.q",
+          "original_shape": [
+            1,
+            7744,
+            128
+          ],
+          "p99_absolute_error": 0.0,
+          "passed": true,
+          "position": 4,
+          "reference_dtype": "float32",
+          "reference_shape": [
+            1,
+            7744,
+            128
+          ],
+          "storage": "exact"
+        },
+        {
+          "candidate_dtype": "float32",
+          "candidate_shape": [
+            1,
+            128,
+            22,
+            22
+          ],
+          "cosine_similarity": 1.0,
+          "elements": 61952,
+          "gating": true,
+          "max_absolute_error": 0.0,
+          "max_relative_error": 0.0,
+          "mean_absolute_error": 0.0,
+          "mismatch_ratio": 0.0,
+          "mismatched_elements": 0,
+          "name": "model.backbone.block2.1.attn.sr",
+          "original_shape": [
+            1,
+            128,
+            22,
+            22
+          ],
+          "p99_absolute_error": 0.0,
+          "passed": true,
+          "position": 5,
+          "reference_dtype": "float32",
+          "reference_shape": [
+            1,
+            128,
+            22,
+            22
+          ],
+          "storage": "exact"
+        },
+        {
+          "candidate_dtype": "float32",
+          "candidate_shape": [
+            1,
+            484,
+            128
+          ],
+          "cosine_similarity": 1.0,
+          "elements": 61952,
+          "gating": true,
+          "max_absolute_error": 0.0,
+          "max_relative_error": 0.0,
+          "mean_absolute_error": 0.0,
+          "mismatch_ratio": 0.0,
+          "mismatched_elements": 0,
+          "name": "model.backbone.block2.1.attn.norm",
+          "original_shape": [
+            1,
+            484,
+            128
+          ],
+          "p99_absolute_error": 0.0,
+          "passed": true,
+          "position": 6,
+          "reference_dtype": "float32",
+          "reference_shape": [
+            1,
+            484,
+            128
+          ],
+          "storage": "exact"
+        }
+      ]
+    },
+    "tensors": [
+      {
+        "candidate_dtype": "float32",
+        "candidate_shape": [
+          1,
+          7744,
+          128
+        ],
+        "cosine_similarity": 0.999999999999898,
+        "elements": 991232,
+        "gating": true,
+        "max_absolute_error": 1.9073486328125e-06,
+        "max_relative_error": 0.07692307692307693,
+        "mean_absolute_error": 6.59456625064856e-08,
+        "mismatch_ratio": 0.0,
+        "mismatched_elements": 0,
+        "name": "model.backbone.block2.0.mlp.fc2",
+        "original_shape": [
+          1,
+          7744,
+          128
+        ],
+        "p99_absolute_error": 2.980232238769531e-07,
+        "passed": true,
+        "position": 0,
+        "reference_dtype": "float32",
+        "reference_shape": [
+          1,
+          7744,
+          128
+        ],
+        "storage": "exact"
+      },
+      {
+        "candidate_dtype": "float32",
+        "candidate_shape": [
+          1,
+          7744,
+          128
+        ],
+        "cosine_similarity": 0.9999999999998886,
+        "elements": 991232,
+        "gating": true,
+        "max_absolute_error": 1.7881393432617188e-06,
+        "max_relative_error": 0.2608695652173913,
+        "mean_absolute_error": 6.998847309599918e-08,
+        "mismatch_ratio": 0.0,
+        "mismatched_elements": 0,
+        "name": "model.backbone.block2.0.mlp",
+        "original_shape": [
+          1,
+          7744,
+          128
+        ],
+        "p99_absolute_error": 2.980232238769531e-07,
+        "passed": true,
+        "position": 1,
+        "reference_dtype": "float32",
+        "reference_shape": [
+          1,
+          7744,
+          128
+        ],
+        "storage": "exact"
+      },
+      {
+        "candidate_dtype": "float32",
+        "candidate_shape": [
+          1,
+          7744,
+          128
+        ],
+        "cosine_similarity": 0.9999999999999707,
+        "elements": 991232,
+        "gating": true,
+        "max_absolute_error": 1.9073486328125e-06,
+        "max_relative_error": 0.16571969696969696,
+        "mean_absolute_error": 9.850979709460435e-08,
+        "mismatch_ratio": 1.0088455578512397e-06,
+        "mismatched_elements": 1,
+        "name": "model.backbone.block2.0",
+        "original_shape": [
+          1,
+          7744,
+          128
+        ],
+        "p99_absolute_error": 3.5762786865234375e-07,
+        "passed": false,
+        "position": 2,
+        "reference_dtype": "float32",
+        "reference_shape": [
+          1,
+          7744,
+          128
+        ],
+        "storage": "exact"
+      },
+      {
+        "candidate_dtype": "float32",
+        "candidate_shape": [
+          1,
+          7744,
+          128
+        ],
+        "cosine_similarity": 0.9999999999999966,
+        "elements": 991232,
+        "gating": true,
+        "max_absolute_error": 1.430511474609375e-06,
+        "max_relative_error": 0.007344074230154741,
+        "mean_absolute_error": 6.330288193445216e-08,
+        "mismatch_ratio": 0.0,
+        "mismatched_elements": 0,
+        "name": "model.backbone.block2.1.norm1",
+        "original_shape": [
+          1,
+          7744,
+          128
+        ],
+        "p99_absolute_error": 3.5762786865234375e-07,
+        "passed": true,
+        "position": 3,
+        "reference_dtype": "float32",
+        "reference_shape": [
+          1,
+          7744,
+          128
+        ],
+        "storage": "exact"
+      },
+      {
+        "candidate_dtype": "float32",
+        "candidate_shape": [
+          1,
+          7744,
+          128
+        ],
+        "cosine_similarity": 0.9999999999999999,
+        "elements": 991232,
+        "gating": true,
+        "max_absolute_error": 0.0,
+        "max_relative_error": 0.0,
+        "mean_absolute_error": 0.0,
+        "mismatch_ratio": 0.0,
+        "mismatched_elements": 0,
+        "name": "model.backbone.block2.1.attn.q",
+        "original_shape": [
+          1,
+          7744,
+          128
+        ],
+        "p99_absolute_error": 0.0,
+        "passed": true,
+        "position": 4,
+        "reference_dtype": "float32",
+        "reference_shape": [
+          1,
+          7744,
+          128
+        ],
+        "storage": "exact"
+      },
+      {
+        "candidate_dtype": "float32",
+        "candidate_shape": [
+          1,
+          128,
+          22,
+          22
+        ],
+        "cosine_similarity": 0.9999999999997617,
+        "elements": 61952,
+        "gating": true,
+        "max_absolute_error": 4.76837158203125e-05,
+        "max_relative_error": 0.02815533980582524,
+        "mean_absolute_error": 2.7681130895194838e-06,
+        "mismatch_ratio": 0.010879390495867768,
+        "mismatched_elements": 674,
+        "name": "model.backbone.block2.1.attn.sr",
+        "original_shape": [
+          1,
+          128,
+          22,
+          22
+        ],
+        "p99_absolute_error": 1.430511474609375e-05,
+        "passed": false,
+        "position": 5,
+        "reference_dtype": "float32",
+        "reference_shape": [
+          1,
+          128,
+          22,
+          22
+        ],
+        "storage": "exact"
+      },
+      {
+        "candidate_dtype": "float32",
+        "candidate_shape": [
+          1,
+          484,
+          128
+        ],
+        "cosine_similarity": 0.9999999999999943,
+        "elements": 61952,
+        "gating": true,
+        "max_absolute_error": 9.5367431640625e-07,
+        "max_relative_error": 0.004117653860617615,
+        "mean_absolute_error": 4.2916776679422386e-08,
+        "mismatch_ratio": 0.0,
+        "mismatched_elements": 0,
+        "name": "model.backbone.block2.1.attn.norm",
+        "original_shape": [
+          1,
+          484,
+          128
+        ],
+        "p99_absolute_error": 2.384185791015625e-07,
+        "passed": true,
+        "position": 6,
+        "reference_dtype": "float32",
+        "reference_shape": [
+          1,
+          484,
+          128
+        ],
+        "storage": "exact"
+      }
+    ]
+  },
+  "kind": "torchport.trace",
+  "module_config": {
+    "common_modules": 949,
+    "compared_keys": 2295,
+    "kind": "torchport.module_config",
+    "mismatches": [
+      {
+        "key": "eps",
+        "module": "model.backbone.block1.0.attn.norm",
+        "source": 1e-05,
+        "source_class": "LayerNorm",
+        "target": 1e-06,
+        "target_class": "_LayerNorm",
+        "used": null
+      },
+      {
+        "key": "eps",
+        "module": "model.backbone.block1.1.attn.norm",
+        "source": 1e-05,
+        "source_class": "LayerNorm",
+        "target": 1e-06,
+        "target_class": "_LayerNorm",
+        "used": null
+      },
+      {
+        "key": "eps",
+        "module": "model.backbone.block1.2.attn.norm",
+        "source": 1e-05,
+        "source_class": "LayerNorm",
+        "target": 1e-06,
+        "target_class": "_LayerNorm",
+        "used": null
+      },
+      {
+        "key": "eps",
+        "module": "model.backbone.block2.0.attn.norm",
+        "source": 1e-05,
+        "source_class": "LayerNorm",
+        "target": 1e-06,
+        "target_class": "_LayerNorm",
+        "used": null
+      },
+      {
+        "key": "eps",
+        "module": "model.backbone.block2.1.attn.norm",
+        "source": 1e-05,
+        "source_class": "LayerNorm",
+        "target": 1e-06,
+        "target_class": "_LayerNorm",
+        "used": null
+      },
+      {
+        "key": "eps",
+        "module": "model.backbone.block2.2.attn.norm",
+        "source": 1e-05,
+        "source_class": "LayerNorm",
+        "target": 1e-06,
+        "target_class": "_LayerNorm",
+        "used": null
+      },
+      {
+        "key": "eps",
+        "module": "model.backbone.block2.3.attn.norm",
+        "source": 1e-05,
+        "source_class": "LayerNorm",
+        "target": 1e-06,
+        "target_class": "_LayerNorm",
+        "used": null
+      },
+      {
+        "key": "eps",
+        "module": "model.backbone.block3.0.attn.norm",
+        "source": 1e-05,
+        "source_class": "LayerNorm",
+        "target": 1e-06,
+        "target_class": "_LayerNorm",
+        "used": null
+      },
+      {
+        "key": "eps",
+        "module": "model.backbone.block3.1.attn.norm",
+        "source": 1e-05,
+        "source_class": "LayerNorm",
+        "target": 1e-06,
+        "target_class": "_LayerNorm",
+        "used": null
+      },
+      {
+        "key": "eps",
+        "module": "model.backbone.block3.2.attn.norm",
+        "source": 1e-05,
+        "source_class": "LayerNorm",
+        "target": 1e-06,
+        "target_class": "_LayerNorm",
+        "used": null
+      },
+      {
+        "key": "eps",
+        "module": "model.backbone.block3.3.attn.norm",
+        "source": 1e-05,
+        "source_class": "LayerNorm",
+        "target": 1e-06,
+        "target_class": "_LayerNorm",
+        "used": null
+      },
+      {
+        "key": "eps",
+        "module": "model.backbone.block3.4.attn.norm",
+        "source": 1e-05,
+        "source_class": "LayerNorm",
+        "target": 1e-06,
+        "target_class": "_LayerNorm",
+        "used": null
+      },
+      {
+        "key": "eps",
+        "module": "model.backbone.block3.5.attn.norm",
+        "source": 1e-05,
+        "source_class": "LayerNorm",
+        "target": 1e-06,
+        "target_class": "_LayerNorm",
+        "used": null
+      },
+      {
+        "key": "eps",
+        "module": "model.backbone.norm1",
+        "source": 1e-06,
+        "source_class": "LayerNorm",
+        "target": 1e-05,
+        "target_class": "_LayerNorm",
+        "used": null
+      },
+      {
+        "key": "eps",
+        "module": "model.backbone.norm2",
+        "source": 1e-06,
+        "source_class": "LayerNorm",
+        "target": 1e-05,
+        "target_class": "_LayerNorm",
+        "used": null
+      },
+      {
+        "key": "eps",
+        "module": "model.backbone.norm3",
+        "source": 1e-06,
+        "source_class": "LayerNorm",
+        "target": 1e-05,
+        "target_class": "_LayerNorm",
+        "used": null
+      },
+      {
+        "key": "eps",
+        "module": "model.backbone.norm4",
+        "source": 1e-06,
+        "source_class": "LayerNorm",
+        "target": 1e-05,
+        "target_class": "_LayerNorm",
+        "used": null
+      },
+      {
+        "key": "align_corners",
+        "module": "model.fm1.input_map.0",
+        "source": true,
+        "source_class": "UpsamplingBilinear2d",
+        "target": false,
+        "target_class": "UpsamplingBilinear2d",
+        "used": null
+      },
+      {
+        "key": "align_corners",
+        "module": "model.fm1.up.3",
+        "source": true,
+        "source_class": "UpsamplingBilinear2d",
+        "target": false,
+        "target_class": "UpsamplingBilinear2d",
+        "used": null
+      },
+      {
+        "key": "align_corners",
+        "module": "model.fm2.input_map.0",
+        "source": true,
+        "source_class": "UpsamplingBilinear2d",
+        "target": false,
+        "target_class": "UpsamplingBilinear2d",
+        "used": null
+      },
+      {
+        "key": "align_corners",
+        "module": "model.fm2.up.3",
+        "source": true,
+        "source_class": "UpsamplingBilinear2d",
+        "target": false,
+        "target_class": "UpsamplingBilinear2d",
+        "used": null
+      },
+      {
+        "key": "align_corners",
+        "module": "model.fm3.input_map.0",
+        "source": true,
+        "source_class": "UpsamplingBilinear2d",
+        "target": false,
+        "target_class": "UpsamplingBilinear2d",
+        "used": null
+      },
+      {
+        "key": "align_corners",
+        "module": "model.fm3.up.3",
+        "source": true,
+        "source_class": "UpsamplingBilinear2d",
+        "target": false,
+        "target_class": "UpsamplingBilinear2d",
+        "used": null
+      },
+      {
+        "key": "align_corners",
+        "module": "model.fm4.input_map.0",
+        "source": true,
+        "source_class": "UpsamplingBilinear2d",
+        "target": false,
+        "target_class": "UpsamplingBilinear2d",
+        "used": null
+      },
+      {
+        "key": "align_corners",
+        "module": "model.fm4.up.3",
+        "source": true,
+        "source_class": "UpsamplingBilinear2d",
+        "target": false,
+        "target_class": "UpsamplingBilinear2d",
+        "used": null
+      }
+    ],
+    "schema_version": 1,
+    "source_only_modules": 24,
+    "used_mismatches": 25
+  },
+  "output": {
+    "atol": 0.0001,
+    "candidate": "/root/autodl-tmp/tp-work/v3all/pc/evidence/runs/agent-trace-target/target-20261010-125007-9976f9de/outputs.npz",
+    "extra_in_candidate": [],
+    "first_divergence": {
+      "name": "output.1",
+      "position": 2,
+      "reason": "数值超出容差"
+    },
+    "first_gating_divergence": {
+      "name": "output.1",
+      "position": 2,
+      "reason": "数值超出容差"
+    },
+    "metrics": {
+      "compared_elements": 3469312,
+      "compared_tensors": 5,
+      "extra_tensors": 0,
+      "max_absolute_error": 0.0002161860466003418,
+      "mismatch_ratio": 0.00011904377582644628,
+      "mismatched_elements": 413,
+      "mismatched_tensors": 2,
+      "missing_tensors": 0,
+      "skipped_sketched_tensors": 0
+    },
+    "missing_in_candidate": [],
+    "passed": false,
+    "profile": "fp32-inference",
+    "reference": "/root/autodl-tmp/tp-work/v3all/pc/evidence/runs/agent-trace-source/source-20261010-124959-4aa1e33e/outputs.npz",
+    "require_all": true,
+    "rtol": 0.0001,
+    "schema_version": 1,
+    "skipped_sketched": [],
+    "tensors": [
+      {
+        "candidate_dtype": "float32",
+        "candidate_shape": [
+          1,
+          3,
+          704,
+          704
+        ],
+        "cosine_similarity": 1.0000000000000002,
+        "elements": 1486848,
+        "gating": true,
+        "max_absolute_error": 0.0,
+        "max_relative_error": 0.0,
+        "mean_absolute_error": 0.0,
+        "mismatch_ratio": 0.0,
+        "mismatched_elements": 0,
+        "name": "input",
+        "original_shape": [
+          1,
+          3,
+          704,
+          704
+        ],
+        "p99_absolute_error": 0.0,
+        "passed": true,
+        "position": 0,
+        "reference_dtype": "float32",
+        "reference_shape": [
+          1,
+          3,
+          704,
+          704
+        ],
+        "storage": "exact"
+      },
+      {
+        "candidate_dtype": "float32",
+        "candidate_shape": [
+          1,
+          1,
+          704,
+          704
+        ],
+        "cosine_similarity": 0.999999999997576,
+        "elements": 495616,
+        "gating": true,
+        "max_absolute_error": 0.0001354217529296875,
+        "max_relative_error": 0.24406117800195248,
+        "mean_absolute_error": 1.9668527808192245e-05,
+        "mismatch_ratio": 0.0,
+        "mismatched_elements": 0,
+        "name": "output.0",
+        "original_shape": [
+          1,
+          1,
+          704,
+          704
+        ],
+        "p99_absolute_error": 8.58306884765625e-05,
+        "passed": true,
+        "position": 1,
+        "reference_dtype": "float32",
+        "reference_shape": [
+          1,
+          1,
+          704,
+          704
+        ],
+        "storage": "exact"
+      },
+      {
+        "candidate_dtype": "float32",
+        "candidate_shape": [
+          1,
+          1,
+          704,
+          704
+        ],
+        "cosine_similarity": 0.9999999999977502,
+        "elements": 495616,
+        "gating": true,
+        "max_absolute_error": 0.000152587890625,
+        "max_relative_error": 0.2833068053126856,
+        "mean_absolute_error": 2.0410949444338667e-05,
+        "mismatch_ratio": 8.474302685950413e-05,
+        "mismatched_elements": 42,
+        "name": "output.1",
+        "original_shape": [
+          1,
+          1,
+          704,
+          704
+        ],
+        "p99_absolute_error": 9.632110595703125e-05,
+        "passed": false,
+        "position": 2,
+        "reference_dtype": "float32",
+        "reference_shape": [
+          1,
+          1,
+          704,
+          704
+        ],
+        "storage": "exact"
+      },
+      {
+        "candidate_dtype": "float32",
+        "candidate_shape": [
+          1,
+          1,
+          704,
+          704
+        ],
+        "cosine_similarity": 0.9999999999978687,
+        "elements": 495616,
+        "gating": true,
+        "max_absolute_error": 9.202957153320312e-05,
+        "max_relative_error": 0.4852216748768473,
+        "mean_absolute_error": 1.4398916655202562e-05,
+        "mismatch_ratio": 0.0,
+        "mismatched_elements": 0,
+        "name": "output.2",
+        "original_shape": [
+          1,
+          1,
+          704,
+          704
+        ],
+        "p99_absolute_error": 6.079673767089844e-05,
+        "passed": true,
+        "position": 3,
+        "reference_dtype": "float32",
+        "reference_shape": [
+          1,
+          1,
+          704,
+          704
+        ],
+        "storage": "exact"
+      },
+      {
+        "candidate_dtype": "float32",
+        "candidate_shape": [
+          1,
+          1,
+          704,
+          704
+        ],
+        "cosine_similarity": 0.9999999999972402,
+        "elements": 495616,
+        "gating": true,
+        "max_absolute_error": 0.0002161860466003418,
+        "max_relative_error": 0.1144158858420012,
+        "mean_absolute_error": 2.063320434213772e-05,
+        "mismatch_ratio": 0.0007485634039256198,
+        "mismatched_elements": 371,
+        "name": "output.3",
+        "original_shape": [
+          1,
+          1,
+          704,
+          704
+        ],
+        "p99_absolute_error": 9.441375732421875e-05,
+        "passed": false,
+        "position": 4,
+        "reference_dtype": "float32",
+        "reference_shape": [
+          1,
+          1,
+          704,
+          704
+        ],
+        "storage": "exact"
+      }
+    ]
+  },
+  "passed": false,
+  "physical_cost": {
+    "cuda_execution_seconds": 13.047066688537598,
+    "execution_wall_seconds": 13.047066688537598,
+    "executions": 2
+  },
+  "source_run": {
+    "artifacts": {
+      "module_alt": "/root/autodl-tmp/tp-work/v3all/pc/evidence/runs/agent-trace-source/source-20261010-124959-4aa1e33e/module_alt.npz",
+      "module_calls": "/root/autodl-tmp/tp-work/v3all/pc/evidence/runs/agent-trace-source/source-20261010-124959-4aa1e33e/module_calls.json",
+      "module_config": "/root/autodl-tmp/tp-work/v3all/pc/evidence/runs/agent-trace-source/source-20261010-124959-4aa1e33e/module_config.json",
+      "module_fp64": "/root/autodl-tmp/tp-work/v3all/pc/evidence/runs/agent-trace-source/source-20261010-124959-4aa1e33e/module_fp64.npz",
+      "module_inputs": "/root/autodl-tmp/tp-work/v3all/pc/evidence/runs/agent-trace-source/source-20261010-124959-4aa1e33e/module_inputs.npz",
+      "module_outputs": "/root/autodl-tmp/tp-work/v3all/pc/evidence/runs/agent-trace-source/source-20261010-124959-4aa1e33e/module_outputs.npz",
+      "module_repeat": "/root/autodl-tmp/tp-work/v3all/pc/evidence/runs/agent-trace-source/source-20261010-124959-4aa1e33e/module_repeat.npz",
+      "outputs": "/root/autodl-tmp/tp-work/v3all/pc/evidence/runs/agent-trace-source/source-20261010-124959-4aa1e33e/outputs.npz",
+      "trace": "/root/autodl-tmp/tp-work/v3all/pc/evidence/runs/agent-trace-source/source-20261010-124959-4aa1e33e/trace.npz"
+    },
+    "capture": {
+      "checkpoint": {
+        "complete": true,
+        "loaded": 1278,
+        "missing": [],
+        "path": "/root/autodl-tmp/tp-work/weights-cache/f9a9d4a222d30ddef887ec0a6618f2ce88d3abae4f6585ee61477f2e2633601a/Net_epoch_best.pth",
+        "requested": true,
+        "sha256": "f9a9d4a222d30ddef887ec0a6618f2ce88d3abae4f6585ee61477f2e2633601a",
+        "total": 1278,
+        "unexpected": []
+      },
+      "framework": {
+        "cuda": "12.8",
+        "device": "cuda",
+        "device_name": "NVIDIA GeForce RTX 3080 Ti",
+        "name": "pytorch",
+        "version": "2.8.0+cu128"
+      },
+      "hashes": {
+        "input": "e638073f5ad5923ac9840d64b8eb461d9f594fe9fccf045cb8f747fc8eace34d",
+        "output": "c24f15ff4648cc1dfa0ba8ebde1fdf132fc93a4fd48f42a485bbe490a4448e56",
+        "state": "5598748b7c4942edca343bb1ca2c12cff46db5e45b9858abbbce59648a26bce3"
+      },
+      "kind": "source",
+      "loaded": 1278,
+      "mode": "trace",
+      "module_probe": {
+        "calibration": {
+          "alt_tensors": 7,
+          "failed": [],
+          "fp64_tensors": 7,
+          "repeat_tensors": 7
+        },
+        "calls": 7,
+        "input_tensors": 7,
+        "output_tensors": 7
+      },
+      "numpy": "2.3.2",
+      "outputs": [
+        "output.0",
+        "output.1",
+        "output.2",
+        "output.3"
+      ],
+      "state": {
+        "extra": [],
+        "loaded": 1278,
+        "missing": [],
+        "target_total": 1278,
+        "total": 1278,
+        "value_mismatch": []
+      },
+      "weights": 1278
+    },
+    "dir": "/root/autodl-tmp/tp-work/v3all/pc/evidence/runs/agent-trace-source/source-20261010-124959-4aa1e33e",
+    "execution": {
+      "cache": "/root/autodl-tmp/tp-work/v3all/pc/evidence/cache/agent-trace-source/source-_root_miniconda3_bin_python",
+      "command": [
+        "/root/miniconda3/bin/python",
+        "-m",
+        "torchport",
+        "_capture",
+        "/root/autodl-tmp/tp-work/v3all/pc/evidence/runs/agent-trace-source/source-20261010-124959-4aa1e33e/job.json"
+      ],
+      "cwd": "/root/autodl-tmp/tp-work/1bf6a0b5967e/source",
+      "exit_code": 0,
+      "finished": 1791607807.5928357,
+      "ok": true,
+      "seconds": 8.5698082447052,
+      "started": 1791607799.0230274,
+      "timeout": false
+    },
+    "kind": "torchport.run",
+    "mode": "trace",
+    "ok": true,
+    "oracle": "/root/autodl-tmp/tp-work/v3all/pc/evidence/oracle/da1fc146b7b1e23d",
+    "run_id": "source-20261010-124959-4aa1e33e",
+    "side": "source",
+    "side_identity": "c91cc5e59102198b6cfbb94b5d9b809288ee8b8e0f9a243231273ff608fcbc43",
+    "task_digest": "da1fc146b7b1e23d63c4a7b6d274fce37bbd1c952734b352d8d3e5b7bb6670b4",
+    "task_id": "v3-pc-agent",
+    "trial_id": "agent-trace-source"
+  },
+  "status": "diverged",
+  "strict": {
+    "atol": 1e-06,
+    "candidate": "/root/autodl-tmp/tp-work/v3all/pc/evidence/runs/agent-trace-target/target-20261010-125007-9976f9de/trace.npz",
+    "extra_in_candidate": [],
+    "first_divergence": {
+      "name": "model.backbone.block2.1.attn.sr",
+      "position": 7,
+      "reason": "数值超出容差"
+    },
+    "first_gating_divergence": {
+      "name": "model.backbone.block2.1.attn.sr",
+      "position": 7,
+      "reason": "数值超出容差"
+    },
+    "metrics": {
+      "compared_elements": 123904,
+      "compared_tensors": 2,
+      "extra_tensors": 0,
+      "max_absolute_error": 0.00016021728515625,
+      "mismatch_ratio": 0.31402537448347106,
+      "mismatched_elements": 38909,
+      "mismatched_tensors": 2,
+      "missing_tensors": 0,
+      "skipped_sketched_tensors": 7
+    },
+    "missing_in_candidate": [],
+    "passed": false,
+    "profile": "operator-strict",
+    "reference": "/root/autodl-tmp/tp-work/v3all/pc/evidence/runs/agent-trace-source/source-20261010-124959-4aa1e33e/trace.npz",
+    "require_all": true,
+    "rtol": 1e-05,
+    "schema_version": 1,
+    "skipped_sketched": [
+      "model.backbone.block2.0.mlp.drop",
+      "model.backbone.block2.0.mlp.fc2",
+      "model.backbone.block2.0.mlp.drop#2",
+      "model.backbone.block2.0.mlp",
+      "model.backbone.block2.0",
+      "model.backbone.block2.1.norm1",
+      "model.backbone.block2.1.attn.q"
+    ],
+    "tensors": [
+      {
+        "candidate_shape": [
+          1,
+          7744,
+          1024
+        ],
+        "gating": false,
+        "name": "model.backbone.block2.0.mlp.drop",
+        "passed": true,
+        "position": 0,
+        "reason": "CountSketch 不参与逐元素严格比较",
+        "reference_shape": [
+          1,
+          7744,
+          1024
+        ],
+        "skipped": true,
+        "storage": "countsketch",
+        "stored_elements": 65536
+      },
+      {
+        "candidate_shape": [
+          1,
+          7744,
+          128
+        ],
+        "gating": false,
+        "name": "model.backbone.block2.0.mlp.fc2",
+        "passed": true,
+        "position": 1,
+        "reason": "CountSketch 不参与逐元素严格比较",
+        "reference_shape": [
+          1,
+          7744,
+          128
+        ],
+        "skipped": true,
+        "storage": "countsketch",
+        "stored_elements": 65536
+      },
+      {
+        "candidate_shape": [
+          1,
+          7744,
+          128
+        ],
+        "gating": false,
+        "name": "model.backbone.block2.0.mlp.drop#2",
+        "passed": true,
+        "position": 2,
+        "reason": "CountSketch 不参与逐元素严格比较",
+        "reference_shape": [
+          1,
+          7744,
+          128
+        ],
+        "skipped": true,
+        "storage": "countsketch",
+        "stored_elements": 65536
+      },
+      {
+        "candidate_shape": [
+          1,
+          7744,
+          128
+        ],
+        "gating": false,
+        "name": "model.backbone.block2.0.mlp",
+        "passed": true,
+        "position": 3,
+        "reason": "CountSketch 不参与逐元素严格比较",
+        "reference_shape": [
+          1,
+          7744,
+          128
+        ],
+        "skipped": true,
+        "storage": "countsketch",
+        "stored_elements": 65536
+      },
+      {
+        "candidate_shape": [
+          1,
+          7744,
+          128
+        ],
+        "gating": false,
+        "name": "model.backbone.block2.0",
+        "passed": true,
+        "position": 4,
+        "reason": "CountSketch 不参与逐元素严格比较",
+        "reference_shape": [
+          1,
+          7744,
+          128
+        ],
+        "skipped": true,
+        "storage": "countsketch",
+        "stored_elements": 65536
+      },
+      {
+        "candidate_shape": [
+          1,
+          7744,
+          128
+        ],
+        "gating": false,
+        "name": "model.backbone.block2.1.norm1",
+        "passed": true,
+        "position": 5,
+        "reason": "CountSketch 不参与逐元素严格比较",
+        "reference_shape": [
+          1,
+          7744,
+          128
+        ],
+        "skipped": true,
+        "storage": "countsketch",
+        "stored_elements": 65536
+      },
+      {
+        "candidate_shape": [
+          1,
+          7744,
+          128
+        ],
+        "gating": false,
+        "name": "model.backbone.block2.1.attn.q",
+        "passed": true,
+        "position": 6,
+        "reason": "CountSketch 不参与逐元素严格比较",
+        "reference_shape": [
+          1,
+          7744,
+          128
+        ],
+        "skipped": true,
+        "storage": "countsketch",
+        "stored_elements": 65536
+      },
+      {
+        "candidate_dtype": "float64",
+        "candidate_shape": [
+          61952
+        ],
+        "cosine_similarity": 0.999999999974308,
+        "elements": 61952,
+        "gating": true,
+        "max_absolute_error": 0.00016021728515625,
+        "max_relative_error": 0.15388349514563107,
+        "mean_absolute_error": 3.3550133428599857e-05,
+        "mismatch_ratio": 0.389010847107438,
+        "mismatched_elements": 24100,
+        "name": "model.backbone.block2.1.attn.sr",
+        "original_shape": [
+          1,
+          128,
+          22,
+          22
+        ],
+        "p99_absolute_error": 0.00010967254638671875,
+        "passed": false,
+        "position": 7,
+        "reference_dtype": "float64",
+        "reference_shape": [
+          61952
+        ],
+        "storage": "exact"
+      },
+      {
+        "candidate_dtype": "float64",
+        "candidate_shape": [
+          61952
+        ],
+        "cosine_similarity": 0.9999999999570135,
+        "elements": 61952,
+        "gating": true,
+        "max_absolute_error": 1.71661376953125e-05,
+        "max_relative_error": 0.23380909818737974,
+        "mean_absolute_error": 2.236773931809034e-06,
+        "mismatch_ratio": 0.23903990185950413,
+        "mismatched_elements": 14809,
+        "name": "model.backbone.block2.1.attn.norm",
+        "original_shape": [
+          1,
+          484,
+          128
+        ],
+        "p99_absolute_error": 1.1579799465835088e-05,
+        "passed": false,
+        "position": 8,
+        "reference_dtype": "float64",
+        "reference_shape": [
+          61952
+        ],
+        "storage": "exact"
+      }
+    ]
+  },
+  "target_run": {
+    "artifacts": {
+      "isolated": "/root/autodl-tmp/tp-work/v3all/pc/evidence/runs/agent-trace-target/target-20261010-125007-9976f9de/isolated.npz",
+      "isolated_repeat": "/root/autodl-tmp/tp-work/v3all/pc/evidence/runs/agent-trace-target/target-20261010-125007-9976f9de/isolated_repeat.npz",
+      "module_config": "/root/autodl-tmp/tp-work/v3all/pc/evidence/runs/agent-trace-target/target-20261010-125007-9976f9de/module_config.json",
+      "outputs": "/root/autodl-tmp/tp-work/v3all/pc/evidence/runs/agent-trace-target/target-20261010-125007-9976f9de/outputs.npz",
+      "trace": "/root/autodl-tmp/tp-work/v3all/pc/evidence/runs/agent-trace-target/target-20261010-125007-9976f9de/trace.npz"
+    },
+    "capture": {
+      "checkpoint": null,
+      "framework": {
+        "cache_path": "/root/autodl-tmp/tp-work/v3all/pc/evidence/cache/agent-trace-target/target-_root_autodl-tmp_jt-env_bin_python/jittor/.cache/jittor/jt1.3.9/g++11.4.0/py3.12.3/Linux-5.4.0-16x1e/IntelRXeonRSilx76/c5f1/default/cu12.8.93_sm_86",
+        "device": "cuda",
+        "name": "jittor",
+        "version": "1.3.9.14"
+      },
+      "hashes": {
+        "input": "e638073f5ad5923ac9840d64b8eb461d9f594fe9fccf045cb8f747fc8eace34d",
+        "output": "927437e3657fc11918aef735758520df7f3b62ae8a893cdda252cf84602fb2ae",
+        "state": null
+      },
+      "isolated": {
+        "available": true,
+        "failed_modules": [],
+        "missing_modules": [],
+        "recorded": 7,
+        "succeeded": 7,
+        "unsupported_inputs": []
+      },
+      "kind": "target",
+      "loaded": 1278,
+      "mode": "trace",
+      "numpy": "1.26.4",
+      "outputs": [
+        "output.0",
+        "output.1",
+        "output.2",
+        "output.3"
+      ],
+      "state": {
+        "extra": [],
+        "loaded": 1278,
+        "missing": [],
+        "target_total": 1278,
+        "total": 1278,
+        "value_mismatch": []
+      },
+      "weights": 1278
+    },
+    "dir": "/root/autodl-tmp/tp-work/v3all/pc/evidence/runs/agent-trace-target/target-20261010-125007-9976f9de",
+    "execution": {
+      "cache": "/root/autodl-tmp/tp-work/v3all/pc/evidence/cache/agent-trace-target/target-_root_autodl-tmp_jt-env_bin_python",
+      "command": [
+        "/root/autodl-tmp/jt-env/bin/python",
+        "-m",
+        "torchport",
+        "_capture",
+        "/root/autodl-tmp/tp-work/v3all/pc/evidence/runs/agent-trace-target/target-20261010-125007-9976f9de/job.json"
+      ],
+      "cwd": "/root/autodl-tmp/tp-work/1bf6a0b5967e/target",
+      "exit_code": 0,
+      "finished": 1791607812.073361,
+      "ok": true,
+      "seconds": 4.4772584438323975,
+      "started": 1791607807.5961025,
+      "timeout": false
+    },
+    "kind": "torchport.run",
+    "mode": "trace",
+    "ok": true,
+    "oracle": "/root/autodl-tmp/tp-work/v3all/pc/evidence/oracle/da1fc146b7b1e23d",
+    "run_id": "target-20261010-125007-9976f9de",
+    "side": "target",
+    "side_identity": "6857e7e14fbd479d46b3dd7a2a00d32f9739fcf41fd1cc909b7880bf52c8eab3",
+    "task_digest": "da1fc146b7b1e23d63c4a7b6d274fce37bbd1c952734b352d8d3e5b7bb6670b4",
+    "task_id": "v3-pc-agent",
+    "trial_id": "agent-trace-target"
+  },
+  "task_digest": "da1fc146b7b1e23d63c4a7b6d274fce37bbd1c952734b352d8d3e5b7bb6670b4",
+  "task_id": "v3-pc-agent",
+  "trial_id": "agent"
+}
