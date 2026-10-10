@@ -351,18 +351,26 @@ def save_state(model: Any, path: Path) -> int:
     return len(weights)
 
 
-def load_state(model: Any, path: Path) -> dict[str, Any]:
+def load_state(model: Any, path: Path, kind: str = "target") -> dict[str, Any]:
     """加载 oracle 状态并逐参数回读核验形状、dtype 与数值。"""
     with np.load(path, allow_pickle=False) as archive:
         weights = {n: np.asarray(archive[n]) for n in archive.files if _portable(n)}
     target = model.state_dict()
     matched = _matched(weights, target)
-    model.load_parameters(matched)
+    if kind == "source":
+        import torch
+
+        model.load_state_dict(
+            {name: torch.from_numpy(np.asarray(value)) for name, value in matched.items()},
+            strict=False,
+        )
+    else:
+        model.load_parameters(matched)
     after = model.state_dict()
     mismatched = [
         name
         for name, value in matched.items()
-        if not np.array_equal(np.asarray(_to_numpy(after[name], "target")), value)
+        if not np.array_equal(np.asarray(_to_numpy(after[name], kind)), value)
     ]
     # target 多出的参数没有 oracle 值，初始化随机，必须进入证据而不是被忽略
     extra = sorted(n for n in set(target) - set(matched) if _portable(n))
@@ -587,6 +595,10 @@ def add_hooks(
                     "module": name,
                     "args": _encode_call_value(inputs, kind, probe_inputs, tensor_inputs),
                     "kwargs": _encode_call_value(kwargs, kind, probe_inputs, tensor_inputs),
+                    "output_dtypes": {
+                        output_name: str(value.dtype)
+                        for output_name, value in output_arrays.items()
+                    },
                 }
             except TypeError as exc:
                 probe_calls.append({"key": key, "module": name, "unsupported": str(exc)})
@@ -641,6 +653,22 @@ def _to_float64(value: Any) -> Any:
     return value
 
 
+def _float32_like_reference(
+    values: dict[str, np.ndarray],
+    dtypes: dict[str, str] | None,
+) -> dict[str, np.ndarray]:
+    """参考输出是 float32 时按 float32 落盘，避免后端无意中扩成 float64。"""
+    dtypes = dtypes or {}
+    return {
+        name: (
+            np.asarray(value, dtype=np.float32)
+            if dtypes.get(name) == "float32" and np.issubdtype(np.asarray(value).dtype, np.floating)
+            else np.asarray(value)
+        )
+        for name, value in values.items()
+    }
+
+
 def calibrate_source_modules(
     model: Any,
     calls: list[dict[str, Any]],
@@ -681,7 +709,12 @@ def calibrate_source_modules(
                 # 另一条 FP32 路径：换 cuDNN 算法选择，TF32 保持关闭，只量化“合法的 FP32 差异”。
                 backends.cudnn.benchmark, backends.cudnn.deterministic = True, False
                 backends.cudnn.allow_tf32 = backends.cuda.matmul.allow_tf32 = False
-                alt.update(to_arrays(module(*args, **kwargs), "source", key))
+                alt.update(
+                    _float32_like_reference(
+                        to_arrays(module(*args, **kwargs), "source", key),
+                        call.get("output_dtypes"),
+                    )
+                )
                 (
                     backends.cudnn.benchmark,
                     backends.cudnn.deterministic,
@@ -689,8 +722,15 @@ def calibrate_source_modules(
                     backends.cuda.matmul.allow_tf32,
                 ) = saved
                 # source 重复性：默认设置下同输入再跑一次，与 target 的 isolated_repeat 对称。
-                repeat.update(to_arrays(module(*args, **kwargs), "source", key))
+                repeat.update(
+                    _float32_like_reference(
+                        to_arrays(module(*args, **kwargs), "source", key),
+                        call.get("output_dtypes"),
+                    )
+                )
                 double = deepcopy(module).double()
+                # fp64 是 v3 在约 1e-7 量级估计 source 路径距离的基准；降为
+                # float32 会把这部分差异舍入掉，因此只有该归档保留 float64。
                 fp64.update(to_arrays(double(*_to_float64(args), **_to_float64(kwargs)), "source", key))
                 del double
             except Exception as exc:  # noqa: BLE001 - 标定失败只让该模块失去判定依据
@@ -760,13 +800,23 @@ def run_isolated_modules(
                 kwargs = _decode_call_value(call["kwargs"], arrays, kind)
                 output = module(*args, **kwargs)
                 _synchronize(kind, device, output)
-                values.update(to_arrays(output, kind, key))
+                values.update(
+                    _float32_like_reference(
+                        to_arrays(output, kind, key),
+                        call.get("output_dtypes"),
+                    )
+                )
                 # 使用重新解码的同一份 source 输入再跑一次，单独测 target 自身波动。
                 repeat_args = _decode_call_value(call["args"], arrays, kind)
                 repeat_kwargs = _decode_call_value(call["kwargs"], arrays, kind)
                 repeat = module(*repeat_args, **repeat_kwargs)
                 _synchronize(kind, device, repeat)
-                repeats.update(to_arrays(repeat, kind, key))
+                repeats.update(
+                    _float32_like_reference(
+                        to_arrays(repeat, kind, key),
+                        call.get("output_dtypes"),
+                    )
+                )
                 succeeded += 1
             except Exception as exc:  # noqa: BLE001 - 每个模块单独留下可审计失败
                 failed.append({"key": key, "reason": f"{type(exc).__name__}: {exc}"[:500]})
@@ -1036,7 +1086,11 @@ def _call_model(model: Any, args: list[Any], kwargs: dict[str, Any], kind: str) 
 
 
 def capture(job: dict[str, Any]) -> dict[str, Any]:
-    """job: kind/side/inputs/seed/mode/out_dir，以及 oracle（target 端必需）或 weights。"""
+    """job: kind/side/inputs/seed/mode/out_dir，以及 oracle 或 source weights。
+
+    target 必须从 oracle 读 state/inputs；聚焦 source trace 也可直接复用同一份
+    冻结证据，避免在 run 目录重复写权重。
+    """
     capture_started = time.time()
     kind, side, mode = job["kind"], job["side"], job.get("mode", "normal")
     if mode not in MODES:
@@ -1057,18 +1111,29 @@ def capture(job: dict[str, Any]) -> dict[str, Any]:
     if kind == "source" and device == "cuda":
         model.cuda()
 
+    oracle = Path(job["oracle"]) if job.get("oracle") else None
+    state_path = out / "state.npz"
     if kind == "source":
-        weights = job.get("weights")
-        checkpoint = (
-            load_checkpoint(model, Path(weights))
-            if weights
-            else {"requested": False, "complete": True}
-        )
-        arrays = make_data(job["inputs"], job["seed"])
-        total = save_state(model, out / "state.npz")
-        state = {"total": total, "loaded": total, "missing": [], "value_mismatch": []}
+        if oracle is not None:
+            with np.load(oracle / "inputs.npz", allow_pickle=False) as archive:
+                arrays = {name: np.asarray(archive[name]) for name in archive.files}
+            state_path = oracle / "state.npz"
+            state = load_state(model, state_path, kind="source")
+            oracle_meta = read_json(oracle / "oracle.json")
+            checkpoint = (oracle_meta.get("capture") or {}).get("checkpoint")
+        else:
+            weights = job.get("weights")
+            checkpoint = (
+                load_checkpoint(model, Path(weights))
+                if weights
+                else {"requested": False, "complete": True}
+            )
+            arrays = make_data(job["inputs"], job["seed"])
+            total = save_state(model, state_path)
+            state = {"total": total, "loaded": total, "missing": [], "value_mismatch": []}
     else:
-        oracle = Path(job["oracle"])
+        if oracle is None:
+            raise ValueError("target 端缺少 oracle")
         with np.load(oracle / "inputs.npz", allow_pickle=False) as archive:
             arrays = {name: np.asarray(archive[name]) for name in archive.files}
         state = load_state(model, oracle / "state.npz")
@@ -1136,7 +1201,7 @@ def capture(job: dict[str, Any]) -> dict[str, Any]:
     isolated = None
     if mode == "trace" and kind == "target":
         isolated_values, isolated_repeats, isolated = run_isolated_modules(
-            model, Path(job["oracle"]), kind, device
+            model, Path(job.get("module_oracle") or job["oracle"]), kind, device
         )
     performance = None
     if requested := job.get("performance"):
@@ -1173,11 +1238,14 @@ def capture(job: dict[str, Any]) -> dict[str, Any]:
     outputs = to_arrays(result, kind, "output")
     if not outputs:
         raise ValueError("模型输出中没有张量")
-    if kind == "source":
+    if kind == "source" and oracle is None:
         np.savez(out / "inputs.npz", **arrays)
     np.savez(out / "outputs.npz", **arrays, **outputs)
     if trace_values:
-        np.savez(out / "trace.npz", **trace_values)
+        # 聚焦 trace 中的容器模块仍可输出数千万元素；大张量只保留
+        # CountSketch 供 L2 证据使用，小张量仍逐元素保留。全量 trace 不改。
+        stored_trace = sketch_layers(trace_values) if focus is not None else trace_values
+        np.savez(out / "trace.npz", **stored_trace)
     if mode == "layers":
         # 最终输出也进入 E1：中间层可以因命名不同而只报告，output.* 必须参与判定。
         batch = variant["batch"] if variant else 1
@@ -1218,7 +1286,9 @@ def capture(job: dict[str, Any]) -> dict[str, Any]:
         "hashes": {
             "input": _digest(arrays),
             "output": _digest(outputs),
-            "state": file_hash(out / "state.npz") if kind == "source" else None,
+            # 聚焦 source trace 直接使用冻结 oracle；哈希指向真实加载的文件，
+            # 不在 run 目录再写一份权重。
+            "state": file_hash(state_path) if kind == "source" else None,
         },
     }
     if variant is not None:

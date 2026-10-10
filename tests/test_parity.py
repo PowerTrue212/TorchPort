@@ -10,6 +10,58 @@ from torchport.parity import compare_tensor_archives
 
 
 class TensorParityTests(unittest.TestCase):
+    def test_strict_trace_skips_large_sketch_but_compares_small_values_exactly(self) -> None:
+        from torchport.capture import SKETCH_DIM, sketch_layers
+
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            root = Path(temporary_directory)
+            reference = root / "reference.npz"
+            candidate = root / "candidate.npz"
+            large = np.arange(SKETCH_DIM + 1, dtype=np.float32)
+            np.savez(
+                reference,
+                **sketch_layers({"large": large, "small": np.asarray([1.0], dtype=np.float32)}),
+            )
+            np.savez(
+                candidate,
+                **sketch_layers({"large": large + 100, "small": np.asarray([2.0], dtype=np.float32)}),
+            )
+
+            report = compare_tensor_archives(
+                reference,
+                candidate,
+                profile="operator-strict",
+                skip_sketched=True,
+            )
+
+        self.assertFalse(report["passed"])
+        self.assertEqual(report["skipped_sketched"], ["large"])
+        self.assertEqual(report["first_divergence"]["name"], "small")
+        self.assertEqual(report["metrics"]["compared_tensors"], 1)
+        self.assertEqual(report["metrics"]["skipped_sketched_tensors"], 1)
+
+    def test_strict_trace_still_rejects_sketched_original_shape_mismatch(self) -> None:
+        from torchport.capture import SKETCH_DIM, sketch_layers
+
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            root = Path(temporary_directory)
+            reference = root / "reference.npz"
+            candidate = root / "candidate.npz"
+            values = np.arange(SKETCH_DIM + 1, dtype=np.float32)
+            np.savez(reference, **sketch_layers({"large": values}))
+            np.savez(candidate, **sketch_layers({"large": values.reshape(1, -1)}))
+
+            report = compare_tensor_archives(
+                reference,
+                candidate,
+                profile="operator-strict",
+                skip_sketched=True,
+            )
+
+        self.assertFalse(report["passed"])
+        self.assertEqual(report["first_divergence"]["name"], "large")
+        self.assertEqual(report["skipped_sketched"], [])
+
     def test_nested_outputs_satisfy_fp32_output_requirement(self) -> None:
         with tempfile.TemporaryDirectory() as temporary_directory:
             root = Path(temporary_directory)

@@ -21,6 +21,7 @@ def compare_tensor_archives(
     rtol: float | None = None,
     atol: float | None = None,
     require_all: bool = True,
+    skip_sketched: bool = False,
 ) -> dict[str, Any]:
     """比较两个 NPZ 证据包，并按参考包顺序定位首次分歧。"""
     reference_path = Path(reference_path).expanduser().resolve()
@@ -44,8 +45,8 @@ def compare_tensor_archives(
         candidate_path,
         allow_pickle=False,
     ) as candidate:
-        reference_names = list(reference.files)
-        candidate_names = list(candidate.files)
+        reference_names = [name for name in reference.files if not name.startswith(SHAPE_PREFIX)]
+        candidate_names = [name for name in candidate.files if not name.startswith(SHAPE_PREFIX)]
         if profile == "fp32-inference" and not any(
             name == "output" or name.startswith("output.") for name in reference_names
         ):
@@ -71,14 +72,63 @@ def compare_tensor_archives(
                     "reference_elements": int(reference[name].size),
                 }
             else:
-                item = compare_arrays(
-                    reference[name],
-                    candidate[name],
-                    rtol=rtol,
-                    atol=atol,
+                ref_value, cand_value = reference[name], candidate[name]
+                shape_key = SHAPE_PREFIX + name
+                ref_has_shape = shape_key in reference
+                cand_has_shape = shape_key in candidate
+                ref_shape = (
+                    tuple(int(x) for x in reference[shape_key])
+                    if ref_has_shape
+                    else ref_value.shape
                 )
+                cand_shape = (
+                    tuple(int(x) for x in candidate[shape_key])
+                    if cand_has_shape
+                    else cand_value.shape
+                )
+                sketched = ref_has_shape and int(np.prod(ref_shape)) > int(ref_value.size)
+                if ref_has_shape != cand_has_shape:
+                    item = {
+                        "passed": False,
+                        "reason": "一端缺少 CountSketch 原始形状",
+                        "reference_shape": list(ref_shape),
+                        "candidate_shape": list(cand_shape),
+                    }
+                elif ref_has_shape and ref_shape != cand_shape:
+                    item = {
+                        "passed": False,
+                        "reason": "CountSketch 前的张量形状不同",
+                        "reference_shape": list(ref_shape),
+                        "candidate_shape": list(cand_shape),
+                    }
+                elif ref_has_shape and ref_value.shape != cand_value.shape:
+                    item = {
+                        "passed": False,
+                        "reason": "CountSketch 存储形状不同",
+                        "reference_shape": list(ref_value.shape),
+                        "candidate_shape": list(cand_value.shape),
+                    }
+                elif sketched and skip_sketched:
+                    item = {
+                        "passed": True,
+                        "skipped": True,
+                        "storage": "countsketch",
+                        "reason": "CountSketch 不参与逐元素严格比较",
+                        "reference_shape": list(ref_shape),
+                        "candidate_shape": list(cand_shape),
+                        "stored_elements": int(ref_value.size),
+                    }
+                else:
+                    item = compare_arrays(
+                        ref_value,
+                        cand_value,
+                        rtol=rtol,
+                        atol=atol,
+                    )
+                    item["storage"] = "countsketch" if sketched else "exact"
+                    item["original_shape"] = list(ref_shape)
                 item.update({"name": name, "position": position})
-            item["gating"] = gating
+            item["gating"] = gating and not item.get("skipped", False)
             comparisons.append(item)
             if first_divergence is None and not item["passed"]:
                 first_divergence = {
@@ -102,6 +152,7 @@ def compare_tensor_archives(
         "profile": profile,
         "passed": first_gating_divergence is None and (require_all or bool(comparisons)),
         "require_all": require_all,
+        "skipped_sketched": [item["name"] for item in comparisons if item.get("skipped")],
         "first_divergence": first_divergence,
         "first_gating_divergence": first_gating_divergence,
         "missing_in_candidate": missing,
@@ -780,12 +831,15 @@ def _leaf_key(name: str, leaves: set[str]) -> bool:
 def comparison_metrics(report: dict[str, Any]) -> dict[str, Any]:
     """把逐张量证据归约成稳定、可聚合的计数；结构不一致不伪造元素误差。"""
     tensors = list(report.get("tensors") or [])
-    comparable = [item for item in tensors if "mismatched_elements" in item]
+    skipped = [item for item in tensors if item.get("skipped")]
+    measured = [item for item in tensors if not item.get("skipped")]
+    comparable = [item for item in measured if "mismatched_elements" in item]
     compared_elements = sum(int(item.get("elements", 0)) for item in comparable)
     mismatched_elements = sum(int(item["mismatched_elements"]) for item in comparable)
     return {
-        "compared_tensors": len(tensors),
-        "mismatched_tensors": sum(not bool(item.get("passed")) for item in tensors),
+        "compared_tensors": len(measured),
+        "skipped_sketched_tensors": len(skipped),
+        "mismatched_tensors": sum(not bool(item.get("passed")) for item in measured),
         "compared_elements": compared_elements,
         "mismatched_elements": mismatched_elements,
         "mismatch_ratio": (

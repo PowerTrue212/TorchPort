@@ -50,6 +50,7 @@ def run_side(
     performance: dict[str, int] | None = None,
     variant: dict[str, Any] | None = None,
     focus: list[str] | None = None,
+    module_oracle: Path | None = None,
 ) -> dict[str, Any]:
     """执行一端，返回 RunManifest；manifest 在全部产物写完后原子提交。
 
@@ -69,6 +70,8 @@ def run_side(
         "out_dir": str(run_dir),
         "weights": task["weights"] if kind == "source" else None,
         "oracle": str(oracle) if oracle else None,
+        # target 从冻结 oracle 读 state/inputs，从本次 trace-source 读局部调用证据。
+        "module_oracle": str(module_oracle) if module_oracle else None,
         "performance": performance,
         "variant": variant,
     }

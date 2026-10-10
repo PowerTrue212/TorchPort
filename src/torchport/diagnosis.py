@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import Any
 
 from .execution import add_physical_cost, read_json, run_physical_cost, write_json
-from .oracle import run_side
+from .oracle import build_oracle, run_side
 from .parity import (
     ENVELOPE_V3,
     TOLERANCE_PROFILES,
@@ -120,7 +120,36 @@ def trace(task: dict[str, Any], root: Path, *, trial: str = "t0") -> dict[str, A
         report["artifacts"] = {"report": str(out)}
         return report
     focus = focus_modules(root, trial)
-    source = run_side(task, "source", root, trial=f"{trial}-trace-source", mode="trace", focus=focus)
+    frozen = build_oracle(task, root) if focus else None
+    if frozen is not None and not frozen.get("ok"):
+        report = {
+            "kind": "torchport.trace",
+            "task_id": task["task_id"],
+            "task_digest": task["digest"],
+            "trial_id": trial,
+            "passed": False,
+            "status": "run_failed",
+            "failure_code": frozen.get("reason", "ORACLE_INVALID"),
+            "stage": "oracle",
+            "reason": "聚焦 trace 无法获取有效的冻结 oracle",
+            "source_run": None,
+            "target_run": None,
+        }
+        report["physical_cost"] = add_physical_cost(frozen.get("physical_cost"))
+        out = root / "trace" / f"{trial}.json"
+        write_json(out, report)
+        report["artifacts"] = {"report": str(out)}
+        return report
+    frozen_dir = Path(frozen["dir"]) if frozen is not None else None
+    source = run_side(
+        task,
+        "source",
+        root,
+        trial=f"{trial}-trace-source",
+        mode="trace",
+        oracle=frozen_dir,
+        focus=focus,
+    )
     if not source["ok"]:
         report = _failed_trace(task, trial, "source", source)
     else:
@@ -130,7 +159,8 @@ def trace(task: dict[str, Any], root: Path, *, trial: str = "t0") -> dict[str, A
             root,
             trial=f"{trial}-trace-target",
             mode="trace",
-            oracle=Path(source["dir"]),
+            oracle=frozen_dir or Path(source["dir"]),
+            module_oracle=Path(source["dir"]),
             focus=focus,
         )
         if not target["ok"]:
@@ -158,6 +188,9 @@ def trace(task: dict[str, Any], root: Path, *, trial: str = "t0") -> dict[str, A
                 source["artifacts"]["trace"],
                 target["artifacts"]["trace"],
                 profile="operator-strict",
+                # CountSketch 不保留逐元素容差语义；大条目的数值判定交给
+                # v3 未压缩的 isolated 证据，这里仍严格核对原始 shape。
+                skip_sketched=bool(focus),
             )
             isolated = None
             if source["artifacts"].get("module_outputs") and target["artifacts"].get("isolated"):
@@ -247,6 +280,7 @@ def trace(task: dict[str, Any], root: Path, *, trial: str = "t0") -> dict[str, A
                 "target_run": target,
             }
     report["physical_cost"] = add_physical_cost(
+        (frozen or {}).get("physical_cost"),
         run_physical_cost(report.get("source_run") or {}, task["source"]["device"]),
         run_physical_cost(report.get("target_run") or {}, task["target"]["device"]),
     )

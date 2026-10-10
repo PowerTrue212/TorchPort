@@ -10,17 +10,20 @@ from unittest.mock import patch
 import numpy as np
 
 from torchport.capture import (
+    SKETCH_DIM,
     OpTrace,
     _check_bridge,
     _decode_call_value,
     _encode_call_value,
+    _float32_like_reference,
     _matched,
     _to_numpy,
+    capture,
     load_state,
     make_data,
     save_state,
 )
-from torchport.task import normalize
+from torchport.task import file_hash, normalize
 from torchport.verify import judge
 
 
@@ -123,6 +126,10 @@ class Model:
         for name, value in weights.items():
             self.state[name] = Tensor(value + (1 if self.corrupt else 0))
 
+    def load_state_dict(self, weights, strict=False):
+        del strict
+        self.load_parameters(weights)
+
 
 class LocalStateTests(unittest.TestCase):
     def test_builtin_layer_with_own_parameters_is_selected(self) -> None:
@@ -178,6 +185,20 @@ class StateTests(unittest.TestCase):
         self.assertEqual(state["loaded"], 1)
         self.assertEqual(state["value_mismatch"], [])
 
+    def test_source_can_load_the_frozen_oracle_state(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = self._save(Path(directory))
+            source = Model({"w": Tensor(np.zeros((2, 2), dtype=np.float32))})
+            fake_torch = SimpleNamespace(from_numpy=lambda value: value)
+            with (
+                patch.dict(sys.modules, {"torch": fake_torch}),
+                patch("torchport.capture._to_numpy", side_effect=lambda t, _k: t.numpy()),
+            ):
+                state = load_state(source, path, kind="source")
+
+        self.assertEqual(state["loaded"], 1)
+        np.testing.assert_array_equal(source.state["w"].numpy(), np.ones((2, 2)))
+
     def test_wrong_loaded_value_is_not_counted(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             path = self._save(Path(directory))
@@ -195,6 +216,91 @@ class StateTests(unittest.TestCase):
                 state = load_state(target, path)
         self.assertEqual(state["loaded"], 0)
         self.assertEqual(state["missing"], ["w"])
+
+
+    def test_focused_source_reuses_oracle_state_and_sketches_only_large_trace(self) -> None:
+        class FakeModel:
+            def eval(self) -> None:
+                pass
+
+            def named_modules(self):
+                return iter(())
+
+        def fake_hooks(_model, _kind, values, **_kwargs):
+            values["large"] = np.arange(SKETCH_DIM + 1, dtype=np.float32)
+            values["small"] = np.asarray([1.0, 2.0], dtype=np.float32)
+            return []
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            oracle, out = root / "oracle", root / "run"
+            oracle.mkdir()
+            out.mkdir()
+            np.savez(oracle / "inputs.npz", input=np.asarray([3.0], dtype=np.float32))
+            np.savez(oracle / "state.npz", weight=np.asarray([4.0], dtype=np.float32))
+            (oracle / "oracle.json").write_text(
+                '{"capture":{"checkpoint":{"requested":false,"complete":true}}}',
+                encoding="utf-8",
+            )
+            job = {
+                "kind": "source",
+                "side": {
+                    "repo": str(root),
+                    "entry": "main.py",
+                    "model": "Net",
+                    "args": [],
+                    "kwargs": {},
+                },
+                "inputs": [{"shape": [1]}],
+                "seed": 0,
+                "mode": "trace",
+                "focus": ["large", "small"],
+                "out_dir": str(out),
+                "oracle": str(oracle),
+            }
+            with (
+                patch("torchport.capture._framework", return_value={}),
+                patch("torchport.capture._check_bridge"),
+                patch("torchport.capture.load_scope", return_value={}),
+                patch("torchport.capture.load_model", return_value=FakeModel()),
+                patch(
+                    "torchport.capture.load_state",
+                    return_value={"total": 1, "loaded": 1, "missing": [], "value_mismatch": []},
+                ),
+                patch("torchport.capture._from_numpy", side_effect=lambda value, _kind: value),
+                patch("torchport.capture.add_hooks", side_effect=fake_hooks),
+                patch("torchport.capture._call_model", return_value=np.asarray([5.0], dtype=np.float32)),
+                patch("torchport.capture._synchronize"),
+                patch(
+                    "torchport.capture.to_arrays",
+                    side_effect=lambda value, _kind, key: {key: np.asarray(value)},
+                ),
+                patch(
+                    "torchport.capture.calibrate_source_modules",
+                    return_value=({}, {}, {}, {"failed": []}),
+                ),
+            ):
+                report = capture(job)
+
+            self.assertFalse((out / "state.npz").exists())
+            self.assertFalse((out / "inputs.npz").exists())
+            self.assertEqual(report["hashes"]["state"], file_hash(oracle / "state.npz"))
+            with np.load(out / "trace.npz", allow_pickle=False) as trace:
+                self.assertEqual(trace["large"].shape, (SKETCH_DIM,))
+                self.assertEqual(tuple(trace["__shape__/large"]), (SKETCH_DIM + 1,))
+                np.testing.assert_array_equal(trace["small"], [1.0, 2.0])
+
+    def test_float32_reference_controls_diagnostic_storage_dtype(self) -> None:
+        stored = _float32_like_reference(
+            {
+                "fp32": np.asarray([1.0], dtype=np.float64),
+                "fp64": np.asarray([1.0], dtype=np.float64),
+            },
+            {"fp32": "float32", "fp64": "float64"},
+        )
+
+        self.assertEqual(stored["fp32"].dtype, np.dtype("float32"))
+        self.assertEqual(stored["fp64"].dtype, np.dtype("float64"))
 
     def test_extra_target_parameter_fails_verification(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

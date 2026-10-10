@@ -154,6 +154,62 @@ class DiagnosisTests(unittest.TestCase):
         # 窗口内的模块，多输出张量 `blk.0` 同时带上模块 `blk`；输出张量与窗口外的不进入
         self.assertEqual(focus, ["blk", "blk.0", "m17", "m18", "m19"])
 
+    def test_focused_trace_separates_frozen_oracle_from_module_evidence(self) -> None:
+        from torchport.execution import write_json
+
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            task = _task(root / "repos")
+            evidence = root / "evidence"
+            write_json(
+                evidence / "verify" / "t0.json",
+                {
+                    "e1": {
+                        "first_divergence": {"name": "block", "position": 0},
+                        "tensors": [{"name": "block", "position": 0}],
+                    }
+                },
+            )
+            frozen = evidence / "oracle" / "frozen"
+            source_dir, target_dir = evidence / "source-run", evidence / "target-run"
+            source_dir.mkdir(parents=True)
+            target_dir.mkdir(parents=True)
+            for directory in (source_dir, target_dir):
+                np.savez(directory / "outputs.npz", output=np.asarray([1.0], dtype=np.float32))
+                np.savez(directory / "trace.npz", block=np.asarray([1.0], dtype=np.float32))
+            calls = []
+
+            def fake_run(_task_value, kind, _root, **kwargs):
+                calls.append((kind, kwargs))
+                directory = source_dir if kind == "source" else target_dir
+                return {
+                    "ok": True,
+                    "dir": str(directory),
+                    "artifacts": {
+                        "outputs": str(directory / "outputs.npz"),
+                        "trace": str(directory / "trace.npz"),
+                    },
+                    "execution": {},
+                }
+
+            with (
+                patch.object(
+                    diagnosis,
+                    "build_oracle",
+                    return_value={"ok": True, "dir": str(frozen), "physical_cost": {}},
+                ),
+                patch.object(diagnosis, "run_side", fake_run),
+            ):
+                diagnosis.trace(task, evidence, trial="t0")
+
+        self.assertEqual(len(calls), 2)
+        self.assertEqual(calls[0][0], "source")
+        self.assertEqual(calls[0][1]["oracle"], frozen)
+        self.assertEqual(calls[0][1]["focus"], ["block"])
+        self.assertEqual(calls[1][0], "target")
+        self.assertEqual(calls[1][1]["oracle"], frozen)
+        self.assertEqual(calls[1][1]["module_oracle"], source_dir)
+
     def test_trace_refuses_to_start_when_disk_is_low(self) -> None:
         from collections import namedtuple
 
