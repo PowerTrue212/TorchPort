@@ -1,0 +1,67 @@
+{
+  "images": 250,
+  "runs": {
+    "torch-fp32": {
+      "root": "/root/autodl-tmp/tp-work/e2/pc/plantcamo-full-r0/torch-fp32",
+      "missing": 0,
+      "Smeasure": 0.880029928450781,
+      "wFmeasure": 0.818730290447947,
+      "MAE": 0.027831449338402224,
+      "adpEm": 0.9383992708273274,
+      "meanEm": 0.9394771170234393,
+      "maxEm": 0.945266361792679,
+      "adpFm": 0.840805393000845,
+      "meanFm": 0.8491386270381749,
+      "maxFm": 0.8648422162160277
+    },
+    "jt-agent": {
+      "root": "/root/autodl-tmp/tp-work/e2/pc/plantcamo-full-r0/jt-agent",
+      "missing": 0,
+      "Smeasure": 0.8800298391914062,
+      "wFmeasure": 0.8187300950732813,
+      "MAE": 0.02783144018490905,
+      "adpEm": 0.9383994749642846,
+      "meanEm": 0.9394770932379777,
+      "maxEm": 0.9452663455782534,
+      "adpFm": 0.8408054455751992,
+      "meanFm": 0.84913844808493,
+      "maxFm": 0.8648422439814422
+    },
+    "jt-cf-eps": {
+      "root": "/root/autodl-tmp/tp-work/e2/pc/plantcamo-full-r0/jt-cf-eps",
+      "missing": 0,
+      "Smeasure": 0.8800299067079177,
+      "wFmeasure": 0.8187302513638883,
+      "MAE": 0.027831453164047084,
+      "adpEm": 0.9383992842546464,
+      "meanEm": 0.9394771000935127,
+      "maxEm": 0.9452663059570513,
+      "adpFm": 0.8408053465146312,
+      "meanFm": 0.8491385951159722,
+      "maxFm": 0.8648421722655834
+    }
+  },
+  "pairwise": {
+    "torch-fp32__vs__jt-agent": {
+      "images": 250,
+      "max_abs_diff_uint8": 1,
+      "images_with_max_diff_gt_1": 0,
+      "changed_pixel_fraction": 3.916241261577521e-05,
+      "threshold128_flip_fraction": 1.4769860565487844e-07
+    },
+    "torch-fp32__vs__jt-cf-eps": {
+      "images": 250,
+      "max_abs_diff_uint8": 1,
+      "images_with_max_diff_gt_1": 0,
+      "changed_pixel_fraction": 7.464509272859698e-06,
+      "threshold128_flip_fraction": 2.9921700283531413e-08
+    },
+    "jt-agent__vs__jt-cf-eps": {
+      "images": 250,
+      "max_abs_diff_uint8": 1,
+      "images_with_max_diff_gt_1": 0,
+      "changed_pixel_fraction": 3.99932172725839e-05,
+      "threshold128_flip_fraction": 1.5724808446877145e-07
+    }
+  }
+}

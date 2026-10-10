@@ -1,0 +1,35 @@
+{
+  "dominant_op": "sum_spatial",
+  "gpu": "NVIDIA GeForce RTX 3080 Ti",
+  "identity": "5583b9df1378b6e6906e9ad187de529f313e67e4001cacc379d5458a5d4cda7b",
+  "jittor": "1.3.9.14",
+  "kind": "torchport.noise_probe",
+  "noise_floor": 2.16577561427497e-06,
+  "ok": true,
+  "per_op": {
+    "attn_av": 0.0,
+    "avgpool_global": 1.6440185064887667e-06,
+    "conv_k1": 1.80273188206564e-07,
+    "conv_k3s1": 1.8156359097291392e-07,
+    "conv_k3s1_d6": 1.8224066182540892e-07,
+    "conv_k8s8": 1.4901968501865136e-07,
+    "gelu": 0.0,
+    "group_norm": 1.602936884861167e-06,
+    "interp_up2": 0.0,
+    "layernorm": 0.0,
+    "linear": 0.0,
+    "matmul_qk": 0.0,
+    "mean_lastdim": 0.0,
+    "softmax": 0.0,
+    "sum_spatial": 2.16577561427497e-06
+  },
+  "probe": {
+    "channels": 64,
+    "keys": 484,
+    "repeats": 5,
+    "seed": 0,
+    "spatial": 176,
+    "tokens": 30976
+  },
+  "run_dir": "/root/autodl-tmp/tp-work/pc-v3/evidence/runs/noise/target-20261010-001229-548276af"
+}

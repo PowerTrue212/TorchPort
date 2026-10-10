@@ -1,0 +1,82 @@
+{
+  "runs": {
+    "jt": {
+      "root": "/root/autodl-tmp/tp-work/e2/birefnet-none-r0/jt",
+      "datasets": {
+        "CHAMELEON": {
+          "images": 76,
+          "missing": 0,
+          "Smeasure": 0.9319135302794743,
+          "MAE": 0.015523392101994007,
+          "wFmeasure": 0.9139741066130018,
+          "maxFmeasure": 0.9297122762394402,
+          "meanFmeasure": 0.9213667597095436,
+          "adaptiveFmeasure": 0.9163181687849044,
+          "maxEmeasure": 0.980572987057191,
+          "meanEmeasure": 0.9734833855970897,
+          "adaptiveEmeasure": 0.9734991365231195
+        },
+        "CAMO": {
+          "images": 250,
+          "missing": 0,
+          "Smeasure": 0.9041167108970868,
+          "MAE": 0.03018306362236006,
+          "wFmeasure": 0.890221154040454,
+          "maxFmeasure": 0.9151979827722438,
+          "meanFmeasure": 0.9036534313940888,
+          "adaptiveFmeasure": 0.8959905728911027,
+          "maxEmeasure": 0.9595613904622747,
+          "meanEmeasure": 0.9542673764140064,
+          "adaptiveEmeasure": 0.949265605282304
+        }
+      }
+    },
+    "torch-fp32": {
+      "root": "/root/autodl-tmp/tp-work/e2/birefnet-none-r0/torch-fp32",
+      "datasets": {
+        "CHAMELEON": {
+          "images": 76,
+          "missing": 0,
+          "Smeasure": 0.9319135056246486,
+          "MAE": 0.015523390371827808,
+          "wFmeasure": 0.9139741108974133,
+          "maxFmeasure": 0.9297122005835,
+          "meanFmeasure": 0.9213667692580205,
+          "adaptiveFmeasure": 0.9163181984670414,
+          "maxEmeasure": 0.9805729634584907,
+          "meanEmeasure": 0.9734833683826131,
+          "adaptiveEmeasure": 0.9734991556713555
+        },
+        "CAMO": {
+          "images": 250,
+          "missing": 0,
+          "Smeasure": 0.9041167097653573,
+          "MAE": 0.03018306492332668,
+          "wFmeasure": 0.8902211618631332,
+          "maxFmeasure": 0.9151979473582423,
+          "meanFmeasure": 0.9036534604885024,
+          "adaptiveFmeasure": 0.895990624682813,
+          "maxEmeasure": 0.9595614547006562,
+          "meanEmeasure": 0.9542673762429529,
+          "adaptiveEmeasure": 0.949265690322233
+        }
+      }
+    }
+  },
+  "pairwise": {
+    "jt__vs__torch-fp32": {
+      "CHAMELEON": {
+        "images": 76,
+        "max_abs_diff_uint8": 1,
+        "changed_pixel_fraction": 1.3665610987279576e-05,
+        "threshold128_flip_fraction": 4.3753290247426604e-08
+      },
+      "CAMO": {
+        "images": 250,
+        "max_abs_diff_uint8": 1,
+        "changed_pixel_fraction": 2.160725777048256e-05,
+        "threshold128_flip_fraction": 5.336772527442435e-08
+      }
+    }
+  }
+}

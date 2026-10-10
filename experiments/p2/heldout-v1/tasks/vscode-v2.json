@@ -1,0 +1,82 @@
+{
+  "_unverified": [
+    "source.python/target.python/target.env copied from CamoFormer task-correct-384.json; real remote interpreters are not checked here.",
+    "target.repo points at the r0 full workspace; materialize.py writes per-workspace copies under workspaces/_tasks/.",
+    "Checkpoint is loaded non-strict with `module.` stripped (64 unexpected keys from other-task branches). Whether TorchPort verify accepts this as weights complete=true is not verified; a weights-completeness rule for unexpected keys may need a decision.",
+    "Adapter never executed (no torch locally). Output is only outputs[2][-1] (final COD logits), following smoke/run_torch.py; the other three heads are not compared.",
+    "Input uses PIL bilinear resize like dataset_test.py trans.Scale; COD mean/std from transformCOD_RGB.",
+    "Adapter replaces the Models_test swin factory (hardcoded depths [2,2,18,2]) with Swin-T [2,2,6,2], as the smoke script does."
+  ],
+  "inputs": [
+    {
+      "dtype": "float32",
+      "path": "D:\\科研\\TorchPort\\experiments\\p2\\heldout-v1\\inputs\\vscode-v2-cod10k-batfish2-352.npy",
+      "shape": [
+        1,
+        3,
+        352,
+        352
+      ]
+    }
+  ],
+  "protocol": {
+    "profile": "noise-envelope-v3",
+    "repeats": 3,
+    "timeout": 1800,
+    "pass_k": 2.0,
+    "floor_k": 3.0,
+    "noise_floor": "auto",
+    "variants": [
+      {
+        "name": "benchmark",
+        "cudnn_benchmark": true
+      },
+      {
+        "name": "fp64",
+        "dtype": "float64"
+      },
+      {
+        "name": "cpu",
+        "device": "cpu"
+      },
+      {
+        "name": "channels_last",
+        "channels_last": true
+      },
+      {
+        "name": "batch2",
+        "batch": 2,
+        "batch_mode": "distinct"
+      }
+    ]
+  },
+  "schema_version": 1,
+  "seed": 20261004,
+  "source": {
+    "device": "cuda",
+    "entry": "torchport_adapter.py",
+    "model": "TorchPortVSCodeV2",
+    "python": "D:\\科研\\TorchPort\\.venv\\Scripts\\python.exe",
+    "repo": "D:\\科研\\TorchPort\\heldout\\vscode-v2\\adapter",
+    "paths": [
+      "D:\\科研\\TorchPort\\heldout\\vscode-v2\\source\\VSCode2"
+    ],
+    "env": {
+      "NVIDIA_TF32_OVERRIDE": "0"
+    }
+  },
+  "target": {
+    "device": "cuda",
+    "entry": "torchport_adapter.py",
+    "env": {
+      "conv_opt": "1",
+      "python_config_path": ".venv\\Scripts\\python3.12-config",
+      "use_cutlass": "0"
+    },
+    "model": "TorchPortVSCodeV2",
+    "python": "D:\\科研\\TorchPort\\.venv\\Scripts\\python.exe",
+    "repo": "D:\\科研\\TorchPort\\experiments\\p2\\heldout-v1\\workspaces\\vscode-v2-full-r0"
+  },
+  "task_id": "heldout-vscode-v2-noise-envelope-352-fp32",
+  "weights": "D:\\科研\\TorchPort\\heldout\\vscode-v2\\checkpoint\\swinT.pth"
+}

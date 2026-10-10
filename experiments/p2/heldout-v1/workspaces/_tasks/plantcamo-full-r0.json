@@ -1,0 +1,71 @@
+{
+  "inputs": [
+    {
+      "dtype": "float32",
+      "path": "D:\\科研\\TorchPort\\experiments\\p2\\heldout-v1\\inputs\\plantcamo-abronia1042-704.npy",
+      "shape": [
+        1,
+        3,
+        704,
+        704
+      ]
+    }
+  ],
+  "protocol": {
+    "profile": "noise-envelope",
+    "repeats": 2,
+    "timeout": 1800,
+    "variants": [
+      {
+        "name": "benchmark",
+        "cudnn_benchmark": true
+      },
+      {
+        "name": "deterministic",
+        "cudnn_deterministic": true
+      },
+      {
+        "name": "fp64",
+        "dtype": "float64"
+      },
+      {
+        "name": "cpu",
+        "device": "cpu"
+      },
+      {
+        "name": "channels_last",
+        "channels_last": true
+      },
+      {
+        "name": "batch2",
+        "batch": 2
+      }
+    ]
+  },
+  "schema_version": 1,
+  "seed": 20261004,
+  "source": {
+    "device": "cuda",
+    "entry": "torchport_adapter.py",
+    "model": "TorchPortPlantCamo",
+    "python": "D:\\科研\\TorchPort\\.venv\\Scripts\\python.exe",
+    "repo": "D:\\科研\\TorchPort\\heldout\\plantcamo\\oracle-src",
+    "env": {
+      "NVIDIA_TF32_OVERRIDE": "0"
+    }
+  },
+  "target": {
+    "device": "cuda",
+    "entry": "torchport_adapter.py",
+    "env": {
+      "conv_opt": "1",
+      "python_config_path": ".venv\\Scripts\\python3.12-config",
+      "use_cutlass": "0"
+    },
+    "model": "TorchPortPlantCamo",
+    "python": "D:\\科研\\TorchPort\\.venv\\Scripts\\python.exe",
+    "repo": "D:\\tp-runs\\plantcamo-full-r0"
+  },
+  "task_id": "heldout-plantcamo-noise-envelope-704-fp32-full-r0",
+  "weights": "D:\\科研\\TorchPort\\heldout\\plantcamo\\checkpoint\\Net_epoch_best.pth"
+}

@@ -1,0 +1,29 @@
+# 隐藏最终评测
+
+两个条件（`none` / `full`）在运行结束后由同一评测器判定，评测器与 oracle 不进入任何 agent 工作区。
+
+## E1：TorchPort verify
+
+用 `tasks/<repo>.json`（profile `noise-envelope`，source 设 `NVIDIA_TF32_OVERRIDE=0`，fp32，6 个 variant，repeats 2）
+对 agent 最终的 `submission.py` 候选运行 `verify`。`verify` 是唯一判定入口。
+`none` 条件的 agent 从未调用过它，评测时才首次运行，成本记入评测方而非 agent。
+
+## E2：任务指标
+
+在各仓库测试集上用官方指标计算 Jittor 候选的结果，并与 `heldout/<repo>/smoke/metrics-torch.json`（PyTorch 参考）比较。
+
+- BiRefNet：CHAMELEON、NC4K、CAMO、COD10K，参考为 fp16 autocast；候选以 fp32 运行，差异须在报告中注明。
+- VSCode-v2：COD10K、CAMO、NC4K。
+- PlantCamo：PlantCAMO1250 test。
+
+## E2 噪声包络（待做）
+
+固定容差不能区分后端数值差异与实现错误，E2 需要 source 自身的变体指标运行。每个仓库至少需要：
+
+1. source fp32，TF32 关闭，重复 2 次（重复性）。
+2. source fp64（或 cpu）全测试集指标。
+3. source 开启 cudnn benchmark 的指标。
+4. source channels_last 的指标。
+5. BiRefNet 额外：source fp16 autocast（官方协议）与 fp32 各一次。
+
+据此得到各指标的 source 变动范围，候选落在范围（含倍数 k）内才算 E2 通过。k 在跑 agent 之前冻结。
