@@ -68,7 +68,7 @@ E:\Anaconda\python.exe scripts\remote\stage_agent_dir.py plantcamo-full-r0 exper
 ## 协议 v3 冻结（2026-10-10）
 
 从本日起所有新 held-out 运行使用 `tasks/*.json` 中的 `noise-envelope-v3`：repeats 3，`pass_k=2`，
-`floor_k=3`，`noise_floor=auto`（target 环境按 source 最大全局归约形状实测 N_env），变体
+`floor_k=4`，`noise_floor=auto`（target 环境按 source 最大全局归约形状实测 N_env），变体
 benchmark / fp64 / cpu / channels_last / batch2(distinct)。停止规则见 `prompts/body.md`：
 `e1_status` 为 `pass` 或 `marginal` 才可提交。之前的运行（birefnet-none-r0、plantcamo-full-r0）
 在 v2 下进行，只能用 v3 事后重验，不能与 v3 运行混在同一效率统计中。
@@ -85,3 +85,10 @@ benchmark / fp64 / cpu / channels_last / batch2(distinct)。停止规则见 `pro
 
 已知边界：k 只用这 7 个候选估计；3 到 60 之间没有负对照；覆盖率 67%~94%；单张输入；
 函数式全局归约（`x.mean((2,3))`）不进入 N_env 形状推断。
+
+2026-10-10 修订 `floor_k` 3 → 4（用户决定，不做噪声注入）：BiRefNet none-r0 两轮分别为 3.095（fail）
+与 2.86（marginal），落点在 `dec_att.global_avg_pool` 的 BN 之后——Jittor 全局归约的运行间误差经
+BN 放大约 7 倍，而 PyTorch 变体差异只放大约 2.5 倍，单算子 N_env 覆盖不到下游。`floor_k=3` 会让这类
+正确实现随机判 fail。代价：PlantCamo eps 写反在首次分歧 `backbone.norm1` 处的比值曾低至 3.18，`floor_k=4`
+下该处可能只记为 marginal、首个 fail 后移；整网仍因下游大量 fail 与输出逐元素比较而判 fail。这个修订是在
+看过校准结果后做的，后续仓库只能检验、不能再用来调整 k。

@@ -16,7 +16,7 @@
     "repeats": 3,
     "timeout": 1800,
     "pass_k": 2.0,
-    "floor_k": 3.0,
+    "floor_k": 4.0,
     "noise_floor": "auto",
     "variants": [
       {

@@ -42,7 +42,7 @@
   但已达到可提交底线，最终以任务指标为准）、`fail`（任务还没有完成）。只有 `e1_status` 为 `pass` 或
   `marginal` 时才可以结束并提交；为 `fail` 时继续工作，直到预算、轮数或时间用尽。
 - `max_ratio` 是所有张量、所有重复运行中 `rel(T,R) / max(D, N_env)` 的最大值：`D` 是 PyTorch 合法运行之间
-  的差异，`N_env` 是当前 Jittor 环境自身的运行间波动下限。`max_ratio <= 2` 为 `pass`，`<= 3` 为 `marginal`。
+  的差异，`N_env` 是当前 Jittor 环境自身的运行间波动下限。`max_ratio <= 2` 为 `pass`，`<= 4` 为 `marginal`。
 
 ## 工具
 
