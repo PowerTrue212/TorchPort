@@ -98,3 +98,15 @@ BN 放大约 7 倍，而 PyTorch 变体差异只放大约 2.5 倍，单算子 N_
 正确实现随机判 fail。代价：PlantCamo eps 写反在首次分歧 `backbone.norm1` 处的比值曾低至 3.18，`floor_k=4`
 下该处可能只记为 marginal、首个 fail 后移；整网仍因下游大量 fail 与输出逐元素比较而判 fail。这个修订是在
 看过校准结果后做的，后续仓库只能检验、不能再用来调整 k。
+
+## 已知问题（记录，暂不修改冻结协议）
+
+- **N_env 主导上限（2026-10-10，VSCode-v2 full-r0）**：verify 的上限是 `k * max(D, N_env)`，N_env 取全部
+  算子中的最大值（来自全局归约，约 1.9e-6）。Swin-T 352 输入上 PyTorch 变体差异 D 多在 1e-7 量级，561 个
+  比较张量中 550 个的上限由 N_env 决定，实际判据退化为"相对误差在 2·N_env 以内"。PlantCamo 那种 eps 写反
+  （首次分歧处误差约 6.7e-6）在这类模型上比值约 3.5，只会记为 marginal，仍允许提交。候选修法：verify 对
+  不在全局归约下游的张量按算子取 N_env（与 trace 隔离一致）；这会改变判定，属于协议 v4，需重新校准。
+- **覆盖率**：VSCode-v2 full-r0 只比较了 51% 的参考张量；未比较的 543 个是 Dropout / DropPath / Softmax /
+  Identity 等无参数模块与 `#2` 重复调用别名，其输出由下游张量间接约束。
+- **agent_ssh 误拦**：VSCode-v2 full-r0 中 2 次合法命令被拒（引号/反斜杠紧贴路径时，允许目录名的正则多吞
+  一个字符，被识别为"其他 Agent 目录"）。待修。
