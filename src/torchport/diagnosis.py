@@ -7,7 +7,10 @@ import shutil
 from pathlib import Path
 from typing import Any
 
+import numpy as np
+
 from .execution import add_physical_cost, read_json, run_physical_cost, write_json
+from .noise import per_tensor_floors
 from .oracle import build_oracle, run_side
 from .parity import (
     ENVELOPE_V3,
@@ -20,14 +23,15 @@ from .parity import (
 )
 
 
-def _trace_noise_floor(task: dict[str, Any], root: Path, trial: str) -> float:
-    """trace 用的 N_env：协议给定数值直接用；auto 时取同 trial 最近 verify 已标定的值（与候选无关）。"""
+def _trace_noise_floor(task: dict[str, Any], root: Path, trial: str) -> tuple[float, dict[str, float] | None]:
+    """trace 用的 N_env：协议给定数值直接用（无逐算子值）；auto 时取同 trial 最近 verify 已标定的
+    全局值与逐算子值（与候选无关）。"""
     value = task["protocol"].get("noise_floor", 0.0)
     if value != "auto":
-        return float(value or 0.0)
+        return float(value or 0.0), None
     path = Path(root) / "verify" / f"{trial}.json"
     noise = (read_json(path).get("noise") or {}) if path.is_file() else {}
-    return float(noise.get("noise_floor") or 0.0)
+    return float(noise.get("noise_floor") or 0.0), noise.get("per_op") or None
 
 
 def _tolerance_profile(task: dict[str, Any]) -> str:
@@ -240,14 +244,22 @@ def trace(task: dict[str, Any], root: Path, *, trial: str = "t0") -> dict[str, A
                         leaves=leaves,
                     )
                     if task["protocol"]["profile"] == ENVELOPE_V3:
-                        # v3：隔离比较与 verify 同一基准 max(D, N_env)，localize 优先采用它
+                        # v3：隔离比较按 max(D, N_env(算子)) 判定，localize 优先采用它
                         protocol = task["protocol"]
+                        floor, per_op = _trace_noise_floor(task, root, trial)
+                        floors = None
+                        source_config = artifacts.get("module_config")
+                        if per_op and source_config:
+                            with np.load(artifacts["module_outputs"], allow_pickle=False) as archive:
+                                names = list(archive.files)
+                            floors = per_tensor_floors(names, read_json(Path(source_config)), per_op, floor)
                         isolated["envelope_v3"] = compare_isolated_v3(
                             artifacts["module_outputs"],
                             target["artifacts"]["isolated"],
                             artifacts["module_fp64"],
                             artifacts["module_alt"],
-                            noise_floor=_trace_noise_floor(task, root, trial),
+                            noise_floor=floor,
+                            noise_floors=floors,
                             pass_k=float(protocol.get("pass_k", 2.0)),
                             floor_k=float(protocol.get("floor_k", 3.0)),
                             repeat_path=target["artifacts"].get("isolated_repeat"),
@@ -369,8 +381,11 @@ def localize(report: dict[str, Any]) -> dict[str, Any]:
 
 
 def _localize_v3(report: dict[str, Any], v3: dict[str, Any]) -> dict[str, Any]:
-    """字段与 localize 相同；误差跳变用相对误差（v3 隔离报告没有逐元素绝对误差）。"""
-    first = v3.get("first_divergence")
+    """字段与 localize 相同；误差跳变用相对误差（v3 隔离报告没有逐元素绝对误差）。
+
+    没有 fail 时退回首个 marginal：温和错误（如 eps 写反）在隔离运行中常落在 pass_k 与 floor_k 之间。
+    """
+    first = v3.get("first_divergence") or v3.get("first_marginal")
     tensors = v3.get("tensors") or []
     detail = next((item for item in tensors if item.get("name") == (first or {}).get("name")), None)
     name = str((first or {}).get("name") or "")

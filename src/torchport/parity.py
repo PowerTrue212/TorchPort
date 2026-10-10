@@ -730,11 +730,14 @@ def compare_isolated_v3(
     pass_k: float = 2.0,
     floor_k: float = 3.0,
     repeat_path: str | Path | None = None,
+    noise_floors: dict[str, float] | None = None,
 ) -> dict[str, Any]:
-    """trace 模块隔离在协议 v3 下的判定基准，与 verify 一致：ratio = rel(T, R) / max(D, N_env)。
+    """trace 模块隔离在协议 v3 下的判定基准：ratio = rel(T, R) / max(D, N_env(张量))。
 
     D = {R, alt, fp64} 两两最大 rel（同一份局部输入上 source 合法路径之间的差异）；N_env 是与候选无关的
-    target 环境噪声下限。固定容差会被 Jittor 后端自身波动先触发，把首次分歧指到正确的模块上。
+    target 环境噪声下限。隔离运行的输入是 source 真实局部输入，没有上游误差传播，所以 noise_floors
+    给定时按张量（即所属算子类型）取下限，缺省时退回全局 noise_floor：全局最大值来自全局归约，
+    套到逐位确定的 LayerNorm 上会把 eps 这类错误完全掩盖。
     repeat_path 给定时取两次隔离运行的较大误差，并报告 target 自身波动（只报告不放宽）。
     """
     paths = [Path(p).expanduser().resolve() for p in (reference_path, candidate_path, fp64_path, alt_path)]
@@ -748,6 +751,7 @@ def compare_isolated_v3(
     repeat = archives[4] if len(archives) > 4 else None
     tensors: list[dict[str, Any]] = []
     first: dict[str, Any] | None = None
+    first_marginal: dict[str, Any] | None = None
     missing: list[str] = []
     uncalibrated: list[str] = []
     try:
@@ -771,7 +775,8 @@ def compare_isolated_v3(
                 scale = max(_l2(ref), np.finfo(np.float64).tiny)
                 source_noise = _diameter([ref, *group], scale)
                 error = max(_rel(run, ref, scale) for run in runs)
-                basis = max(source_noise, noise_floor)
+                floor = noise_floor if noise_floors is None else noise_floors.get(name, noise_floor)
+                basis = max(source_noise, floor)
                 ratio = error / basis if basis > 0 else (0.0 if error == 0 else float("inf"))
                 target_noise = _diameter(runs, scale)
                 item = {
@@ -780,7 +785,8 @@ def compare_isolated_v3(
                     "relative_error": error,
                     "source_noise": source_noise,
                     "target_noise": target_noise,
-                    "floor_applied": noise_floor > source_noise,
+                    "noise_floor": floor,
+                    "floor_applied": floor > source_noise,
                     "ratio": ratio,
                     "unstable": target_noise > source_noise,
                     "status": _band(ratio, pass_k, floor_k),
@@ -788,6 +794,8 @@ def compare_isolated_v3(
             tensors.append(item)
             if first is None and item["status"] == "fail":
                 first = {"name": name, "position": position, "reason": item.get("reason", "超出 floor_k 倍噪声包络")}
+            if first_marginal is None and item["status"] == "marginal":
+                first_marginal = {"name": name, "position": position, "reason": "介于 pass_k 与 floor_k 之间"}
     finally:
         for archive in archives:
             archive.close()
@@ -798,8 +806,10 @@ def compare_isolated_v3(
         "pass_k": pass_k,
         "floor_k": floor_k,
         "noise_floor": noise_floor,
+        "per_op_floor": noise_floors is not None,
         "passed": first is None and bool(tensors),
         "first_divergence": first,
+        "first_marginal": first_marginal,
         "missing_in_candidate": missing,
         "uncalibrated": uncalibrated,
         "metrics": {

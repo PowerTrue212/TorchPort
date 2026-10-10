@@ -34,6 +34,51 @@ REDUCE_CLASSES = {
 }
 
 
+# 模块类 -> 探针中对应的算子；未列出的类（Sequential、仓库自定义块等复合模块）用全局最大值。
+OP_FAMILIES = {
+    "Conv1d": ("conv_k3s1", "conv_k3s1_d6", "conv_k1", "conv_k8s8"),
+    "Conv2d": ("conv_k3s1", "conv_k3s1_d6", "conv_k1", "conv_k8s8"),
+    "ConvTranspose2d": ("conv_k3s1", "conv_k3s1_d6", "conv_k1", "conv_k8s8"),
+    "Linear": ("linear",),
+    "LayerNorm": ("layernorm",),
+    "GroupNorm": ("group_norm",),
+    "InstanceNorm1d": ("group_norm",),
+    "InstanceNorm2d": ("group_norm",),
+    "AdaptiveAvgPool2d": ("avgpool_global", "sum_spatial"),
+    "AdaptiveMaxPool2d": ("avgpool_global", "sum_spatial"),
+    "Softmax": ("softmax",),
+    # eval 下逐元素：用实测的逐元素算子（gelu）代表
+    "BatchNorm1d": ("gelu",), "BatchNorm2d": ("gelu",), "ReLU": ("gelu",), "GELU": ("gelu",),
+    "Sigmoid": ("gelu",), "Tanh": ("gelu",), "SiLU": ("gelu",), "Dropout": ("gelu",),
+    "Identity": ("gelu",), "UpsamplingBilinear2d": ("interp_up2",), "Upsample": ("interp_up2",),
+}
+
+
+def _module_of(name: str, config: dict[str, dict[str, Any]]) -> str | None:
+    """张量名 `<module>`、`<module>#2`、`<module>.0` -> 模块名。"""
+    base = name.split("#", 1)[0]
+    if base in config:
+        return base
+    head, _, tail = base.rpartition(".")
+    return head if head in config and tail.isdigit() else None
+
+
+def per_tensor_floors(
+    names: list[str], config: dict[str, dict[str, Any]], per_op: dict[str, float], default: float
+) -> dict[str, float]:
+    """按张量所属模块的类取对应算子的 N_env；模块类未知或探针缺该算子时用 default（全局最大值）。
+
+    只用于 trace 隔离：每个模块的输入是 source 真实局部输入，相关噪声只有该算子自身的。
+    """
+    floors: dict[str, float] = {}
+    for name in names:
+        module = _module_of(name, config)
+        ops = OP_FAMILIES.get((config.get(module) or {}).get("class", "")) if module else None
+        values = [per_op[op] for op in ops or () if op in per_op]
+        floors[name] = max(values) if ops and values else default
+    return floors
+
+
 def reduce_shape(config: dict[str, dict[str, Any]], shapes: dict[str, list[int]]) -> list[int] | None:
     """从 source 参考运行的模块类名与输入形状，取全局归约模块中空间规模最大的 [C, H, W]。
 

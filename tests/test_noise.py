@@ -101,3 +101,23 @@ def test_probe_spec_explicit_task_value_overrides_derived_shape(tmp_path) -> Non
     assert derived["reduce_shape"] == [32, 256, 256]
     explicit = probe_spec({"protocol": {"noise_probe": {"reduce_shape": [8, 16, 16]}}}, envelope)
     assert explicit["reduce_shape"] == [8, 16, 16]
+
+
+def test_per_tensor_floors_use_op_family_and_fall_back_for_composites() -> None:
+    from torchport.noise import per_tensor_floors
+
+    config = {
+        "model.backbone.norm1": {"class": "LayerNorm"},
+        "model.att.pool": {"class": "AdaptiveAvgPool2d"},
+        "model.cr4": {"class": "Sequential"},
+        "model.conv": {"class": "Conv2d"},
+    }
+    per_op = {"layernorm": 0.0, "avgpool_global": 1.6e-6, "sum_spatial": 2.1e-6, "conv_k1": 1.8e-7, "conv_k3s1": 1.5e-7}
+    floors = per_tensor_floors(
+        ["model.backbone.norm1", "model.att.pool#2", "model.cr4", "model.conv.0", "unknown"], config, per_op, 2.1e-6
+    )
+    assert floors["model.backbone.norm1"] == 0.0  # LayerNorm 逐位确定：不能套全局归约的下限
+    assert floors["model.att.pool#2"] == 2.1e-6
+    assert floors["model.cr4"] == 2.1e-6  # 复合模块用全局最大值
+    assert floors["model.conv.0"] == 1.8e-7
+    assert floors["unknown"] == 2.1e-6

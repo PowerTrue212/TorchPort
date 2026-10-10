@@ -375,3 +375,29 @@ class IsolatedV3Tests(unittest.TestCase):
         self.assertEqual(location["scope"], "norm1")
         self.assertEqual(location["invocation"], 2)
         self.assertAlmostEqual(location["error_jump"], 5e-5 - 1e-7)
+
+
+def test_isolated_v3_per_op_floor_exposes_layernorm_eps_and_localize_falls_back_to_marginal(tmp_path) -> None:
+    from torchport.diagnosis import _localize_v3
+    from torchport.parity import compare_isolated_v3
+
+    rng = np.random.default_rng(5)
+    ref = rng.standard_normal(4096)
+    d = 7e-8  # source 合法路径差异（PlantCamo attn.norm 实测量级）
+
+    def noisy(scale: float, seed: int) -> np.ndarray:
+        r = np.random.default_rng(seed).standard_normal(ref.size)
+        return ref + scale * np.linalg.norm(ref) * r / np.linalg.norm(r)
+
+    paths = {}
+    for name, value in {"ref": ref, "fp64": noisy(d, 1), "alt": noisy(d / 2, 2), "cand": noisy(2.88 * d, 3)}.items():
+        paths[name] = _save(tmp_path / f"{name}.npz", **{"model.backbone.norm1": value})
+    args = (paths["ref"], paths["cand"], paths["fp64"], paths["alt"])
+    masked = compare_isolated_v3(*args, noise_floor=1.85e-6, pass_k=2.0, floor_k=4.0)
+    assert masked["first_divergence"] is None and masked["first_marginal"] is None
+    exposed = compare_isolated_v3(
+        *args, noise_floor=1.85e-6, noise_floors={"model.backbone.norm1": 0.0}, pass_k=2.0, floor_k=4.0
+    )
+    assert exposed["first_marginal"]["name"] == "model.backbone.norm1"
+    location = _localize_v3({"passed": False}, exposed)
+    assert location["first_divergence"]["name"] == "model.backbone.norm1"
