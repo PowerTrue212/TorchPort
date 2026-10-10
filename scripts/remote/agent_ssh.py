@@ -28,8 +28,10 @@ FORBIDDEN_SUBSTRINGS = (
     "/root/autodl-tmp/tp-",
 )
 AGENT_ROOT = "/root/autodl-tmp/agent"
+# 目录名到第一个路径分隔或 shell 元字符为止；反斜杠与反引号也要截断，
+# 否则 `"...r0\"` 这类转义会把 `r0\` 当成另一个 Agent 的目录（VSCode-v2 full-r0 误拦 2 次）。
 AGENT_DIRECTORY = re.compile(
-    r"/root/autodl-tmp/agent/([^/\s'\";&|()<>]+)", re.IGNORECASE
+    r"/root/autodl-tmp/agent/([^/\s'\"\\`;&|()<>]+)", re.IGNORECASE
 )
 SECRET_VALUE = re.compile(
     r"(?i)\b(password|token|secret|api[_-]?key)\b(\s*=\s*|\s+)([^\s;&|]+)"

@@ -116,6 +116,25 @@ def test_other_agent_directory_is_rejected_without_connecting(
     assert calls == []
 
 
+@pytest.mark.parametrize(
+    "command",
+    [
+        # VSCode-v2 full-r0 的两条真实误拦：转义引号紧跟在自己的目录名后面
+        f"python -c 'import sys; sys.path.insert(0,\" {ALLOWED}\\\");'",
+        f"ls {ALLOWED}/ && grep -n 'x' {ALLOWED}`echo`",
+    ],
+)
+def test_own_directory_followed_by_escape_is_not_rejected(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path, command: str
+) -> None:
+    monkeypatch.setenv("TP_AGENT_REMOTE_DIR", ALLOWED)
+    client = _Client()
+    wrapper, calls = _load(monkeypatch, tmp_path, client)
+
+    assert wrapper.main(["run", command]) == 0
+    assert calls == [1]
+
+
 def test_allowed_command_is_prefixed_with_remote_directory(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
