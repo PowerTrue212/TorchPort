@@ -30,7 +30,7 @@ REPOS = {
     "vscode-v2": {
         "name": "VSCode-v2-T stage2 (CODRGB)", "src": "source/VSCode2", "model": "TorchPortVSCodeV2", "shape": "(1, 3, 352, 352)",
         "ckpt": ["swinT.pth"],
-        "note": "只迁移 CODRGB 路径，返回 (最终 COD logits,) 一个张量；checkpoint 键带 `module.` 前缀并含其他任务分支的多余键，评测方非严格加载。",
+        "note": "只迁移 CODRGB 推理路径，并返回一个张量（最终 COD logits）。checkpoint 含 64 个 CODRGB 推理未使用分支的键；不要构造这些分支，否则额外参数会导致验证失败。参数名必须与去掉 `module.` 前缀后的 788 个推理键完全一致。",
     },
     "plantcamo": {
         "name": "PlantCamo MyNet", "src": "source", "model": "TorchPortPlantCamo", "shape": "(1, 3, 704, 704)",

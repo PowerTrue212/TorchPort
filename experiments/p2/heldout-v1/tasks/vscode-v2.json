@@ -1,12 +1,4 @@
 {
-  "_unverified": [
-    "source.python/target.python/target.env copied from CamoFormer task-correct-384.json; real remote interpreters are not checked here.",
-    "target.repo points at the r0 full workspace; materialize.py writes per-workspace copies under workspaces/_tasks/.",
-    "Checkpoint is loaded non-strict with `module.` stripped (64 unexpected keys from other-task branches). Whether TorchPort verify accepts this as weights complete=true is not verified; a weights-completeness rule for unexpected keys may need a decision.",
-    "Adapter never executed (no torch locally). Output is only outputs[2][-1] (final COD logits), following smoke/run_torch.py; the other three heads are not compared.",
-    "Input uses PIL bilinear resize like dataset_test.py trans.Scale; COD mean/std from transformCOD_RGB.",
-    "Adapter replaces the Models_test swin factory (hardcoded depths [2,2,18,2]) with Swin-T [2,2,6,2], as the smoke script does."
-  ],
   "inputs": [
     {
       "dtype": "float32",
@@ -57,10 +49,7 @@
     "entry": "torchport_adapter.py",
     "model": "TorchPortVSCodeV2",
     "python": "D:\\科研\\TorchPort\\.venv\\Scripts\\python.exe",
-    "repo": "D:\\科研\\TorchPort\\heldout\\vscode-v2\\adapter",
-    "paths": [
-      "D:\\科研\\TorchPort\\heldout\\vscode-v2\\source\\VSCode2"
-    ],
+    "repo": "D:\\科研\\TorchPort\\heldout\\vscode-v2\\oracle-src",
     "env": {
       "NVIDIA_TF32_OVERRIDE": "0"
     }
