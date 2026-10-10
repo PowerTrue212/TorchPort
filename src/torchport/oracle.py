@@ -97,6 +97,8 @@ def run_side(
         artifacts["module_inputs"] = str(run_dir / "module_inputs.npz")
     if ok and (run_dir / "module_config.json").is_file():
         artifacts["module_config"] = str(run_dir / "module_config.json")
+    if ok and (run_dir / "module_shapes.json").is_file():
+        artifacts["module_shapes"] = str(run_dir / "module_shapes.json")
     if ok and (run_dir / "module_calls.json").is_file():
         artifacts["module_calls"] = str(run_dir / "module_calls.json")
     if ok and (run_dir / "isolated.npz").is_file():
@@ -254,7 +256,10 @@ def build_envelope(task: dict[str, Any], root: Path, oracle: dict[str, Any]) -> 
     if meta_path.is_file():
         meta = read_json(meta_path)
         files = [meta.get("reference"), *(meta.get("variants") or [])]
-        if meta.get("task_digest") == task["digest"] and all(f and Path(f).is_file() for f in files):
+        # v3 自动标定需要参考运行的模块输入形状；旧 envelope 缺这份元数据时重建，不静默退回默认形状
+        needs_shapes = task["protocol"].get("noise_floor") == "auto"
+        shapes_ok = not needs_shapes or (meta.get("module_shapes") and Path(meta["module_shapes"]).is_file())
+        if meta.get("task_digest") == task["digest"] and all(f and Path(f).is_file() for f in files) and shapes_ok:
             return {**meta, "physical_cost": empty_physical_cost()}
     runs = [run_side(task, "source", root, trial="envelope-ref", mode="layers")]
     for index, variant in enumerate(variants):
@@ -274,6 +279,8 @@ def build_envelope(task: dict[str, Any], root: Path, oracle: dict[str, Any]) -> 
         "applied": [run["capture"].get("variant") for run in runs[1:]],
         # 参考运行的模块构造超参，供 verify 与 target 同名模块逐键比较（诊断证据）
         "module_config": runs[0]["artifacts"].get("module_config"),
+        # 参考运行的模块输入形状：N_env 按本任务真实的全局归约规模标定
+        "module_shapes": runs[0]["artifacts"].get("module_shapes"),
         "build_physical_cost": physical,
     }
     write_json(meta_path, meta)
@@ -294,7 +301,7 @@ def verify_envelope(task: dict[str, Any], root: Path, *, trial: str = "t0") -> d
     noise: dict[str, Any] = {"physical_cost": empty_physical_cost()}
     noise_floor = 0.0
     if protocol["profile"] == ENVELOPE_V3 and protocol.get("noise_floor") == "auto":
-        noise = calibrate_noise(task, root) if oracle.get("ok") and envelope.get("ok") else noise
+        noise = calibrate_noise(task, root, envelope) if oracle.get("ok") and envelope.get("ok") else noise
         noise_floor = float(noise.get("noise_floor") or 0.0)
     elif protocol["profile"] == ENVELOPE_V3:
         noise_floor = float(protocol.get("noise_floor", 0.0))

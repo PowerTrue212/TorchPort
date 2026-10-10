@@ -23,7 +23,34 @@ from .execution import (
 from .task import CAPTURE_VERSION, digest
 
 # 形状默认取 PlantCamo（704 输入）stage1：64x176x176 特征图、PVT block1 的 30976 token、sr=8 后 484 key。
-DEFAULT_PROBE = {"repeats": 5, "seed": 0, "channels": 64, "spatial": 176, "tokens": 30976, "keys": 484}
+# reduce_shape（[C, H, W]）只用于全局空间归约类算子；为 None 时沿用 channels/spatial。
+DEFAULT_PROBE = {
+    "repeats": 5, "seed": 0, "channels": 64, "spatial": 176, "tokens": 30976, "keys": 484,
+    "reduce_shape": None,
+}
+# 在空间维上做统计的模块类（两端类名相同即可识别；函数式写法 x.mean((2,3)) 识别不到）。
+REDUCE_CLASSES = {
+    "AdaptiveAvgPool2d", "AdaptiveMaxPool2d", "GroupNorm", "InstanceNorm2d", "InstanceNorm1d",
+}
+
+
+def reduce_shape(config: dict[str, dict[str, Any]], shapes: dict[str, list[int]]) -> list[int] | None:
+    """从 source 参考运行的模块类名与输入形状，取全局归约模块中空间规模最大的 [C, H, W]。
+
+    AdaptiveXxxPool2d 只在输出为 1x1（全局池化）时计入；N_env 随归约元素数增长，取最大规模。
+    """
+    best: list[int] | None = None
+    for name, entry in config.items():
+        cls = entry.get("class")
+        shape = shapes.get(name)
+        if cls not in REDUCE_CLASSES or not shape or len(shape) != 4:
+            continue
+        if cls.startswith("Adaptive") and entry.get("output_size") not in (1, [1], [1, 1]):
+            continue
+        candidate = [int(shape[1]), int(shape[2]), int(shape[3])]
+        if best is None or candidate[1] * candidate[2] > best[1] * best[2]:
+            best = candidate
+    return best
 
 
 def _rel_spread(runs: list[np.ndarray]) -> float:
@@ -72,9 +99,12 @@ def run_probe(job: dict[str, Any]) -> dict[str, Any]:
         "q": rand(1, 1, n, c), "k": rand(1, 1, m, c), "v": rand(1, 1, m, c),
         "ln_w": rand(c, scale=0.5) + 1, "ln_b": rand(c, scale=0.1),
     }
+    # 全局归约单独用任务真实规模的张量；卷积等算子仍用默认形状，避免大通道卷积占满显存
+    rc, rh, rw = probe["reduce_shape"] or (c, s, s)
+    data["x_reduce"] = rand(1, int(rc), int(rh), int(rw))
     g = {name: jt.array(value) for name, value in data.items()}
     nn = jt.nn
-    group_norm = nn.GroupNorm(8, c)
+    group_norm = nn.GroupNorm(8 if int(rc) % 8 == 0 else 1, int(rc))
     group_norm.eval()
 
     def ops() -> dict[str, Any]:
@@ -85,10 +115,10 @@ def run_probe(job: dict[str, Any]) -> dict[str, Any]:
             "conv_k3s1_d6": nn.conv2d(g["x_map"], g["w_k3"], g["b_k3"], padding=6, dilation=6),
             "conv_k1": nn.conv2d(g["x_map"], g["w_k1"], g["b_k1"]),
             "conv_k8s8": nn.conv2d(g["x_map"], g["w_k8"], g["b_k8"], stride=8),
-            "avgpool_global": nn.AdaptiveAvgPool2d(1)(g["x_map"]),
-            "sum_spatial": g["x_map"].sum(dims=(2, 3)),
+            "avgpool_global": nn.AdaptiveAvgPool2d(1)(g["x_reduce"]),
+            "sum_spatial": g["x_reduce"].sum(dims=(2, 3)),
             "mean_lastdim": g["x_tok"].mean(-1),
-            "group_norm": group_norm(g["x_map"]),
+            "group_norm": group_norm(g["x_reduce"]),
             "linear": nn.matmul_transpose(g["x_tok"], g["w_lin"]) + g["b_lin"],
             "matmul_qk": att,
             "softmax": weights,
@@ -138,10 +168,26 @@ def noise_identity(side: dict[str, Any], probe: dict[str, Any]) -> str:
     return digest({**config, "probe": probe, "capture_version": CAPTURE_VERSION})
 
 
-def calibrate(task: dict[str, Any], root: Path) -> dict[str, Any]:
-    """返回 target 环境的 N_env；同一环境与探针规格只实测一次。"""
+def probe_spec(task: dict[str, Any], envelope: dict[str, Any] | None = None) -> dict[str, Any]:
+    """探针规格：默认值 < 由 source 参考运行推得的归约规模 < TaskSpec 显式 noise_probe。"""
+    probe = dict(DEFAULT_PROBE)
+    config_path = (envelope or {}).get("module_config")
+    shapes_path = (envelope or {}).get("module_shapes")
+    if config_path and shapes_path and Path(config_path).is_file() and Path(shapes_path).is_file():
+        if shape := reduce_shape(read_json(Path(config_path)), read_json(Path(shapes_path))):
+            probe["reduce_shape"] = shape
+    probe.update(task["protocol"].get("noise_probe") or {})
+    return probe
+
+
+def calibrate(task: dict[str, Any], root: Path, envelope: dict[str, Any] | None = None) -> dict[str, Any]:
+    """返回 target 环境的 N_env；同一环境与探针规格只实测一次。
+
+    envelope 给定时，全局归约探针按 source 参考运行中最大的全局归约输入形状实测（形状只来自
+    source，与候选无关）。
+    """
     side = task["target"]
-    probe = {**DEFAULT_PROBE, **(task["protocol"].get("noise_probe") or {})}
+    probe = probe_spec(task, envelope)
     key = noise_identity(side, probe)
     path = Path(root) / "noise" / f"{key[:16]}.json"
     if path.is_file():

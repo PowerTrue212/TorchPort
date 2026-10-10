@@ -548,14 +548,22 @@ def add_hooks(
     probe_calls: list[dict[str, Any]] | None = None,
     probe_inputs: dict[str, np.ndarray] | None = None,
     focus: set[str] | None = None,
+    shapes: dict[str, list[int]] | None = None,
 ) -> list[Any]:
-    """focus 给定时只记录这些模块的输出与局部输入（trace 聚焦首次分歧附近，避免 GB 级产物）。"""
+    """focus 给定时只记录这些模块的输出与局部输入（trace 聚焦首次分歧附近，避免 GB 级产物）。
+
+    shapes 给定时记录每个模块首次调用的第一个输入张量形状（N_env 按真实归约规模标定用）。
+    """
     counts: Counter[str] = Counter()
     handles = []
 
     def make(name: str, selected: bool) -> Callable:
         def record(_module: Any, inputs: Any, kwargs: dict[str, Any], output: Any) -> None:
             counts[name] += 1
+            if shapes is not None and name not in shapes:
+                tensor = find_tensor(inputs, kind)
+                if tensor is not None:
+                    shapes[name] = [int(x) for x in tensor.shape]
             if focus is not None and name not in focus:
                 return
             key = name if counts[name] == 1 else f"{name}#{counts[name]}"
@@ -1075,9 +1083,13 @@ def capture(job: dict[str, Any]) -> dict[str, Any]:
     module_calls: list[dict[str, Any]] = []
     module_inputs: dict[str, np.ndarray] = {}
     layer_values: dict[str, np.ndarray] = {}
+    # source 参考运行顺带记录各模块输入形状，供 N_env 按真实归约规模标定
+    module_shapes: dict[str, list[int]] | None = (
+        {} if mode == "layers" and kind == "source" and not job.get("variant") else None
+    )
     if mode == "layers":
         # E1 只要整网前向中每个模块的真实输出；不做算子包装和模块隔离。
-        handles = add_hooks(model, kind, layer_values)
+        handles = add_hooks(model, kind, layer_values, shapes=module_shapes)
     elif mode == "trace":
         handles = add_hooks(
             model,
@@ -1207,6 +1219,8 @@ def capture(job: dict[str, Any]) -> dict[str, Any]:
     if mode in ("layers", "trace"):
         # 构造超参只作诊断证据（两端同名模块逐键比较），不进入判定
         write_json(out / "module_config.json", module_config(model))
+    if module_shapes:
+        write_json(out / "module_shapes.json", module_shapes)
     if mode == "layers":
         report["layers"] = len(layer_values)
     if kind == "source" and mode == "trace":

@@ -324,3 +324,54 @@ class JudgeNumericalTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class IsolatedV3Tests(unittest.TestCase):
+    def test_backend_noise_below_floor_passes_and_real_error_is_first(self) -> None:
+        from torchport.parity import compare_isolated_v3
+
+        root = Path(tempfile.mkdtemp())
+        rng = np.random.default_rng(5)
+        conv, norm = rng.standard_normal(4096), rng.standard_normal(4096)
+
+        def save(name: str, conv_noise: float, norm_noise: float) -> Path:
+            r = np.random.default_rng(len(name))
+            return _save(
+                root / f"{name}.npz",
+                **{
+                    "block.dwconv": conv + conv_noise * np.linalg.norm(conv) / 64 * r.standard_normal(4096),
+                    "norm1": norm + norm_noise * np.linalg.norm(norm) / 64 * r.standard_normal(4096),
+                },
+            )
+
+        reference = save("ref", 0.0, 0.0)
+        fp64, alt = save("fp64", 1e-7, 1e-7), save("alt", 1e-7, 1e-7)
+        # 卷积只有后端波动（~1e-6，固定容差会先报它）；norm1 是真实的 eps 错误
+        candidate = save("candidate", 1e-6, 1e-4)
+        report = compare_isolated_v3(reference, candidate, fp64, alt, noise_floor=2e-6)
+        self.assertEqual(report["first_divergence"]["name"], "norm1")
+        statuses = {item["name"]: item["status"] for item in report["tensors"]}
+        self.assertEqual(statuses["block.dwconv"], "pass")
+
+    def test_localize_prefers_v3_isolated_report(self) -> None:
+        from torchport.diagnosis import localize
+
+        report = {
+            "status": "diverged",
+            "passed": False,
+            "strict": {"first_divergence": {"name": "block.dwconv", "position": 0}, "tensors": []},
+            "isolated": {
+                "envelope_v3": {
+                    "first_divergence": {"name": "norm1#2", "position": 3},
+                    "tensors": [
+                        {"name": "a", "position": 2, "relative_error": 1e-7},
+                        {"name": "norm1#2", "position": 3, "relative_error": 5e-5},
+                    ],
+                    "metrics": {"failed_tensors": 1},
+                }
+            },
+        }
+        location = localize(report)
+        self.assertEqual(location["scope"], "norm1")
+        self.assertEqual(location["invocation"], 2)
+        self.assertAlmostEqual(location["error_jump"], 5e-5 - 1e-7)

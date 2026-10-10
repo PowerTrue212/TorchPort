@@ -10,12 +10,24 @@ from typing import Any
 from .execution import add_physical_cost, read_json, run_physical_cost, write_json
 from .oracle import run_side
 from .parity import (
+    ENVELOPE_V3,
     TOLERANCE_PROFILES,
     called_modules,
+    compare_isolated_v3,
     compare_module_config,
     compare_noise_calibrated,
     compare_tensor_archives,
 )
+
+
+def _trace_noise_floor(task: dict[str, Any], root: Path, trial: str) -> float:
+    """trace 用的 N_env：协议给定数值直接用；auto 时取同 trial 最近 verify 已标定的值（与候选无关）。"""
+    value = task["protocol"].get("noise_floor", 0.0)
+    if value != "auto":
+        return float(value or 0.0)
+    path = Path(root) / "verify" / f"{trial}.json"
+    noise = (read_json(path).get("noise") or {}) if path.is_file() else {}
+    return float(noise.get("noise_floor") or 0.0)
 
 
 def _tolerance_profile(task: dict[str, Any]) -> str:
@@ -194,6 +206,19 @@ def trace(task: dict[str, Any], root: Path, *, trial: str = "t0") -> dict[str, A
                         artifacts["module_alt"],
                         leaves=leaves,
                     )
+                    if task["protocol"]["profile"] == ENVELOPE_V3:
+                        # v3：隔离比较与 verify 同一基准 max(D, N_env)，localize 优先采用它
+                        protocol = task["protocol"]
+                        isolated["envelope_v3"] = compare_isolated_v3(
+                            artifacts["module_outputs"],
+                            target["artifacts"]["isolated"],
+                            artifacts["module_fp64"],
+                            artifacts["module_alt"],
+                            noise_floor=_trace_noise_floor(task, root, trial),
+                            pass_k=float(protocol.get("pass_k", 2.0)),
+                            floor_k=float(protocol.get("floor_k", 3.0)),
+                            repeat_path=target["artifacts"].get("isolated_repeat"),
+                        )
             configs = [run["artifacts"].get("module_config") for run in (source, target)]
             module_report = (
                 compare_module_config(
@@ -271,6 +296,10 @@ def localize(report: dict[str, Any]) -> dict[str, Any]:
         }
     strict = report.get("strict") or {}
     output = report.get("output") or {}
+    # 协议 v3：隔离比较按 max(D, N_env) 判定，固定容差会被 Jittor 后端波动先触发而指错模块
+    v3 = (report.get("isolated") or {}).get("envelope_v3")
+    if v3 is not None:
+        return _localize_v3(report, v3)
     first = strict.get("first_divergence") or output.get("first_gating_divergence")
     tensors = strict.get("tensors") or output.get("tensors") or []
     detail = next((item for item in tensors if item.get("name") == (first or {}).get("name")), None)
@@ -302,6 +331,37 @@ def localize(report: dict[str, Any]) -> dict[str, Any]:
         "evidence": {"input": None, "output": detail},
         "error_jump": error_jump,
         "metrics": strict.get("metrics") or output.get("metrics"),
+    }
+
+
+def _localize_v3(report: dict[str, Any], v3: dict[str, Any]) -> dict[str, Any]:
+    """字段与 localize 相同；误差跳变用相对误差（v3 隔离报告没有逐元素绝对误差）。"""
+    first = v3.get("first_divergence")
+    tensors = v3.get("tensors") or []
+    detail = next((item for item in tensors if item.get("name") == (first or {}).get("name")), None)
+    name = str((first or {}).get("name") or "")
+    base, marker, count = name.rpartition("#")
+    invocation = int(count) if marker and count.isdigit() else 1
+    position = (first or {}).get("position")
+    index = next((i for i, item in enumerate(tensors) if item.get("position") == position), None)
+    previous = tensors[index - 1] if index else None
+    current_error = (detail or {}).get("relative_error")
+    previous_error = (previous or {}).get("relative_error")
+    return {
+        "kind": "torchport.localization",
+        "passed": bool(report.get("passed")),
+        "stage": "trace" if first else None,
+        "scope": (base if marker and count.isdigit() else name) or None,
+        "invocation": invocation,
+        "operator": None,
+        "first_divergence": first,
+        "evidence": {"input": None, "output": detail},
+        "error_jump": (
+            float(current_error) - float(previous_error)
+            if current_error is not None and previous_error is not None
+            else None
+        ),
+        "metrics": v3.get("metrics"),
     }
 
 

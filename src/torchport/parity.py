@@ -669,6 +669,99 @@ def compare_metric_envelope(
     }
 
 
+def compare_isolated_v3(
+    reference_path: str | Path,
+    candidate_path: str | Path,
+    fp64_path: str | Path,
+    alt_path: str | Path,
+    *,
+    noise_floor: float = 0.0,
+    pass_k: float = 2.0,
+    floor_k: float = 3.0,
+    repeat_path: str | Path | None = None,
+) -> dict[str, Any]:
+    """trace 模块隔离在协议 v3 下的判定基准，与 verify 一致：ratio = rel(T, R) / max(D, N_env)。
+
+    D = {R, alt, fp64} 两两最大 rel（同一份局部输入上 source 合法路径之间的差异）；N_env 是与候选无关的
+    target 环境噪声下限。固定容差会被 Jittor 后端自身波动先触发，把首次分歧指到正确的模块上。
+    repeat_path 给定时取两次隔离运行的较大误差，并报告 target 自身波动（只报告不放宽）。
+    """
+    paths = [Path(p).expanduser().resolve() for p in (reference_path, candidate_path, fp64_path, alt_path)]
+    if repeat_path is not None:
+        paths.append(Path(repeat_path).expanduser().resolve())
+    for path in paths:
+        if not path.is_file():
+            raise ValueError(f"证据不存在：{path}")
+    archives = [np.load(p, allow_pickle=False) for p in paths]
+    reference, candidate, fp64, alt = archives[:4]
+    repeat = archives[4] if len(archives) > 4 else None
+    tensors: list[dict[str, Any]] = []
+    first: dict[str, Any] | None = None
+    missing: list[str] = []
+    uncalibrated: list[str] = []
+    try:
+        candidate_names, fp64_names, alt_names = set(candidate.files), set(fp64.files), set(alt.files)
+        repeat_names = set(repeat.files) if repeat is not None else set()
+        for position, name in enumerate(reference.files):
+            if name not in candidate_names:
+                missing.append(name)
+                continue
+            if name not in fp64_names or name not in alt_names:
+                uncalibrated.append(name)
+                continue
+            ref, cand = reference[name], candidate[name]
+            group = [fp64[name], alt[name]]
+            runs = [cand, *([repeat[name]] if name in repeat_names else [])]
+            if any(x.shape != ref.shape for x in (*group, *runs)):
+                item = {"name": name, "position": position, "status": "fail", "reason": "张量形状不同"}
+            elif not all(np.all(np.isfinite(x)) for x in (ref, *group, *runs)):
+                item = {"name": name, "position": position, "status": "fail", "reason": "张量包含 NaN 或无穷值"}
+            else:
+                scale = max(_l2(ref), np.finfo(np.float64).tiny)
+                source_noise = _diameter([ref, *group], scale)
+                error = max(_rel(run, ref, scale) for run in runs)
+                basis = max(source_noise, noise_floor)
+                ratio = error / basis if basis > 0 else (0.0 if error == 0 else float("inf"))
+                target_noise = _diameter(runs, scale)
+                item = {
+                    "name": name,
+                    "position": position,
+                    "relative_error": error,
+                    "source_noise": source_noise,
+                    "target_noise": target_noise,
+                    "floor_applied": noise_floor > source_noise,
+                    "ratio": ratio,
+                    "unstable": target_noise > source_noise,
+                    "status": _band(ratio, pass_k, floor_k),
+                }
+            tensors.append(item)
+            if first is None and item["status"] == "fail":
+                first = {"name": name, "position": position, "reason": item.get("reason", "超出 floor_k 倍噪声包络")}
+    finally:
+        for archive in archives:
+            archive.close()
+    ratios = [item["ratio"] for item in tensors if "ratio" in item]
+    return {
+        "schema_version": 1,
+        "profile": "isolated-envelope-v3",
+        "pass_k": pass_k,
+        "floor_k": floor_k,
+        "noise_floor": noise_floor,
+        "passed": first is None and bool(tensors),
+        "first_divergence": first,
+        "missing_in_candidate": missing,
+        "uncalibrated": uncalibrated,
+        "metrics": {
+            "compared_tensors": len(tensors),
+            "failed_tensors": sum(item["status"] == "fail" for item in tensors),
+            "marginal_tensors": sum(item["status"] == "marginal" for item in tensors),
+            "max_ratio": max(ratios, default=None),
+            "unstable_tensors": sum(bool(item.get("unstable")) for item in tensors),
+        },
+        "tensors": tensors,
+    }
+
+
 def _leaf_key(name: str, leaves: set[str]) -> bool:
     """张量名形如 `<module>`、`<module>#2`、`<module>.0`；去掉调用序号与输出下标后匹配模块名。"""
     base = name.split("#", 1)[0]

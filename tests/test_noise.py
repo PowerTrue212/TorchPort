@@ -67,3 +67,37 @@ class NoiseTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+def test_reduce_shape_takes_largest_global_reduction_from_source() -> None:
+    from torchport.noise import reduce_shape
+
+    config = {
+        "a.pool": {"class": "AdaptiveAvgPool2d", "output_size": [1, 1]},
+        "b.pool": {"class": "AdaptiveAvgPool2d", "output_size": [1, 1]},
+        "c.pool": {"class": "AdaptiveAvgPool2d", "output_size": [7, 7]},  # 非全局池化不计入
+        "d.conv": {"class": "Conv2d"},
+    }
+    shapes = {
+        "a.pool": [1, 64, 44, 44],
+        "b.pool": [1, 256, 128, 128],
+        "c.pool": [1, 64, 512, 512],
+        "d.conv": [1, 64, 1024, 1024],
+    }
+    assert reduce_shape(config, shapes) == [256, 128, 128]
+    assert reduce_shape({"d.conv": {"class": "Conv2d"}}, shapes) is None
+
+
+def test_probe_spec_explicit_task_value_overrides_derived_shape(tmp_path) -> None:
+    import json
+
+    from torchport.noise import probe_spec
+
+    config, shapes = tmp_path / "config.json", tmp_path / "shapes.json"
+    config.write_text(json.dumps({"p": {"class": "GroupNorm"}}))
+    shapes.write_text(json.dumps({"p": [1, 32, 256, 256]}))
+    envelope = {"module_config": str(config), "module_shapes": str(shapes)}
+    derived = probe_spec({"protocol": {}}, envelope)
+    assert derived["reduce_shape"] == [32, 256, 256]
+    explicit = probe_spec({"protocol": {"noise_probe": {"reduce_shape": [8, 16, 16]}}}, envelope)
+    assert explicit["reduce_shape"] == [8, 16, 16]
