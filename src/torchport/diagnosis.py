@@ -198,7 +198,8 @@ def trace(task: dict[str, Any], root: Path, *, trial: str = "t0") -> dict[str, A
             module_report = (
                 compare_module_config(
                     *(read_json(Path(path)) for path in configs),
-                    called_modules(source["artifacts"]["trace"]),
+                    # 聚焦 trace 只记录少数模块，无法据此判断哪些模块被调用过；此时 used 留空
+                    None if focus else called_modules(source["artifacts"]["trace"]),
                 )
                 if all(configs)
                 else None
