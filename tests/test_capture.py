@@ -124,6 +124,30 @@ class Model:
             self.state[name] = Tensor(value + (1 if self.corrupt else 0))
 
 
+class LocalStateTests(unittest.TestCase):
+    def test_builtin_layer_with_own_parameters_is_selected(self) -> None:
+        from torchport.capture import _has_local_state
+
+        class Layer:
+            # 模拟 PyTorch：state_dict 不接受 recurse，parameters/buffers 接受
+            def state_dict(self):
+                return {"weight": 1}
+
+            def parameters(self, recurse=True):
+                return iter([object()])
+
+            def buffers(self, recurse=True):
+                return iter([])
+
+        class Container(Layer):
+            def parameters(self, recurse=True):
+                return iter([object()] if recurse else [])
+
+        self.assertTrue(_has_local_state(Layer()))
+        self.assertFalse(_has_local_state(Container()))
+        self.assertFalse(_has_local_state(object()))
+
+
 class StateTests(unittest.TestCase):
     def test_scalar_state_matches_singleton_target(self) -> None:
         matched = _matched(

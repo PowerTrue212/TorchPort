@@ -531,10 +531,17 @@ def _defined_in_repo(module: Any, root: Path) -> bool:
 
 
 def _has_local_state(module: Any) -> bool:
+    """模块自身（不含子模块）是否持有参数或 buffer。
+
+    不能用 state_dict(recurse=False)：PyTorch 的 state_dict 不接受 recurse，会抛 TypeError，
+    结果所有内置层（LayerNorm、Conv2d、Linear）都不被采集局部输入，隔离比较漏掉 eps 这类错误。
+    """
     try:
-        return bool(module.state_dict(recurse=False))
-    except TypeError:
-        # Jittor 1.3 的 state_dict 没有 recurse 参数；局部输入只在 source 端采集。
+        return any(True for _ in module.parameters(recurse=False)) or any(
+            True for _ in module.buffers(recurse=False)
+        )
+    except (AttributeError, TypeError):
+        # 局部输入只在 source（PyTorch）端采集；其他框架没有 recurse 参数时视为无局部状态。
         return False
 
 
