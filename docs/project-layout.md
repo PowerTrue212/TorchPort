@@ -39,7 +39,7 @@ TorchPort 是迁移 Agent 的执行与验收工具。核心代码只处理显式
 
 `.venv/`、`.tmp/`、`.torchport/`、`.codex-build/`、`.codex-finalizer/`、缓存、权重和
 实验工作区都是可重建或机器相关的内容，由 `.gitignore` 排除。需要长期保留的实验
-结论应提炼到 `experiments/results/` 或 `deliverables/`。
+结论应提炼到对应的 `experiments/p2/<study>/` 或 `deliverables/`。
 
 ## 控制代码体积
 

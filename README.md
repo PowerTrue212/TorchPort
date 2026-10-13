@@ -159,7 +159,7 @@ TorchPort 不自动扫描并改写未知仓库。外部代码 Agent 负责仓库
 - [x] 首次数值分歧定位与结构化失败分类
 - [x] CLI、受控 Harness 和 Agent 修复循环
 - [x] P2 受控 Gateway、DeepSeek adapter、成本聚合与 tiny GPU smoke 闭环
-- [x] 实验图表与模型可视化
+- [x] CamoFormer 数值验收、重复性与归约机制证据
 - [ ] 冻结 P2 正式 benchmark 并运行多 replicate 真实迁移实验
 - [ ] P3 建立有证据的迁移问题库，并在 held-out 新案例上评测经验复用
 - [ ] 冻结官方转换器、JTorch、纯 Codex、纯 DSH、DSH + TorchPort 的统一对比实验
@@ -169,69 +169,12 @@ TorchPort 不自动扫描并改写未知仓库。外部代码 Agent 负责仓库
 
 说明：当前公开证据主要集中在 PyTorch/Jittor 迁移与数值验证；昇腾等国产算力已经进入后端设计，但完整端到端实验仍在 TODO 中。
 
-## 实验图表
+## 当前实验材料
 
-### 主实验图
-
-| 端到端对比 | DSH 修复轨迹 |
-| --- | --- |
-| <img src="experiments/figures/fig_e2e/plot.png" width="430"> | <img src="experiments/figures/fig_rounds/plot.png" width="430"> |
-
-| 方法概览 | 模型覆盖快照 |
-| --- | --- |
-| <img src="experiments/figures/fig_methods/plot.png" width="430"> | <img src="experiments/figures/fig_models/plot.png" width="430"> |
-
-| 张量证据 | 状态分布 |
-| --- | --- |
-| <img src="experiments/figures/fig_tensors/plot.png" width="430"> | <img src="experiments/figures/fig_status/plot.png" width="430"> |
-
-| Strict 对齐 | 失败归因 |
-| --- | --- |
-| <img src="experiments/figures/fig_strict/plot.png" width="430"> | <img src="experiments/figures/fig_fail/plot.png" width="430"> |
-
-### 模型可视化
-
-| ViT 注意力/特征 | MAE 重建 |
-| --- | --- |
-| <img src="experiments/figures/fig_vit/plot.png" width="430"> | <img src="experiments/figures/fig_mae/plot.png" width="430"> |
-
-| ViT/MAE 总览 | ViT 对齐 |
-| --- | --- |
-| <img src="experiments/figures/fig_vit_mae/plot.png" width="430"> | <img src="experiments/figures/fig_vit_align/plot.png" width="430"> |
-
-| MAE 对齐 | Swin 注意力/特征 |
-| --- | --- |
-| <img src="experiments/figures/fig_mae_align/plot.png" width="430"> | <img src="experiments/figures/fig_swin/plot.png" width="430"> |
-
-| ResNet 特征图 | SENet 通道响应 |
-| --- | --- |
-| <img src="experiments/figures/fig_resnet/plot.png" width="430"> | <img src="experiments/figures/fig_senet/plot.png" width="430"> |
-
-| U-Net 分割证据 | 超分输出 |
-| --- | --- |
-| <img src="experiments/figures/fig_unet/plot.png" width="430"> | <img src="experiments/figures/fig_superres/plot.png" width="430"> |
-
-| VAE 潜变量/重建 | 可视化总览 |
-| --- | --- |
-| <img src="experiments/figures/fig_vae/plot.png" width="430"> | <img src="experiments/figures/fig_visual/plot.png" width="430"> |
-
-## SuperRes DSH 结果
-
-```text
-官方转换器：
-  CV=true
-  RN=false
-  failure=jittor.init.orthogonal_ is missing
-
-DSH + TorchPort：
-  CV=true
-  RN=true
-  NA=true
-  SA=false
-  FD=conv3
-```
-
-这个样本说明两点。第一，迁移后的 Jittor 项目可以运行，最终 FP32 输出通过数值对齐。第二，更严格的中间层检查仍在 `conv3` 记录到轨迹级分歧。TorchPort 不把这类分歧隐藏掉，而是写入证书，供后续修复或人工审查。
+- `experiments/p2/`：反馈粒度、预算、held-out 任务和实验运行记录。
+- `experiments/figures/fig_e1_ratio/`：E1 噪声标定比值。
+- `experiments/figures/fig_fixed_tolerance/`：固定容差、运行波动和误差放大。
+- `experiments/figures/fig_jittor_atomic/`：Jittor 归约不确定性的机制证据。
 
 ## 目录结构
 
@@ -252,9 +195,9 @@ tests/                  单元测试与集成测试
 ## 复现实验图
 
 ```bash
-python experiments/scripts/build.py
-python experiments/figures/fig_e2e/plot.py
-python experiments/figures/fig_rounds/plot.py
+python experiments/figures/fig_e1_ratio/plot.py
+python experiments/figures/fig_fixed_tolerance/plot.py
+python experiments/figures/fig_jittor_atomic/plot.py
 ```
 
 架构图提示词：

@@ -167,7 +167,7 @@ TorchPort does not scan and rewrite unknown repositories. An external code agent
 - [x] First-divergence localization and structured failure codes
 - [x] CLI, controlled Harness, and an agent repair loop
 - [x] P2 controlled gateway, DeepSeek adapter, cost aggregation, and tiny GPU smoke loop
-- [x] Experiment figures and model visualizations
+- [x] CamoFormer numerical verification, repeatability, and reduction-mechanism evidence
 - [ ] P3 evidence-backed migration issue library with evaluation on held-out cases
 - [ ] Freeze the unified benchmark against the official converter, JTorch, pure Codex, pure DSH, and DSH + TorchPort
 - [ ] Expand the unseen real PyTorch repository test set
@@ -176,69 +176,12 @@ TorchPort does not scan and rewrite unknown repositories. An external code agent
 
 Note: current public evidence focuses on PyTorch/Jittor migration and numerical verification. Ascend-class accelerator support is already part of the backend design, but full end-to-end validation remains a TODO item.
 
-## Figures
+## Current Experiment Materials
 
-### Main Experimental Figures
-
-| End-to-end comparison | DSH repair trajectory |
-| --- | --- |
-| <img src="experiments/figures/fig_e2e/plot.png" width="430"> | <img src="experiments/figures/fig_rounds/plot.png" width="430"> |
-
-| Method summary | Model coverage snapshot |
-| --- | --- |
-| <img src="experiments/figures/fig_methods/plot.png" width="430"> | <img src="experiments/figures/fig_models/plot.png" width="430"> |
-
-| Tensor evidence | Failure/status view |
-| --- | --- |
-| <img src="experiments/figures/fig_tensors/plot.png" width="430"> | <img src="experiments/figures/fig_status/plot.png" width="430"> |
-
-| Strict alignment | Failure attribution |
-| --- | --- |
-| <img src="experiments/figures/fig_strict/plot.png" width="430"> | <img src="experiments/figures/fig_fail/plot.png" width="430"> |
-
-### Model Visualizations
-
-| ViT attention/features | MAE reconstruction |
-| --- | --- |
-| <img src="experiments/figures/fig_vit/plot.png" width="430"> | <img src="experiments/figures/fig_mae/plot.png" width="430"> |
-
-| ViT/MAE overview | ViT alignment |
-| --- | --- |
-| <img src="experiments/figures/fig_vit_mae/plot.png" width="430"> | <img src="experiments/figures/fig_vit_align/plot.png" width="430"> |
-
-| MAE alignment | Swin attention/features |
-| --- | --- |
-| <img src="experiments/figures/fig_mae_align/plot.png" width="430"> | <img src="experiments/figures/fig_swin/plot.png" width="430"> |
-
-| ResNet feature maps | SENet channel response |
-| --- | --- |
-| <img src="experiments/figures/fig_resnet/plot.png" width="430"> | <img src="experiments/figures/fig_senet/plot.png" width="430"> |
-
-| U-Net segmentation evidence | Super-resolution output |
-| --- | --- |
-| <img src="experiments/figures/fig_unet/plot.png" width="430"> | <img src="experiments/figures/fig_superres/plot.png" width="430"> |
-
-| VAE latent/reconstruction | Visual summary |
-| --- | --- |
-| <img src="experiments/figures/fig_vae/plot.png" width="430"> | <img src="experiments/figures/fig_visual/plot.png" width="430"> |
-
-## SuperRes DSH Result
-
-```text
-Official converter:
-  CV=true
-  RN=false
-  failure=jittor.init.orthogonal_ is missing
-
-DSH + TorchPort:
-  CV=true
-  RN=true
-  NA=true
-  SA=false
-  FD=conv3
-```
-
-This sample shows two things. First, the migrated Jittor project runs and its final FP32 output aligns. Second, the stricter intermediate check still records a trace-level divergence at `conv3`. TorchPort keeps that evidence in the certificate instead of hiding it.
+- `experiments/p2/`: feedback conditions, budgets, held-out tasks, and run records.
+- `experiments/figures/fig_e1_ratio/`: E1 noise-calibration ratios.
+- `experiments/figures/fig_fixed_tolerance/`: fixed tolerances, runtime variation, and error amplification.
+- `experiments/figures/fig_jittor_atomic/`: mechanism evidence for Jittor reduction nondeterminism.
 
 ## Layout
 
@@ -259,9 +202,9 @@ boundary between the two Python packages.
 ## Reproduce Figures
 
 ```bash
-python experiments/scripts/build.py
-python experiments/figures/fig_e2e/plot.py
-python experiments/figures/fig_rounds/plot.py
+python experiments/figures/fig_e1_ratio/plot.py
+python experiments/figures/fig_fixed_tolerance/plot.py
+python experiments/figures/fig_jittor_atomic/plot.py
 ```
 
 Architecture prompt:

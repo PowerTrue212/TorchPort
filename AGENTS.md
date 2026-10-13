@@ -163,7 +163,7 @@ CamoFormer 候选已经可以完整运行，参数与结构检查通过，但冻
 | `benchmarks/tasks/` | 小型、显式、可复现的任务定义 |
 | `migrations/` | 真实迁移工作区、提示词和仓库专用证据 |
 | `compatibility/` | 历史规则和后续 P3 问题条目 |
-| `experiments/results/`、`deliverables/` | 需要长期保存的结果和报告 |
+| `experiments/p2/`、`deliverables/` | 需要长期保存的实验结果和交付材料 |
 
 大型工作区、缓存和临时产物不应直接并入核心代码提交。需要保留的实验结论应提炼为报告和
 可追溯证据路径。
