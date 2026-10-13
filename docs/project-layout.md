@@ -31,7 +31,6 @@ TorchPort 是迁移 Agent 的执行与验收工具。核心代码只处理显式
 | `experiments/harness/` | P2 Gateway、工具协议、文件边界、反馈策略、预算和事件记录 |
 | `scripts/remote/torchport_remote/` | 远端配置、bundle、传输、反馈和命令编排 |
 | `migrations/` | 真实仓库迁移协议、本地工作区和仓库专用证据 |
-| `submissions/` | 需要长期保存的 Agent candidate 快照 |
 | `deliverables/` | 面向交付的报告与演示文稿 |
 | `scripts/` | 安装、复现和远程开发工具 |
 | `docs/` | 架构、路线图和开发说明 |
@@ -40,7 +39,7 @@ TorchPort 是迁移 Agent 的执行与验收工具。核心代码只处理显式
 
 `.venv/`、`.tmp/`、`.torchport/`、`.codex-build/`、`.codex-finalizer/`、缓存、权重和
 实验工作区都是可重建或机器相关的内容，由 `.gitignore` 排除。需要长期保留的实验
-结论应提炼到 `experiments/results/`、`submissions/` 或 `deliverables/`。
+结论应提炼到 `experiments/results/` 或 `deliverables/`。
 
 ## 控制代码体积
 

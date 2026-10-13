@@ -189,27 +189,6 @@ TorchPort 不自动扫描并改写未知仓库。外部代码 Agent 负责仓库
 | --- | --- |
 | <img src="experiments/figures/fig_strict/plot.png" width="430"> | <img src="experiments/figures/fig_fail/plot.png" width="430"> |
 
-### RAFT 三方法迁移
-
-| 公共 evaluator 与框架差异 | Optical flow 输出 |
-| --- | --- |
-| <img src="experiments/figures/fig_raft/comparison.png" width="430"> | <img src="experiments/figures/fig_raft/flows.png" width="430"> |
-
-| Flow error map | PyTorch/Jittor 中间 feature |
-| --- | --- |
-| <img src="experiments/figures/fig_raft/errors.png" width="430"> | <img src="experiments/figures/fig_raft/feature_pairs.png" width="430"> |
-
-| 中间 feature 差异 | 12 次迭代收敛轨迹 |
-| --- | --- |
-| <img src="experiments/figures/fig_raft/feature_errors.png" width="430"> | <img src="experiments/figures/fig_raft/iteration_convergence.png" width="430"> |
-
-| Strict mismatch 累积 | Round–RN/NA 修复轨迹 |
-| --- | --- |
-| <img src="experiments/figures/fig_raft/strict_profile.png" width="430"> | <img src="experiments/figures/fig_raft/method_results.png" width="430"> |
-
-RAFT 图只使用公共 evaluator 和 TorchPort 双端捕获的真实数据。三种方法的 agent
-用时/token 未完整记录，因此不画成本气泡图，也不以空心点或零值代替缺失记录。
-
 ### 模型可视化
 
 | ViT 注意力/特征 | MAE 重建 |

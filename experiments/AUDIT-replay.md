@@ -8,6 +8,5 @@
 | 其中 mae（`fix-random-replay`） | 依赖 rand 回放通过 | 高风险，重跑时须按受控随机性单独标注 |
 | `experiments/out/cases.csv`、`case_table.md`、`figures/fig_vit_mae/` | 由 current.json 派生 | 随上游重跑重新生成 |
 | `official_jittor` 各行 | 未经过 capture | 不受影响 |
-| `experiments/results/raft-v1-2026-08-25-v100/` | 专用 evaluator | 不受影响 |
 
 原始文件保留不改。重跑后在此表补充新运行目录。

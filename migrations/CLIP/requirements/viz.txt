@@ -1,3 +1,0 @@
-# Reporting can run in the source environment and does not import either framework.
-numpy==1.26.4
-matplotlib==3.10.0

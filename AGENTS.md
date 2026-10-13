@@ -80,13 +80,11 @@ P2 比较三种反馈：
 - P0：TaskSpec、source oracle、candidate 身份、负例和唯一验收结果已经闭环。
 - P1：双端独立环境、运行记录和重复验收已经闭环。
 - P2：反馈裁剪、DeepSeek API adapter、事件记录、成本聚合和 tiny GPU smoke 已完成最小闭环。
-- CLIP/RAFT：已经完成基础设施与接口覆盖审计；历史结果不能直接用于正式效率排名。
 - CamoFormer：已完成一次真实 COD 仓库迁移，并暴露出 TF32、固定容差和 target 数值波动对
   验收协议的影响。
 - 模块隔离：`trace` 可以记录 source 真实局部输入，直接运行同名 target 模块，并分别报告
   固定容差、source 噪声标定和 target 重复性证据。
 
-核心接口覆盖审计见 [P1/P2 Agent 接口审计](docs/audits/p1-p2-agent-interface-audit.md)。
 目录职责见 [项目目录说明](docs/project-layout.md)。
 
 ## 现在正在做什么
@@ -165,7 +163,7 @@ CamoFormer 候选已经可以完整运行，参数与结构检查通过，但冻
 | `benchmarks/tasks/` | 小型、显式、可复现的任务定义 |
 | `migrations/` | 真实迁移工作区、提示词和仓库专用证据 |
 | `compatibility/` | 历史规则和后续 P3 问题条目 |
-| `experiments/results/`、`submissions/`、`deliverables/` | 需要长期保存的结果和报告 |
+| `experiments/results/`、`deliverables/` | 需要长期保存的结果和报告 |
 
 大型工作区、缓存和临时产物不应直接并入核心代码提交。需要保留的实验结论应提炼为报告和
 可追溯证据路径。
@@ -192,6 +190,5 @@ CamoFormer 候选已经可以完整运行，参数与结构检查通过，但冻
 2. 把成熟 Agent 的正常代码能力与 TorchPort 反馈控制明确分层，并修订与该决定冲突的旧 P2
    文档。
 3. 冻结首轮真实 benchmark、replicate、预算和停止条件。
-4. 运行 verdict / diagnostic / localized 对照；历史 CLIP/RAFT/APT 结果只作案例证据，不混入
-   新实验的效率统计。
+4. 运行 verdict / diagnostic / localized 对照；旧版实验结果不混入新实验的效率统计。
 5. 根据真实失败决定是否补充 trace；没有案例需求时不增加抽象、数据库或自动根因系统。

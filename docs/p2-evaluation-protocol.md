@@ -209,15 +209,3 @@ memory 明确记录为 `unsupported`。冻结配置、便携汇总和性能报�
 该结果只证明 P2 管线、成本边界、provider adapter、隐藏验收和性能产物闭环可运行。
 tiny 初始 candidate 本来就正确，且每组只有一个 replicate，因此不能据此声称某种反馈
 粒度提高迁移成功率；正式研究结论仍需冻结真实 benchmark 后获得。
-
-## CLIP/RAFT 基础设施验收（2026-10-03）
-
-RTX 3080 Ti 上的合并报告为 `infrastructure_passed=true`、`candidate_passed=false`。
-CLIP 历史候选在 public/hidden 上各 3/3 通过；RAFT 历史候选在两组输入上都完成 CUDA
-执行并返回 `PARITY_FAILED`。两个 task 的 job、capture 和 probe 都记录 `device=cuda`，
-Jittor cache 位于各自 validation output 内。
-
-该验收使用历史候选的专用副本，只验证真实 TaskSpec、adapter、oracle、GPU 执行和失败
-判定能够闭环。它没有运行三种条件下的 Agent，也不进入 Success@Budget 或反馈层级效果
-统计。正式物化的六个 candidate workspace 保持独立且为空白；当前 worker 缺少宿主文件
-系统和网络隔离，因此 manifest 固定 `formal_claims_allowed=false`。

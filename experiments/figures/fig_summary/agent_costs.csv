@@ -1,8 +1,0 @@
-model,method,status,active_seconds,non_cache_tokens,cache_read_tokens,time_kind,token_kind,source_id
-CLIP,Codex,passed,549.210,109240,1199360,completed_turn_duration_sum,provider_totals_minus_cache,codex-session://01a027b2-d36c-7830-a756-4492dd5e9332
-CLIP,DSH,passed,905.190,133721,2129792,completed_step_duration_sum,provider_message_sum,dsh-session://session-7d4163e8-9fbc-4cbc-9b38-1bf15818636f
-CLIP,DSH + TorchPort,passed,1549.510,242737,9059968,completed_step_duration_sum,provider_message_sum,dsh-session://session-9bc26245-d02a-4bff-a7d7-80056cdec39a
-RAFT,Codex,passed,3935.786,425821,12225280,completed_turn_duration_sum,provider_totals_minus_cache,codex-session://01a031ea-3178-7fd1-991b-a87f4e20fd40
-RAFT,DSH,stopped_failed,12896.690,949093,165053824,completed_step_duration_sum,provider_message_sum,dsh-session://session-8d5c1b6d-ad22-44dd-a343-d62c03acf56a
-RAFT,DSH + TorchPort,passed,11289.080,1077579,197823104,completed_step_duration_sum,provider_message_sum,dsh-session://session-4582abe7-1df8-488a-b0c3-e202460da31f
-RAFT,DSH V4 Flash + TP,passed,5447.554,921109,163311488,completed_step_duration_sum,provider_message_sum,dsh-session://session-0b77890f-9a9d-4a2e-9259-f8c946955f23

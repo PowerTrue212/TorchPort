@@ -113,14 +113,8 @@ CLI；核心不新增 SDK、MCP 服务或第二套 passed 判定。
   milestone。
 - 性能通过独立的 `mode=normal` 运行测量，默认不改变正确性结论。
 
-CLIP/RAFT pilot 的任务物化、public/hidden TaskSpec 和六个预注册 trial 已冻结；正式多
-replicate 结论仍需在具备宿主文件与网络隔离的 worker 上运行。tiny GPU smoke 只证明
-评测管线可运行，不能说明某种反馈粒度更有效。
-
-2026-10-03 的 RTX 3080 Ti 基础设施验收进一步确认：两个 task 的 CUDA probe、trial 内
-Jittor 缓存、public/hidden oracle 与物理成本记录均可运行；CLIP 历史候选 public/hidden
-各 3/3 通过，RAFT 历史候选在两组输入上均得到真实 `PARITY_FAILED`。该结果只验证
-harness 能区分运行成功与数值成功，不是 verdict/diagnostic/localized 的 Agent 对照结果。
+tiny GPU smoke 只证明评测管线可运行，不能说明某种反馈粒度更有效。正式多 replicate
+结论仍需在具备宿主文件与网络隔离的 worker 上运行。
 
 ## 基础定位：保留为辅助能力
 
