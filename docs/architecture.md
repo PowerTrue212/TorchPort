@@ -16,9 +16,9 @@ TorchPort CLI
         └── diagnosis：公开检查、trace 与首次分歧定位
 ```
 
-TorchPort 不读取未知仓库后自动改写代码。仓库理解、迁移策略和代码修复属于 Agent；
-TorchPort 只处理显式任务、可复验证据和经过准入的迁移问题条目。Agent 通过 CLI 或受控
-Harness 使用 TorchPort，核心不绑定某个 Agent 产品，也不维护第二套工具协议。
+TorchPort 不读取未知仓库后自动改写代码。仓库理解、环境检查、迁移策略和代码修复属于 Agent；
+TorchPort 只处理显式任务、可复验证据和经过准入的迁移问题条目。Agent 通过 CLI 或 Harness
+使用 TorchPort，核心不绑定某个 Agent 产品，也不维护第二套工具协议。
 
 核心依赖保持单向：`contracts → runtime/capture → comparison → verification`；
 `diagnosis` 复用同一运行、采集、比较和 oracle 能力，只增加诊断编排。内部和外部调用都
@@ -78,13 +78,14 @@ task.yaml
 | `verify` | 冻结 oracle，重复运行 candidate 并生成唯一结果 |
 | `compare` | 独立比较两份 NPZ 张量证据 |
 
-`trace` 和 `localize` 组合同一执行器、采集器和比较器，不建立第二套 harness。P2 的
-反馈裁剪、Agent 文件权限和成本计数位于 `experiments/harness/`，不进入判断核心。
+`trace` 和 `localize` 组合同一执行器、采集器和比较器，不建立第二套 Harness。P2 的反馈裁剪、
+预算、事件和成本计数位于 `experiments/harness/`，不进入判断核心。
 
-Harness 自身也分层：`agents/` 适配模型 API 与网络研究，`tooling.py` 定义工具协议，
-`workspace.py` 约束文件访问，`feedback.py` 实施反馈裁剪，`orchestration/` 冻结并执行
-run plan，`reporting/` 只读聚合结果。远端辅助入口只做转发；配置、bundle、SSH 传输、
-反馈裁剪和命令编排位于 `scripts/remote/torchport_remote/`。
+成熟代码 Agent 直接使用自己的文件、Shell、Python、Git、测试和网络能力。Harness 只提供六个
+TorchPort 工具：`tooling.py` 定义工具 schema，`feedback.py` 实施反馈裁剪，`gateway.py` 记录
+调用并守住隐藏认证边界，`candidate.py` 冻结完整候选仓库、manifest 与 Git diff，
+`orchestration/` 冻结并执行 run plan，`reporting/` 只读聚合结果。最终 `verify` 针对冻结快照
+运行，不针对 Agent 仍可继续修改的工作目录运行。
 
 ## 有证据的迁移问题库
 

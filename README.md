@@ -11,7 +11,6 @@
 
   <p>
     <img alt="python" src="https://img.shields.io/badge/python-%E2%89%A53.10-3776AB?logo=python&logoColor=white">
-    <img alt="DeepSeek" src="https://img.shields.io/badge/LLM-DeepSeek-4B6CFF">
     <img alt="Jittor" src="https://img.shields.io/badge/target-Jittor-2F6BFF">
     <img alt="Ascend" src="https://img.shields.io/badge/accelerator-Ascend-E6242E">
     <img alt="Agent" src="https://img.shields.io/badge/interface-code%20agent-7A5AF8">
@@ -152,20 +151,24 @@ PYTHONPATH=src python -m torchport localize .torchport/harness/trace/t0.json
 TorchPort 不自动扫描并改写未知仓库。外部代码 Agent 负责仓库特有决策，TorchPort
 只接受显式任务并返回结构化证据。
 
+正式迁移的 candidate 是完整 Git 仓库。Agent 使用自己的文件、Shell、Python、测试和网络工具，
+Harness 只增加六个 TorchPort 反馈工具。结束时 Harness 保存完整仓库快照、文件 manifest 和 Git
+diff，并对冻结快照执行隐藏 `verify`；`run.py` 只是统一入口，不承载整个模型实现。
+
 ## 当前状态
 
 - [x] 显式 TaskSpec、oracle 和 candidate 身份冻结
 - [x] PyTorch/Jittor 双端执行、张量证据与唯一验收结果
 - [x] 首次数值分歧定位与结构化失败分类
-- [x] CLI、受控 Harness 和 Agent 修复循环
-- [x] P2 受控 Gateway、DeepSeek adapter、成本聚合与 tiny GPU smoke 闭环
+- [x] CLI、Harness 和成熟代码 Agent 修复循环
+- [x] P2 反馈 Gateway、完整仓库交付、成本聚合与 tiny GPU smoke 闭环
 - [x] CamoFormer 数值验收、重复性与归约机制证据
 - [ ] 冻结 P2 正式 benchmark 并运行多 replicate 真实迁移实验
 - [ ] P3 建立有证据的迁移问题库，并在 held-out 新案例上评测经验复用
-- [ ] 冻结官方转换器、JTorch、纯 Codex、纯 DSH、DSH + TorchPort 的统一对比实验
+- [ ] 冻结成熟代码 Agent 在不同 TorchPort 反馈条件下的统一对比实验
 - [ ] 扩展未见真实 PyTorch 仓库测试集
 - [ ] 完成昇腾等国产算力后端的端到端验证
-- [ ] 稳定公开 API、文档和发布流程
+- [ ] 稳定 CLI、Harness 工具契约、文档和发布流程
 
 说明：当前公开证据主要集中在 PyTorch/Jittor 迁移与数值验证；昇腾等国产算力已经进入后端设计，但完整端到端实验仍在 TODO 中。
 

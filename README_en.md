@@ -11,7 +11,6 @@
 
   <p>
     <img alt="python" src="https://img.shields.io/badge/python-%E2%89%A53.10-3776AB?logo=python&logoColor=white">
-    <img alt="DeepSeek" src="https://img.shields.io/badge/LLM-DeepSeek-4B6CFF">
     <img alt="Jittor" src="https://img.shields.io/badge/target-Jittor-2F6BFF">
     <img alt="Ascend" src="https://img.shields.io/badge/accelerator-Ascend-E6242E">
     <img alt="Agent" src="https://img.shields.io/badge/interface-code%20agent-7A5AF8">
@@ -160,19 +159,24 @@ Code agent reads the repository and edits the candidate
 
 TorchPort does not scan and rewrite unknown repositories. An external code agent owns repository-specific decisions; TorchPort accepts an explicit task and returns structured evidence.
 
+A formal candidate is a complete Git repository. The Agent keeps its own file, Shell, Python, test,
+and network tools; the Harness only adds six TorchPort feedback tools. At the end, the Harness saves
+a full repository snapshot, file manifest, and Git diff, then runs hidden `verify` against the frozen
+snapshot. `run.py` is only the standard entry, not the entire migrated implementation.
+
 ## Status
 
 - [x] Explicit TaskSpec plus frozen oracle and candidate identities
 - [x] PyTorch/Jittor dual execution, tensor evidence, and one verification result
 - [x] First-divergence localization and structured failure codes
-- [x] CLI, controlled Harness, and an agent repair loop
-- [x] P2 controlled gateway, DeepSeek adapter, cost aggregation, and tiny GPU smoke loop
+- [x] CLI, Harness, and a mature code-Agent repair loop
+- [x] P2 feedback gateway, full-repository delivery, cost aggregation, and tiny GPU smoke loop
 - [x] CamoFormer numerical verification, repeatability, and reduction-mechanism evidence
 - [ ] P3 evidence-backed migration issue library with evaluation on held-out cases
-- [ ] Freeze the unified benchmark against the official converter, JTorch, pure Codex, pure DSH, and DSH + TorchPort
+- [ ] Freeze a unified mature-code-Agent benchmark across TorchPort feedback conditions
 - [ ] Expand the unseen real PyTorch repository test set
 - [ ] Complete end-to-end validation on Ascend-class domestic accelerators
-- [ ] Stabilize the public API, documentation, and release flow
+- [ ] Stabilize the CLI, Harness tool contract, documentation, and release flow
 
 Note: current public evidence focuses on PyTorch/Jittor migration and numerical verification. Ascend-class accelerator support is already part of the backend design, but full end-to-end validation remains a TODO item.
 

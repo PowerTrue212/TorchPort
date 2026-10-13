@@ -1,24 +1,33 @@
 # {{REPO_NAME}}：从 PyTorch 迁移到原生 Jittor
 
-你在一个独立工作区中工作。当前目录是 {{REPO_NAME}} 官方 PyTorch 推理代码的副本，外加一个空的 Jittor 候选骨架。
-任务：把该模型的推理实现迁移为原生 Jittor 实现，使其对同一输入、同一官方权重给出与 PyTorch 数值一致的输出。
+你在一个独立的 Git 工作区中工作。当前目录是 {{REPO_NAME}} 官方 PyTorch 仓库的完整副本，
+并附带一个空的 Jittor 入口。任务是迁移仓库中的推理实现，而不是只写一个提交文件。
+
+## 开始前
+
+先自行判断当前条件能否完成迁移。你可以阅读仓库和公开资料，并检查 Python、依赖、GPU 或 NPU、
+显存、内存、磁盘、数据和 checkpoint。你也可以编写探测脚本或普通测试。发现问题后，自行决定修复、
+下载公开依赖、使用已有资源、向用户说明阻塞，或者在证据足够时继续。Harness 只记录过程，不替你作判断。
 
 ## 硬性要求
 
-1. 目标是原生 Jittor 重写，不是 jtorch 或任何 PyTorch 兼容层，不得在候选中 import torch、不得用 PyTorch 代跑、
-   不得硬编码输入输出、不得放宽误差标准。
+1. 目标执行路径必须是原生 Jittor，不得通过 jtorch 或 PyTorch 兼容层代跑，不得硬编码输入输出，
+   不得放宽误差标准。未进入目标推理路径的训练或参考文件可以保留。
 2. Jittor 模块的参数名必须与 PyTorch `state_dict` 的键完全一致（含嵌套前缀、buffer 名）。权重由评测方加载，
    你的实现必须无需任何修改即可接收官方 state_dict。参数形状、数量也必须一致，多参数、少参数都算失败。
-3. 实现候选入口接口：
-   - 在 `submission.py` 中实现 `load_model() -> jt.Module`。
+3. 迁移仓库并实现候选入口：
+   - 把推理实现放在正常的仓库模块中，按需要修改、增加、删除或移动仓库文件。
+   - 在 `run.py` 中实现 `load_model() -> jt.Module`。`run.py` 只负责导入和构造迁移后的仓库实现，
+     不能容纳完整模型实现。
    - 返回的模块 `__call__` 接收一个 NCHW float32 图像 `{{INPUT_SHAPE}}`，返回元组 `tuple[jt.Var, ...]`，
      其结构、顺序、形状必须与 PyTorch 侧 `torchport_adapter.py` 的返回一致。
    - 根目录的 `torchport_adapter.py` 已是稳定入口，不要修改它。
    - {{ADAPTER_NOTE}}
-4. 不要下载任何东西（权重、数据、包、代码）。不要联网检索。除下方“工具”一节列出的远端执行脚本和远端工作目录外，
-   不要访问工作区之外的任何路径。
-5. 只修改 `submission.py` 以及你新增的 Jittor 模块文件。不要修改 PyTorch 原始源码文件，不要修改 `torchport_adapter.py`。
-6. 本次只迁移推理路径（eval，batch 推理，fp32）。训练、数据加载、损失函数、评测脚本不需要迁移。
+4. 不要修改根目录的 `torchport_adapter.py`，不要读取 hidden task、oracle 或最终 evaluator。
+5. 本次只要求迁移推理路径（eval、batch 推理、fp32）。训练和损失函数不要求迁移；数据加载与评测脚本
+   是否修改由仓库正常推理是否需要它们决定。
+6. 最终交付物是完整仓库。Harness 会保存整仓库快照、文件 manifest 和相对初始 Git 提交的 diff，
+   并在快照上执行隐藏验收。
 
 ## 访问边界
 
@@ -28,8 +37,8 @@
    远端 verify 报告 JSON 或 envelope 数据；读取其他工作区或 evaluator。
 2. 以下行为禁止，并会记录为实验偏差：读取 TorchPort 源码（`src/torchport/`，以及除调用 `ssh_exec.py` 之外的
    `scripts/remote/`）、仓库文档或 `AGENTS.md`。
-3. 允许访问：当前工作区内的文件、已提供的工具、你自己的远端工作目录，以及你在那里自行建立的
-   PyTorch 与 Jittor 对照测试。
+3. 允许访问：当前工作区、代码 Agent 自带的代码与网络工具、已提供的 TorchPort 工具、你自己的远端工作目录，
+   以及你建立的 PyTorch 与 Jittor 对照测试。正式实验若冻结了网络或挂载边界，以启动说明为准。
 
 ## 预算与停止规则
 
@@ -47,7 +56,8 @@
 ## 工具
 
 <!-- TOOLS:BEGIN -->
-你可以使用 DSH 自带的文件浏览、代码搜索、编辑、Shell 和 Python 能力，在工作区内读、改、运行代码，自行写测试和最小复现。
+你可以使用代码 Agent 自带的文件浏览、代码搜索、编辑、Shell、Python、Git 和网络检索能力，
+在工作区内读、改、运行代码，自行检查环境并编写测试和最小复现。
 
 远端 GPU（RTX 3080 Ti，已装 PyTorch 和 Jittor）可以直接使用：
 

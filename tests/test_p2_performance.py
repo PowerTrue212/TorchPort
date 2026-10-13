@@ -5,7 +5,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from experiments.harness.performance import measure_performance
+from experiments.harness.reporting import measure_performance
 
 
 def _run(name: str, started: float, first: float, median: float) -> dict:

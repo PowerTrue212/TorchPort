@@ -5,7 +5,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from experiments.harness.aggregate import aggregate
+from experiments.harness.reporting import aggregate
 
 
 def _write(path: Path, value: dict) -> None:

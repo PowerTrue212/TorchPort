@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run hidden official verify after a DSH session and save the full report evaluator-side."""
+"""Run hidden official verify after an Agent session and save it evaluator-side."""
 
 from __future__ import annotations
 
@@ -14,6 +14,9 @@ KIT = Path(__file__).resolve().parents[1]
 PROJECT_ROOT = KIT.parents[2]
 RESULTS_ROOT = KIT / "results"
 RUNNER = PROJECT_ROOT / "scripts" / "remote" / "dsh_torchport.py"
+sys.path.insert(0, str(PROJECT_ROOT))
+
+from experiments.harness.candidate import finalize_candidate  # noqa: E402
 
 
 def _inside(path: Path, root: Path) -> bool:
@@ -22,7 +25,7 @@ def _inside(path: Path, root: Path) -> bool:
 
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description="DSH 会话结束后运行隐藏 verify；完整 JSON 只写入 heldout 结果目录。"
+        description="Agent 会话结束后运行隐藏 verify；完整 JSON 只写入 heldout 结果目录。"
     )
     parser.add_argument("task", type=Path)
     parser.add_argument("output", type=Path)
@@ -30,11 +33,11 @@ def main() -> int:
     parser.add_argument(
         "--session-ended",
         action="store_true",
-        help="确认对应 DSH 会话已经停止，后续输出不会返回给 Agent。",
+        help="确认对应 Agent 会话已经停止，后续输出不会返回给 Agent。",
     )
     args = parser.parse_args()
     if not args.session_ended:
-        parser.error("必须在 DSH 会话停止后传入 --session-ended")
+        parser.error("必须在 Agent 会话停止后传入 --session-ended")
 
     task_path = args.task.resolve()
     output_path = args.output.resolve()
@@ -49,20 +52,34 @@ def main() -> int:
     if _inside(output_path, target_repo):
         parser.error("禁止把正式验收结果写入 Agent 工作区")
 
+    delivery = finalize_candidate(
+        target_repo,
+        output_path.with_suffix("").with_name(f"{output_path.stem}-delivery"),
+        required_entry="run.py",
+    )
+    task["target"]["repo"] = delivery["snapshot"]
+    official_target_repo = Path(delivery["snapshot"]).resolve()
+    official_task_path = Path(delivery["manifest"]).parent / "official-task.json"
+    official_task_path.write_text(
+        json.dumps(task, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+
     env = os.environ.copy()
     env["TP_PROJECT_ROOT"] = str(PROJECT_ROOT)
     extra_roots = [item for item in env.get("TP_EXTRA_ROOTS", "").split(os.pathsep) if item]
-    if str(target_repo.parent) not in extra_roots:
-        extra_roots.append(str(target_repo.parent))
+    for root in (target_repo.parent, official_target_repo.parent):
+        if str(root) not in extra_roots:
+            extra_roots.append(str(root))
     env["TP_EXTRA_ROOTS"] = os.pathsep.join(extra_roots)
-    # 评测方需要保存完整原始报告；该进程不属于已经停止的 DSH 会话。
+    # 评测方需要保存完整原始报告；该进程不属于已经停止的 Agent 会话。
     env["TP_FEEDBACK"] = "localized"
 
     command = [
         sys.executable,
         str(RUNNER),
         "verify",
-        str(task_path),
+        str(official_task_path),
         "--root",
         "official",
         "--trial",

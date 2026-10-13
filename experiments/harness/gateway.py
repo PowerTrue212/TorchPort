@@ -1,4 +1,4 @@
-"""受控 Tool Gateway：唯一的 Agent 文件与 TorchPort 能力边界。"""
+"""成熟代码 Agent 的 TorchPort 反馈、预算与最终认证边界。"""
 
 from __future__ import annotations
 
@@ -9,30 +9,17 @@ from typing import Any, Callable, Mapping
 
 from torchport.contracts import file_hash, load_task
 from torchport.diagnosis import inspect_task, localize, trace
-from torchport.runtime import (
-    add_physical_cost,
-    empty_physical_cost,
-    execute,
-    new_run_dir,
-    run_physical_cost,
-    write_json,
-)
+from torchport.runtime import add_physical_cost, empty_physical_cost, run_physical_cost, write_json
 from torchport.verification import build_oracle, evaluate, load_oracle, run_side, verify
 
-from .agents.research import fetch as web_fetch
-from .agents.research import search as web_search
+from .candidate import finalize_candidate
 from .feedback import filter_feedback, public_run, trace_summary
 from .protocol import TrialProtocol
-from .tooling import ORACLE_TOOLS, event_arguments, required, tool_schemas, validate_call
-from .workspace import WorkspaceAccess
-
-MAX_PROBE_ARGS = 64
-MAX_PROBE_ARG_BYTES = 4096
-MAX_PROBE_OUTPUT_CHARS = 20_000
+from .tooling import ORACLE_TOOLS, event_arguments, tool_schemas, validate_call
 
 
 class HarnessGateway:
-    """一次 trial 的有状态工具接口；最终认证故意不注册成 Agent tool。"""
+    """一次 trial 的有状态 TorchPort 接口；不接管 Agent 的通用代码工具。"""
 
     def __init__(
         self,
@@ -58,11 +45,6 @@ class HarnessGateway:
         self._queried_candidates: set[str] = set()
         self._queries_by_tool = {name: 0 for name in sorted(ORACLE_TOOLS)}
         self._physical_cost = empty_physical_cost()
-        self._research_cost = {
-            "search_calls": 0,
-            "fetch_calls": 0,
-            "wall_seconds": 0.0,
-        }
         self.calls = 0
         self._runs: dict[str, dict[str, Any]] = {}
         self._last_run_id: str | None = None
@@ -75,11 +57,6 @@ class HarnessGateway:
         hidden_target = Path(load_task(self.hidden_task_path)["target"]["repo"]).resolve()
         if hidden_target != self.workspace:
             raise ValueError("开发 TaskSpec 与隐藏 TaskSpec 必须指向同一 candidate 工作区")
-        self.files = WorkspaceAccess(
-            self.workspace,
-            lambda: Path(self._task()["source"]["repo"]),
-            self._candidate_identity,
-        )
         self.trial_dir.mkdir(parents=True, exist_ok=True)
         self.events_path = self.trial_dir / "events.jsonl"
         trial = {
@@ -141,7 +118,6 @@ class HarnessGateway:
                 "oracle_queries": self.oracle_queries,
                 "logical_query_cost": dict(self._queries_by_tool),
                 "physical_evaluation_cost": dict(self._physical_cost),
-                "external_research_cost": dict(self._research_cost),
                 "response_ok": response["ok"],
                 "error_type": (response.get("error") or {}).get("type"),
                 "response_artifact": str(artifact),
@@ -151,7 +127,7 @@ class HarnessGateway:
         return response
 
     def record_agent_event(self, event: str, **facts: Any) -> None:
-        """供可信 adapter 记录模型 usage、turn 和停止事件；不暴露为 Agent tool。"""
+        """供可信 supervisor 记录检查、usage、turn 和停止事件；不暴露为 Agent tool。"""
         self._append_event(
             {
                 "schema_version": 1,
@@ -172,7 +148,6 @@ class HarnessGateway:
                 "unique_candidates": len(self._queried_candidates),
             },
             "physical_evaluation_cost": dict(self._physical_cost),
-            "external_research_cost": dict(self._research_cost),
             "oracle_queries": self.oracle_queries,
             "unique_candidate_queries": len(self._queried_candidates),
             "max_oracle_queries": self.protocol.max_oracle_queries,
@@ -191,8 +166,18 @@ class HarnessGateway:
         """trial controller 专用；不出现在 tool_schemas，也不能通过 call 调用。"""
         official_started = self.clock()
         agent_wall = max(0.0, official_started - self.started)
+        delivery = finalize_candidate(
+            self.workspace,
+            self.trial_dir / "delivery",
+            required_entry=self.protocol.candidate_entry,
+        )
+        official_task_value = load_task(self.hidden_task_path)
+        official_task_value["target"]["repo"] = delivery["snapshot"]
+        official_task_path = self.trial_dir / "delivery" / "official-task.json"
+        write_json(official_task_path, official_task_value)
+        official_task = load_task(official_task_path)
         report = verify(
-            load_task(self.hidden_task_path),
+            official_task,
             self.evidence_root / "official",
             trial=f"{self.trial_id}-official",
         )
@@ -219,11 +204,11 @@ class HarnessGateway:
                 "official": dict(official_physical),
                 "total": total_physical,
             },
-            "external_research_cost": dict(self._research_cost),
             "official_wall_seconds": official_wall,
             "tool_calls": self.calls,
             "agent_wall_seconds": agent_wall,
-            "candidate_identity": self._candidate_identity(),
+            "candidate_identity": official_task["target_identity"],
+            "candidate_delivery": delivery,
             "official_report": str(self.trial_dir / "official-verify.json"),
         }
         result["total_wall_seconds"] = result["agent_wall_seconds"] + result[
@@ -235,31 +220,8 @@ class HarnessGateway:
         return result
 
     def _dispatch(self, tool: str, arguments: dict[str, Any]) -> Any:
-        if tool == "list_files":
-            return self.files.list_files(
-                str(arguments.get("path", ".")), str(arguments.get("side", "target"))
-            )
-        if tool == "read_file":
-            return self.files.read_file(
-                required(arguments, "path"),
-                str(arguments.get("side", "target")),
-                arguments.get("start_line"),
-                arguments.get("end_line"),
-            )
-        if tool == "search_code":
-            return self.files.search_code(
-                required(arguments, "query"),
-                str(arguments.get("path", ".")),
-                str(arguments.get("side", "target")),
-            )
-        if tool == "apply_patch":
-            return self.files.apply_patch(
-                required(arguments, "path"), arguments.get("old"), required(arguments, "new")
-            )
         if tool == "inspect":
             return inspect_task(self._task())
-        if tool == "probe":
-            return self._probe(required(arguments, "path"), arguments.get("args", []))
         if tool == "run":
             task = self._task()
             oracle = build_oracle(task, self.evidence_root)
@@ -305,19 +267,7 @@ class HarnessGateway:
             if self._last_trace is None:
                 raise ValueError("没有 trace；请先调用 trace")
             return localize(self._last_trace)
-        if tool == "web_search":
-            return self._research("search", lambda: web_search(required(arguments, "query")))
-        if tool == "web_fetch":
-            return self._research("fetch", lambda: web_fetch(required(arguments, "url")))
         raise ValueError(f"未知或未授权工具：{tool}")
-
-    def _research(self, kind: str, action: Callable[[], Any]) -> Any:
-        started = self.clock()
-        try:
-            return action()
-        finally:
-            self._research_cost[f"{kind}_calls"] += 1
-            self._research_cost["wall_seconds"] += max(0.0, self.clock() - started)
 
     def _validate_call(self, tool: str, arguments: dict[str, Any]) -> None:
         validate_call(self.protocol, tool, arguments)
@@ -345,72 +295,6 @@ class HarnessGateway:
     def _add_physical(self, cost: dict[str, Any] | None) -> None:
         self._physical_cost = add_physical_cost(self._physical_cost, cost)
 
-    def _probe(self, value: str, raw_args: Any) -> dict[str, Any]:
-        script = self.files.path(value)
-        if script.suffix.lower() != ".py":
-            raise ValueError("probe 只允许运行 target 内的 .py 文件")
-        if not script.is_file():
-            raise FileNotFoundError(value)
-        if not isinstance(raw_args, list) or any(not isinstance(item, str) for item in raw_args):
-            raise TypeError("probe.args 必须是字符串数组")
-        if len(raw_args) > MAX_PROBE_ARGS:
-            raise ValueError(f"probe.args 最多允许 {MAX_PROBE_ARGS} 项")
-        if any(len(item.encode("utf-8")) > MAX_PROBE_ARG_BYTES for item in raw_args):
-            raise ValueError(f"probe.args 单项不能超过 {MAX_PROBE_ARG_BYTES} 字节")
-
-        task = self._task()
-        relative = script.relative_to(self.workspace).as_posix()
-        run_dir = new_run_dir(self.evidence_root / "probes", self.trial_id, "probe")
-        timeout = min(
-            float(task["protocol"]["timeout"]),
-            float(self.budget_status()["wall_seconds_remaining"]),
-        )
-        execution = execute(
-            task["target"],
-            [relative, *raw_args],
-            run_dir=run_dir,
-            cache=self.evidence_root / "cache" / self.trial_id / "probe-target",
-            timeout=timeout,
-            module=None,
-        )
-        cost = run_physical_cost({"execution": execution}, task["target"]["device"])
-        self._add_physical(cost)
-        stdout, stdout_truncated = _text_tail(run_dir / "stdout.log")
-        stderr, stderr_truncated = _text_tail(run_dir / "stderr.log")
-        manifest = {
-            "schema_version": 1,
-            "kind": "torchport.probe",
-            "probe_id": run_dir.name,
-            "path": relative,
-            "args": raw_args,
-            "device": task["target"]["device"],
-            "candidate_identity": task["target_identity"],
-            "execution": execution,
-            "physical_cost": cost,
-        }
-        write_json(run_dir / "probe.json", manifest)
-        return {
-            "kind": manifest["kind"],
-            "probe_id": manifest["probe_id"],
-            "path": relative,
-            "ok": bool(execution["ok"]),
-            "exit_code": execution["exit_code"],
-            "timeout": bool(execution["timeout"]),
-            "seconds": execution["seconds"],
-            "stdout": stdout,
-            "stderr": stderr,
-            "stdout_truncated": stdout_truncated,
-            "stderr_truncated": stderr_truncated,
-            "physical_cost": cost,
-        }
-
     def _append_event(self, value: dict[str, Any]) -> None:
         with self.events_path.open("a", encoding="utf-8") as stream:
             stream.write(json.dumps(value, ensure_ascii=False, sort_keys=True) + "\n")
-
-
-def _text_tail(path: Path) -> tuple[str, bool]:
-    text = path.read_text("utf-8", "replace")
-    if len(text) <= MAX_PROBE_OUTPUT_CHARS:
-        return text, False
-    return text[-MAX_PROBE_OUTPUT_CHARS:], True

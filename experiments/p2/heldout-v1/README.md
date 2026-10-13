@@ -19,10 +19,10 @@ evaluator/  隐藏最终评测说明（E1 / E2）
 heldout/<repo>/adapter/torchport_adapter.py  PyTorch 侧 adapter（在 source/ 之外）
 ```
 
-## Agent 远端目录
+## 历史远端目录
 
-Agent 只使用 `scripts/remote/agent_ssh.py` 的 `run` 和 `put`。启动 `dsh web` 前，实验者应在
-同一个 cmd.exe 窗口设置本次运行的唯一远端目录：
+以下 `agent_ssh.py` 流程只用于复核旧版 DSH 试跑，不是新 Harness 的通用接入方式。历史运行
+要求实验者在同一个 cmd.exe 窗口设置本次运行的唯一远端目录：
 
 ```bat
 set TP_AGENT_REMOTE_DIR=/root/autodl-tmp/agent/plantcamo-full-r0
@@ -48,17 +48,20 @@ E:\Anaconda\python.exe scripts\remote\stage_agent_dir.py plantcamo-full-r0 exper
    `python experiments\p2\heldout-v1\workspaces\materialize.py --out D:\tp-runs --repos plantcamo --conds full --k 0`
    默认不限 token / 200 轮 / 180 分钟。每个工作区内有 `PROMPT.md`（占位符已替换），任务副本仍写入
    `workspaces/_tasks/`。
-3. 把生成的 `<repo>-<cond>-r0` 目录作为 Agent 工作区，把其中的 `PROMPT.md` 作为首条消息。
+3. 把生成的 `<repo>-<cond>-r0` 完整 Git 仓库作为 Agent 工作区，把其中的 `PROMPT.md` 作为首条
+   消息。Agent 先自行检查运行环境、资源、数据和 checkpoint，再开始迁移。
 4. 使用与当前 Agent 产品匹配的外部适配层调用 TorchPort CLI。适配层必须把 `task` 指向
    `workspaces/_tasks/` 下对应任务，并冻结反馈层级：`none` 用 `diagnostic`，`full` 用
    `localized`。diagnostic 条件不得暴露 `trace/localize`，也必须裁剪 `verify/evaluate` 输出。
-5. 每次运行结束后保存 DSH 事件日志与 Token 用量，再按 `evaluator/README.md` 统一评测。
+5. 每次运行结束后保存 Agent 事件、步数、Token 与费用原始事实。随后冻结完整仓库快照、文件
+   manifest 和 Git diff，再按 `evaluator/README.md` 统一评测。
 
 ## 启动前必须核对
 
 - [ ] `tasks/*.json` 中 `_unverified` 字段已逐项处理（尤其 target 端 repo 路径、远端路径、权重路径）。
 - [ ] `full` 条件的 task 路径、`root`、`trial` 与工作区对应；远端 GPU 可通过 `~/.tp_ssh.env` 连接。
-- [ ] `none` 条件的 Agent 以 `diagnostic` 反馈启动，工具列表不含定位能力，且 Agent 无法读到仓库根目录其他位置。
+- [ ] `none` 条件的 Agent 以 `diagnostic` 反馈启动，工具列表不含定位能力，且 Agent 无法读到
+  hidden task、oracle 和 evaluator。
 - [ ] 工作区内没有 Jittor 参考实现、oracle、隐藏输入、evaluator（materialize 之后再 grep 一遍 `jittor` 以外的泄露）。
 - [ ] 权重只以路径引用形式给出（`WEIGHTS.md`），agent 工作区不含 .pth。
 - [ ] PlantCamo：`oracle-src/torchport_adapter.py` 只在构造时跳过硬编码的 backbone 权重读取；需确认完整 checkpoint 严格加载且无缺失键。

@@ -26,8 +26,8 @@ Agent 负责阅读仓库、理解代码、提出假设并修改 candidate。Torc
 ## 最小架构
 
 ```text
-代码 Agent / CLI / Harness
-          │ 修改 candidate，提交显式 task
+成熟代码 Agent + Harness
+          │ 检查环境并修改完整 candidate 仓库
           ▼
 contracts + runtime ──► capture ──► oracle / candidate artifacts
                                                 │
@@ -107,14 +107,15 @@ CLI；核心不新增 SDK、MCP 服务或第二套 passed 判定。
   first divergence；这些只属于 Localized。
 - Logical Query Cost 单独统计 evaluate/verify/trace 调用。
 - Physical Evaluation Cost 单独统计 executions、wall time 和 CUDA 配置进程秒数。
-- Gateway 提供受控 `probe(path, args=[])`；它只运行 target 内 Python 脚本，计 physical
-  cost，不计 logical query，也不能签发成功。
+- Harness 只增加六个 TorchPort 工具；Agent 继续使用自己的文件、Shell、Git、测试和网络能力。
+- 最终认证先冻结完整仓库快照、文件 manifest 与 Git diff，再对快照运行隐藏 `verify`。
 - 聚合器按工具输出调用次数、工具时间、physical cost、candidate revision 与关键成功
   milestone。
 - 性能通过独立的 `mode=normal` 运行测量，默认不改变正确性结论。
 
-tiny GPU smoke 只证明评测管线可运行，不能说明某种反馈粒度更有效。正式多 replicate
-结论仍需在具备宿主文件与网络隔离的 worker 上运行。
+旧版 tiny GPU smoke 只证明当时的评测管线可运行，不能说明某种反馈粒度更有效。直接模型 API
+adapter 已移除；当前成熟 Agent Harness 仍需重新完成回归，并在具备宿主文件与隐藏材料隔离的
+worker 上运行正式多 replicate 实验。
 
 ## 基础定位：保留为辅助能力
 

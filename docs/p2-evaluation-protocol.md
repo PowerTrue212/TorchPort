@@ -31,17 +31,15 @@ P2 只回答一个问题：在相同 Agent、任务、初始 candidate、硬件�
 也不返回 module、file、line、operator、张量名称或首次分歧。失败码必须归一到通用类别，
 例如 `NUMERICAL_MISMATCH`，不能把定位信息编码进失败原因。
 
-Agent 不获得通用 shell。受控 Gateway 只开放 candidate 内的文件读取、搜索、精确修改，
-以及 `inspect`、`probe`、`run`、`evaluate`、`verify`、`trace`、`localize`。最终认证入口不
-注册为 Agent tool，隐藏 TaskSpec 和 oracle 也不在 candidate 工作区内。
+Agent 使用成熟代码环境自带的文件浏览、搜索、编辑、Shell、Python、Git、测试和公开网络检索。
+Harness 不重写这些能力，只增加 `inspect`、`run`、`evaluate`、`verify`、`trace`、`localize`
+六个 TorchPort 工具。`trace` 和 `localize` 只在 localized 条件出现。最终认证入口不注册为
+Agent tool，隐藏 TaskSpec、oracle 和 evaluator 也不在 candidate 工作区内。
 
-`probe(path, args=[])` 只运行 target 工作区内已存在的 `.py` 文件。解释器、device、环境、
-cwd、缓存和 timeout 均取自冻结的 TaskSpec 与 trial，Agent 不能覆盖；参数按 argv 传递，
-不经过 shell。输出完整写入 trial evidence，响应只返回有长度上限的 stdout/stderr 尾部。
-controller 继承环境中的 credential 类变量会先被清除，再应用 TaskSpec 显式环境。probe
-只能提供 candidate 自测证据；Gateway 不向它传递 oracle 数据或路径，它也不能签发成功或
-替代正式验证。Gateway 是进程调用与证据边界，不是操作系统沙箱；正式实验仍应在隔离
-worker 中运行整个 trial，依靠 worker 防止 candidate 主动遍历宿主文件系统或访问网络。
+Agent 在迁移前自行检查依赖、运行设备、显存、内存、磁盘、数据和 checkpoint，并决定是否安装、
+下载、调整环境或停止。Harness 只记录外部 supervisor 提交的检查事件，不把这些检查固化成一套
+仓库无关的真假判断。Gateway 是反馈和证据边界，不是操作系统沙箱；正式实验仍应在隔离 worker
+中运行整个 trial，防止 candidate 主动遍历宿主文件系统、凭据或隐藏评测材料。
 
 ## 产物
 
@@ -51,6 +49,11 @@ P2 不建立数据库。每个 trial 使用独立目录并保留五类文件：
 experiments/p2/runs/<experiment>/<task>/<condition>/<trial>/
 ├── trial.json             冻结配置和内容摘要
 ├── events.jsonl           Agent、工具和 evaluator 的追加事件
+├── delivery/
+│   ├── repository/        最终候选仓库的冻结快照
+│   ├── candidate-manifest.json
+│   ├── git-status.txt
+│   └── candidate.diff
 ├── official-verify.json   trial 结束后的独立验收原始结果
 ├── result.json            从原始事件确定性计算的指标
 └── performance.json       仅对正确性通过的 candidate 运行
@@ -68,8 +71,8 @@ experiments/p2/runs/<experiment>/<task>/<condition>/<trial>/
 `events.jsonl` 只追加原始事实：时间、phase、事件类型、调用方、持续时间、退出状态、
 artifact，以及 provider 返回的原始 usage。聚合器不得覆盖或删掉失败尝试。
 
-一次 `evaluate`、`verify` 或 `trace` 请求记为一个 logical oracle query；`inspect`、`probe`、
-`run` 和对已有 trace 的确定性 `localize` 不计。重复查询同一 candidate 仍计数，同时另记
+一次 `evaluate`、`verify` 或 `trace` 请求记为一个 logical oracle query；`inspect`、`run`
+和对已有 trace 的确定性 `localize` 不计。重复查询同一 candidate 仍计数，同时另记
 唯一 candidate query 数量。trial 同时受 oracle query 和 wall time 限制，先到者停止。
 
 Logical Query Cost 与 Physical Evaluation Cost 分开保存，不能互相替代：
@@ -79,8 +82,6 @@ Logical Query Cost 与 Physical Evaluation Cost 分开保存，不能互相替�
   device 为 CUDA 的进程墙钟秒数 `cuda_execution_seconds`。
 - `cuda_execution_seconds` 是 CUDA 配置进程占用的墙钟上界，不声称等于 GPU active time。
 - `evaluate` 只读已有产物，因此增加 logical query，但不重复累计产生该产物的执行成本。
-- `probe` 每启动一个 target Python 进程就累计一次 physical execution，但不增加 logical
-  query；失败和 timeout 的进程也计入。
 - `run` 可能实际启动 source/target，因此累计 physical cost，但不增加 logical query。
 - Agent 阶段与隐藏 official evaluator 的 physical cost 分栏保存，同时提供总计。
 
@@ -91,9 +92,15 @@ Logical Query Cost 与 Physical Evaluation Cost 分开保存，不能互相替�
 
 ## 正确性与停止
 
-Agent 工作期间只能通过受控工具执行和验证 candidate；正式成功只由 trial 结束后的独立
-`torchport verify` 决定。最终 evaluator 使用冻结 task 和独立运行目录，Agent 不得
-修改其 fixture、容差或 oracle。
+Agent 可以用自己的代码工具和普通测试修改、运行 candidate，但 TorchPort 证据只能通过 Harness
+的六个工具取得。正式成功只由 trial 结束后的独立 `torchport verify` 决定。结束时 Harness 先
+冻结完整仓库、文件 manifest 和 Git diff，再把隐藏 task 的 target 指向该快照。最终 evaluator
+使用独立运行目录，Agent 不得修改其 fixture、容差或 oracle。
+
+正式 candidate 是完整仓库，不是单独的 `submission.py`。当前 held-out 工作区使用薄 `run.py`
+作为统一入口；模型实现、配置、依赖和辅助模块仍保留在正常仓库结构中。任务专用隐藏测试应覆盖
+正常导入、配置、checkpoint 加载和推理路径。通用 Harness 只负责冻结与审计，不能仅靠文件数量
+证明迁移质量。
 
 停止原因使用固定枚举：
 
@@ -168,9 +175,9 @@ PyTorch 使用 CUDA synchronize；Jittor 使用等价的全局同步。计时边
 
 ## 实施顺序
 
-1. 冻结受控 Gateway、反馈裁剪、query 计数与路径隔离，先用 tiny 做协议测试。
-2. 为具体 provider 编写薄 adapter；模型只能看到 Gateway 发布的 schema，原始 usage 由
-   adapter 写入事件流。
+1. 冻结 Gateway、反馈裁剪、query 计数与隐藏认证边界，先用 tiny 做协议测试。
+2. 为成熟代码 Agent 编写薄外部适配层；它只映射 Gateway 发布的六个 schema，并把模型、turn
+   和 usage 原始事实写入事件流，不接管 Agent 的普通代码工具。
 3. 编写只读聚合器，保留所有 trial，输出 Success@Budget、Time-to-Success、Token
    和停止原因。
 4. benchmark 冻结后，为真实任务建立开发与隐藏 TaskSpec，并完成小规模 pilot。
@@ -206,6 +213,7 @@ official verify；每组各调用一次 `evaluate` 和一次 `verify`。聚合�
 memory 明确记录为 `unsupported`。冻结配置、便携汇总和性能报告位于
 `experiments/p2/tiny-smoke/`，原始 trial 目录保留在本地但不进入 Git。
 
-该结果只证明 P2 管线、成本边界、provider adapter、隐藏验收和性能产物闭环可运行。
+该结果只证明旧版 P2 管线、成本边界、隐藏验收和性能产物闭环曾经可运行。其直接模型 API
+adapter 已经移除，不能作为当前成熟 Agent Harness 的回归结果。
 tiny 初始 candidate 本来就正确，且每组只有一个 replicate，因此不能据此声称某种反馈
 粒度提高迁移成功率；正式研究结论仍需冻结真实 benchmark 后获得。

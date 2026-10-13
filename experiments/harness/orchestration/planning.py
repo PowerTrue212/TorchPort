@@ -1,4 +1,4 @@
-"""冻结实验输入、隔离声明与运行环境快照。"""
+"""Validate and freeze trial inputs; this is not the Agent's own environment review."""
 
 from __future__ import annotations
 
@@ -78,8 +78,8 @@ def _gpu_snapshot() -> dict[str, Any] | None:
     return {"command": command, "devices": completed.stdout.strip().splitlines()}
 
 
-def preflight(manifest_path: str | Path) -> dict[str, Any]:
-    """Validate the immutable experiment inputs without executing an Agent."""
+def validate_experiment(manifest_path: str | Path) -> dict[str, Any]:
+    """Validate controller-owned inputs without replacing the Agent's own checks."""
     manifest_path = Path(manifest_path).resolve()
     root = manifest_path.parent
     manifest = _json(manifest_path)
@@ -232,7 +232,7 @@ def prepare_run_plan(
     allow_trusted_pilot: bool = False,
 ) -> Path:
     """Freeze preflight and runtime facts once; a resume reuses the same plan."""
-    checked = preflight(manifest_path)
+    checked = validate_experiment(manifest_path)
     root = checked["manifest_path"].parent
     plan_path = root / "run-plan.json"
     if plan_path.is_file():
@@ -307,6 +307,5 @@ def prepare_run_plan(
     }
     write_json(plan_path, plan)
     return plan_path
-
 
 

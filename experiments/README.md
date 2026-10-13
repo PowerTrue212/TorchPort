@@ -5,7 +5,7 @@
 
 | 路径 | 内容 |
 | --- | --- |
-| `harness/` | 模型 API Agent 的工具环境、预算、事件记录和结果聚合 |
+| `harness/` | 成熟代码 Agent 的反馈控制、预算、事件、仓库冻结和结果聚合 |
 | `p2/` | tiny smoke、CamoFormer 和 held-out 真实迁移实验 |
 | `figures/fig_e1_ratio/` | E1 噪声标定比值 |
 | `figures/fig_fixed_tolerance/` | 固定容差、运行波动和误差放大 |

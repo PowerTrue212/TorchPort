@@ -45,13 +45,17 @@ class TrialProtocol:
     feedback: FeedbackLevel
     max_oracle_queries: int
     max_wall_seconds: float
-    allow_network_research: bool = False
+    candidate_entry: str | None = None
 
     def __post_init__(self) -> None:
         if self.max_oracle_queries < 1:
             raise ValueError("max_oracle_queries 必须为正数")
         if self.max_wall_seconds <= 0:
             raise ValueError("max_wall_seconds 必须为正数")
+        if self.candidate_entry is not None:
+            value = self.candidate_entry.strip()
+            if not value or value.startswith(("/", "\\")) or ".." in value.replace("\\", "/").split("/"):
+                raise ValueError("candidate_entry 必须是仓库内的相对路径")
 
     def as_dict(self) -> dict:
         value = asdict(self)

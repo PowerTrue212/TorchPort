@@ -1,7 +1,7 @@
 # TorchPort 跨对话工作说明
 
-更新时间：2026-10-07  
-当前开发分支：`torchport-2.0-core`
+更新时间：2026-10-13
+当前开发分支：`codex/reorganize-repository`
 
 这份文件是新对话和新 Agent 的项目入口。它只保存当前方向、不可破坏的边界和接手顺序。
 详细设计、实验协议和原始证据以链接文件为准。阶段目标改变时更新本文件，不在这里堆积逐次
@@ -32,27 +32,20 @@ TorchPort 当前不是自动代码转换器，也不负责替 Agent 猜入口、
 公开 CLI 没有 `migrate` 命令。仓库中的历史迁移代码或旧 prompt 不是当前核心工作流，不要在
 没有明确需求时重新接入或扩张。
 
-## 当前有两条 Agent 接入路线
+## Agent 接入方式
 
-### 成熟的代码 Agent
+当前只维护成熟代码 Agent 这一条路线。Agent 保留正常的仓库浏览、搜索、编辑、Shell、Python、
+Git、测试和网络检索能力，并先自行检查依赖、设备、显存、内存、磁盘、数据和 checkpoint 是否
+满足迁移需要。TorchPort 不替 Agent 做这些判断，也不要求源仓库预先提供专用 adapter。
 
-成熟代码 Agent 应保留正常的仓库浏览、搜索、编辑、Shell、Python、测试和网络
-检索能力。TorchPort 作为附加验证工具接入，环境负责隔离 hidden task、oracle、凭据和最终
-evaluator，并记录调用与成本。
+`experiments/harness/` 是实验控制层，不是模型 API 客户端。它只向 Agent 暴露
+`inspect`、`run`、`evaluate`、`verify`、`trace`、`localize`，冻结反馈层级、预算和事件，
+并在结束时保存完整候选仓库快照、文件 manifest 和 Git diff，再用隐藏 task 对快照执行正式
+`verify`。Agent 自带的普通工具不由 Harness 重写。
 
-当前不维护特定 Agent 产品的仓库内插件。成熟 Agent 通过公开 CLI 或外部适配层调用
-`inspect`、`run`、`evaluate`、`verify`、`trace`、`localize`。远端 GPU 连接只从
-`~/.tp_ssh.env` 读取，密码和主机信息不能写入仓库。
-
-### 直接调用模型 API 或本地代码模型
-
-这类模型没有现成的代码操作环境，需要 `experiments/harness/` 提供文件、搜索、编辑、执行、
-测试和 TorchPort 工具，并统一记录预算和事件。现有 Harness 已能完成最小闭环，但狭窄工具
-接口不能作为成熟 Agent 的公平替代。正式比较前必须确认模型拥有完成真实迁移所需的代码操作
-能力。
-
-两条路线可以分别实现，但实验中的唯一自变量应是 TorchPort 反馈粒度。不能让一组使用完整
-代码工具，另一组只能使用少数受限文件工具，然后把差异归因于 TorchPort。
+当前不维护特定 Agent 产品的仓库内插件，也不维护直接调用模型 API 的受限代码环境。外部适配层
+可以把六个 Harness 工具映射给具体 Agent，但不得改变字段裁剪、查询计数或最终判定。远端 GPU
+连接只从 `~/.tp_ssh.env` 读取，密码和主机信息不能写入仓库。
 
 ## 已冻结的实验边界
 
@@ -79,7 +72,8 @@ P2 比较三种反馈：
 
 - P0：TaskSpec、source oracle、candidate 身份、负例和唯一验收结果已经闭环。
 - P1：双端独立环境、运行记录和重复验收已经闭环。
-- P2：反馈裁剪、DeepSeek API adapter、事件记录、成本聚合和 tiny GPU smoke 已完成最小闭环。
+- P2：反馈裁剪、事件记录、成本聚合、完整仓库交付和 tiny GPU smoke 已完成最小闭环；旧的
+  DeepSeek/API 受限 Harness 已移除。
 - CamoFormer：已完成一次真实 COD 仓库迁移，并暴露出 TF32、固定容差和 target 数值波动对
   验收协议的影响。
 - 模块隔离：`trace` 可以记录 source 真实局部输入，直接运行同名 target 模块，并分别报告
@@ -93,8 +87,8 @@ P2 比较三种反馈：
 
 1. 校准 CamoFormer 暴露出的数值验收问题，区分模型实现错误、后端正常数值差异和重复运行
    波动；在证据充分前保留正式失败。
-2. 为成熟 Agent 准备不削弱其代码能力的实验环境，使 verdict、diagnostic、localized 三组只在
-   TorchPort 反馈上不同。
+2. 完成成熟 Agent 的完整仓库迁移链路，使 verdict、diagnostic、localized 三组只在 TorchPort
+   反馈上不同；Agent 的普通代码能力和启动前检查保持一致。
 3. 在相同初始 candidate、模型版本、提示词、硬件和预算下运行多次真实任务，比较成功率、
    用时、Token、Logical Query Cost 和 Physical Evaluation Cost。
 4. P2 协议稳定后，再推进 P3 的可复现迁移问题库。P3 不按“框架固有问题/Agent 引入错误”
@@ -159,7 +153,7 @@ CamoFormer 候选已经可以完整运行，参数与结构检查通过，但冻
 | --- | --- |
 | `src/torchport/` | 冻结任务、双端执行、证据采集、比较和验收核心 |
 | `tests/` | 核心契约与负例测试 |
-| `experiments/harness/` | 直接调用模型 API 时使用的实验控制器 |
+| `experiments/harness/` | 成熟 Agent 实验的反馈、预算、事件、仓库冻结和最终验收控制器 |
 | `benchmarks/tasks/` | 小型、显式、可复现的任务定义 |
 | `migrations/` | 真实迁移工作区、提示词和仓库专用证据 |
 | `compatibility/` | 历史规则和后续 P3 问题条目 |
@@ -187,8 +181,8 @@ CamoFormer 候选已经可以完整运行，参数与结构检查通过，但冻
 ## 当前优先级
 
 1. 完成 CamoFormer 多输入、真实 checkpoint 和重复性校准报告。
-2. 把成熟 Agent 的正常代码能力与 TorchPort 反馈控制明确分层，并修订与该决定冲突的旧 P2
-   文档。
+2. 完成完整仓库 candidate 的冻结交付、隐藏验收和首轮 held-out 工作区，清除旧 API Harness
+   与单文件交付假设。
 3. 冻结首轮真实 benchmark、replicate、预算和停止条件。
 4. 运行 verdict / diagnostic / localized 对照；旧版实验结果不混入新实验的效率统计。
 5. 根据真实失败决定是否补充 trace；没有案例需求时不增加抽象、数据库或自动根因系统。

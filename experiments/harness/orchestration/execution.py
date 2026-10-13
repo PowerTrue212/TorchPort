@@ -9,6 +9,7 @@ from typing import Any, Callable
 from torchport.contracts import file_hash, load_task
 from torchport.runtime import write_json
 
+from ..candidate import initialize_git_workspace
 from .common import inside as _inside
 from .common import read_json as _json
 
@@ -31,6 +32,7 @@ def _prepare_attempt(
         candidate,
         ignore=shutil.ignore_patterns(".git", ".torchport", "__pycache__", "*.pyc"),
     )
+    initialize_git_workspace(candidate)
     for value in (public_seed, hidden_seed):
         value["target"]["repo"] = str(candidate.resolve())
     public_path = attempt_root / "public.json"
@@ -132,6 +134,5 @@ def execute_run_plan(
             record["exhausted"] = True
             write_json(state_path, state)
     return state
-
 
 

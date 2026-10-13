@@ -1,7 +1,7 @@
 """Create agent workspaces workspaces/<repo>-<condition>-r<k>/.
 
 Contents: copy of the PyTorch source, the PyTorch adapter as reference_torch_adapter.py,
-a Jittor-side torchport_adapter.py, an empty submission.py skeleton, the rendered prompt
+a Jittor-side torchport_adapter.py, a thin run.py skeleton, the rendered prompt
 (PROMPT.md) and WEIGHTS.md (path reference only; no weights are copied).
 No Jittor reference, oracle, hidden input or evaluator is copied.
 Per-workspace task files go to workspaces/_tasks/ (outside every workspace).
@@ -14,6 +14,7 @@ from __future__ import annotations
 import argparse
 import json
 import shutil
+import subprocess
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
@@ -40,12 +41,11 @@ REPOS = {
 }
 IGNORE = shutil.ignore_patterns("__pycache__", "*.pyc", ".git", ".idea", "*.pth", "*.png", "*.jpg")
 
-SKELETON = '''"""Agent-owned {name} migration contract.
+SKELETON = '''"""Standard entry for the migrated {name} repository.
 
-Implement ``load_model`` and return a Jittor module whose call accepts one NCHW float32
-image {shape} and returns the same tuple structure as reference_torch_adapter.py.
-Parameter names must equal the PyTorch state_dict keys. TorchPort loads the frozen
-PyTorch state into the returned module before inference.
+Keep the migrated implementation in normal repository modules. This file only imports and
+constructs that implementation for TorchPort. ``load_model`` returns a Jittor module whose
+call accepts one NCHW float32 image {shape} and matches reference_torch_adapter.py.
 """
 
 from __future__ import annotations
@@ -54,15 +54,15 @@ import jittor as jt
 
 
 def load_model() -> jt.Module:
-    raise NotImplementedError("implement the native Jittor model")
+    raise NotImplementedError("import and construct the migrated repository model")
 '''
 
-JT_ADAPTER = '''"""Stable TorchPort entry around the Agent-owned submission."""
+JT_ADAPTER = '''"""Stable TorchPort entry around the Agent-owned repository entry."""
 
 from __future__ import annotations
 
 import jittor as jt
-from submission import load_model
+from run import load_model
 
 
 class {model}(jt.Module):
@@ -73,6 +73,29 @@ class {model}(jt.Module):
     def execute(self, image: jt.Var) -> tuple[jt.Var, ...]:
         return tuple(self.model(image))
 '''
+
+
+def initialize_git_workspace(path: Path) -> None:
+    commands = (
+        ("init", "--quiet"),
+        ("add", "-A"),
+        (
+            "-c", "user.name=TorchPort", "-c", "user.email=torchport@invalid",
+            "commit", "--quiet", "-m", "Initial repository candidate",
+        ),
+    )
+    for command in commands:
+        completed = subprocess.run(
+            ["git", "-C", str(path), *command],
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            timeout=60,
+            check=False,
+        )
+        if completed.returncode != 0:
+            raise RuntimeError(completed.stderr.strip() or "failed to initialize candidate Git")
 
 
 def render_prompt(cond: str, repo: str, args) -> str:
@@ -119,7 +142,9 @@ def main() -> None:
             shutil.copytree(HELD / repo / cfg["src"], ws, ignore=IGNORE)
             shutil.copy2(HELD / repo / "adapter" / "torchport_adapter.py", ws / "reference_torch_adapter.py")
             (ws / "torchport_adapter.py").write_text(JT_ADAPTER.format(model=cfg["model"]), encoding="utf-8")
-            (ws / "submission.py").write_text(SKELETON.format(name=cfg["name"], shape=cfg["shape"]), encoding="utf-8")
+            (ws / "run.py").write_text(
+                SKELETON.format(name=cfg["name"], shape=cfg["shape"]), encoding="utf-8"
+            )
             (ws / "PROMPT.md").write_text(render_prompt(cond, repo, args), encoding="utf-8")
             weights = "\n".join(f"- {(HELD / repo / 'checkpoint' / c)}" for c in cfg["ckpt"])
             (ws / "WEIGHTS.md").write_text(
@@ -128,6 +153,7 @@ def main() -> None:
             task["target"]["repo"] = str(ws)
             task["task_id"] += f"-{cond}-r{args.k}"
             (HERE / "_tasks" / f"{ws.name}.json").write_text(json.dumps(task, indent=2, ensure_ascii=False), encoding="utf-8")
+            initialize_git_workspace(ws)
             print("created", ws.name)
 
 

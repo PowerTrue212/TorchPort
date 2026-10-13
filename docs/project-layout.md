@@ -25,10 +25,10 @@ TorchPort 是迁移 Agent 的执行与验收工具。核心代码只处理显式
 | `benchmarks/tasks/` | 公开、显式、可复现的 TaskSpec 与小型双端 fixture |
 | `compatibility/` | P3 的历史兼容性规则、迁移问题条目和已验证修复证据 |
 | `experiments/` | 汇总数据、绘图代码、报告和可复现实验记录 |
-| `experiments/harness/agents/` | 模型 API 与网络研究适配器 |
-| `experiments/harness/orchestration/` | preflight、冻结 run plan、attempt 和基础设施重试 |
+| `experiments/harness/candidate.py` | 冻结完整候选仓库、文件 manifest 和 Git diff |
+| `experiments/harness/orchestration/` | 实验校验、冻结 run plan、attempt 和基础设施重试 |
 | `experiments/harness/reporting/` | 只读结果聚合与性能测量 |
-| `experiments/harness/` | P2 Gateway、工具协议、文件边界、反馈策略、预算和事件记录 |
+| `experiments/harness/` | 成熟 Agent 的 P2 Gateway、反馈策略、预算、事件和最终认证 |
 | `scripts/remote/torchport_remote/` | 远端配置、bundle、传输、反馈和命令编排 |
 | `migrations/` | 真实仓库迁移协议、本地工作区和仓库专用证据 |
 | `deliverables/` | 面向交付的报告与演示文稿 |

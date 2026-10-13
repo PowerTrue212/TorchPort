@@ -1,19 +1,21 @@
 # 隐藏最终评测
 
-两个条件（`none` / `full`）在运行结束后由同一评测器判定，评测器与 oracle 不进入任何 agent 工作区。
-正式验收必须在 DSH 会话停止后、由实验者在独立终端运行。完整 JSON 只能写入评测方结果目录，不能粘贴回
-DSH 会话，也不能放入 agent 工作区。DSH 的步数、Token 和费用从会话记录读取，不从验收输出推断。
+两个条件（`none` / `full`）在运行结束后由同一评测器判定，评测器与 oracle 不进入任何 Agent 工作区。
+正式验收必须在 Agent 会话停止后、由 Harness controller 或实验者在独立终端运行。完整 JSON 只能写入
+评测方结果目录，不能返回给 Agent，也不能放入 Agent 工作区。步数、Token 和费用从 Agent 会话原始记录
+读取，不从验收输出推断。
 
 ## E1：TorchPort verify
 
-用本次物化的 `_tasks/<repo>-<condition>-r<k>.json` 对 agent 最终的 `submission.py` 候选运行
-`verify`。当前新运行冻结为 `noise-envelope-v3`、source 关闭 TF32、fp32、5 个 source 变体、
+先冻结 Agent 的完整仓库快照、文件 manifest 和 Git diff，再用本次物化的
+`_tasks/<repo>-<condition>-r<k>.json` 对快照运行 `verify`。`run.py` 只是统一入口。
+当前新运行冻结为 `noise-envelope-v3`、source 关闭 TF32、fp32、5 个 source 变体、
 candidate 重复 3 次、`pass_k=2`、`floor_k=4`、`noise_floor=auto`。`verify` 是唯一最终判定入口。
 
-开发期 DSH 调用的 `verify` 计入 Agent 的 Logical Query Cost。会话结束后的这一次独立 verify
+开发期 Agent 调用的 `verify` 计入 Logical Query Cost。会话结束后的这一次独立 verify
 计入评测方 Physical Evaluation Cost，不计入 Agent query。`none` 的开发期响应只有 diagnostic 字段；
 评测方仍保存完整原始报告，但绝不能把 `first_divergence`、`first_marginal`、逐张量列表、模块构造参数差异
-或自由文本问题描述返回给 DSH。
+或自由文本问题描述返回给 Agent。
 
 ## E2：任务指标
 

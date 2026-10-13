@@ -6,8 +6,12 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from experiments.harness.aggregate import aggregate
-from experiments.harness.experiment import execute_run_plan, preflight, prepare_run_plan
+from experiments.harness.orchestration import (
+    execute_run_plan,
+    prepare_run_plan,
+    validate_experiment,
+)
+from experiments.harness.reporting import aggregate
 from torchport.contracts import file_hash
 from torchport.runtime import write_json
 
@@ -47,8 +51,8 @@ def _fixture(root: Path, *, formal: bool = False) -> Path:
     manifest = {
         "schema_version": 1,
         "experiment_id": "fixture-experiment",
-        "provider": "deepseek",
-        "model": "deepseek-flash",
+        "provider": "external-code-agent",
+        "model": "fixture-agent",
         "temperature": 0.0,
         "prompt": "prompt.md",
         "runtime_packages": ["pytest"],
@@ -90,7 +94,7 @@ class ExperimentRunnerTests(unittest.TestCase):
             root = Path(temporary)
             manifest = _fixture(root)
 
-            checked = preflight(manifest)
+            checked = validate_experiment(manifest)
             with self.assertRaisesRegex(ValueError, "--allow-trusted-pilot"):
                 prepare_run_plan(manifest)
             plan_path = prepare_run_plan(manifest, allow_trusted_pilot=True)
@@ -158,7 +162,7 @@ class ExperimentRunnerTests(unittest.TestCase):
                 task = json.loads(public.read_text("utf-8"))
                 candidate = Path(task["target"]["repo"])
                 text = (candidate / "main.py").read_text("utf-8")
-                calls.append((attempt_id, candidate, text))
+                calls.append((attempt_id, candidate, text, (candidate / ".git").exists()))
                 (candidate / "main.py").write_text("MUTATED = 1\n", "utf-8")
                 valid = len(calls) > 1
                 result = {
@@ -189,6 +193,8 @@ class ExperimentRunnerTests(unittest.TestCase):
         self.assertNotEqual(calls[0][1], calls[1][1])
         self.assertEqual(calls[0][2], "VALUE = 0\n")
         self.assertEqual(calls[1][2], "VALUE = 0\n")
+        self.assertTrue(calls[0][3])
+        self.assertTrue(calls[1][3])
         self.assertTrue(trial["selected"].endswith("infra-r1"))
         self.assertEqual(resumed, state)
         self.assertTrue(report["complete"])

@@ -1,203 +1,108 @@
-# Controlled Agent Harness
+# Mature-Agent experiment harness
 
-This directory is the experiment boundary around TorchPort. It is deliberately outside
-`src/torchport`: TorchPort judges evidence, while this harness controls what an Agent can see and
-counts the cost of obtaining that evidence.
+This directory controls reproducible migration trials for mature code Agents. It does not call a
+model API and does not replace an Agent's normal repository, Shell, Python, Git, test, or network
+tools.
 
-## Conditions
+The Harness has four jobs:
 
-- `verdict`: `evaluate` and `verify` return only `passed`.
-- `diagnostic`: a fixed allowlist of stage/category/code, aggregate numeric errors, structural,
-  weight-load, aligned, and strict-aligned status. It never returns free text or a location.
-- `localized`: the full diagnostic result plus `trace` and `localize` is available.
+1. Freeze the initial repository, task, feedback condition, budget, and hidden evaluator boundary.
+2. Expose only TorchPort's validation tools to the Agent.
+3. Record tool calls, logical queries, physical executions, candidate identities, and wall time.
+4. Freeze the final repository and run hidden verification against that exact snapshot.
 
-All conditions use the same TorchPort evaluator. Only the response shown to the Agent changes.
+## Trial lifecycle
 
-## Code layout
+```text
+complete source repository
+        │
+        ▼
+independent Git candidate workspace
+        │
+        ├─ Agent checks environment, resources, data, and checkpoints
+        ├─ Agent migrates repository code with its normal tools
+        └─ Agent uses TorchPort feedback and iterates
+        │
+        ▼
+repository finalizer
+        ├─ repository snapshot
+        ├─ candidate-manifest.json
+        ├─ git-status.txt
+        └─ candidate.diff
+        │
+        ▼
+hidden verify on the frozen snapshot
+```
 
-- `gateway.py` owns one trial's state, budgets, tool dispatch, event log, and final certification.
-- `tooling.py`, `workspace.py`, and `feedback.py` define the tool contract, repository boundary,
-  and the three feedback projections independently of provider code.
-- `agents/` contains provider and research adapters; adding a general-purpose Agent should require
-  an adapter here, not another evaluator or file-access implementation.
-- `orchestration/` validates and freezes manifests, creates isolated attempts, and resumes or retries
-  infrastructure failures.
-- `reporting/` reads frozen evidence to aggregate outcomes or measure already-correct candidates.
+The Agent decides how much preliminary checking to do. The Harness does not infer dependencies,
+install packages, decide whether memory is sufficient, or download datasets. An external worker
+still enforces filesystem, credential, and network isolation for formal experiments.
 
-The old `deepseek.py`, `aggregate.py`, and `performance.py` module paths remain executable
-compatibility entry points. New code should import their implementations from the subpackages above.
+## Agent-facing tools
 
-The diagnostic allowlist excludes module, file, line, operator, tensor name, first divergence,
-`summary`, `problems`, and `next`. Localized feedback adds scope, invocation, operator, first
-divergence, available input/output evidence, and error jump.
+`HarnessGateway.tool_schemas()` returns only:
 
-Logical query cost and physical evaluation cost are recorded independently. `evaluate`, `verify`,
-and `trace` consume logical queries. `probe` and `run` do not consume logical queries, but every
-process they start contributes to physical cost. Physical cost records process executions, their
-wall seconds, and wall seconds for CUDA-configured executions. The CUDA value is an allocation-time
-upper bound, not measured GPU active time.
+- `inspect`
+- `run`
+- `evaluate`
+- `verify`
+- `trace`
+- `localize`
 
-## Trusted boundary
+`trace` and `localize` are absent outside the localized condition. The Agent uses its own tools for
+files, Shell, tests, Git, package management, and public research. `certify()` is controller-only and
+is never part of the Agent tool schema.
 
-The model receives `HarnessGateway.tool_schemas()` and can invoke only `HarnessGateway.call()`.
-The registered tools can read the source repository, can read and edit the target repository, plus
-`inspect`, `probe`, `run`, `evaluate`, `verify`, `trace`, and `localize`. There is no generic shell
-tool.
-`apply_patch` is always target-only; passing a source side or escaping either repository is rejected.
-
-`read_file` returns at most 200 lines and reports the returned range, total line count, and whether
-more lines remain. Agents should use `search_code` first and request only the ranges they need. This
-keeps repeated provider context from growing with whole repository files.
-
-`probe(path, args=[])` runs one existing `.py` file inside the target repository. The target Python,
-device, environment, cache root, working directory, and timeout come from the frozen TaskSpec and
-trial; the Agent cannot override them. Arguments are passed as an argv array without a shell. Each
-call gets its own stdout/stderr logs and `probe.json`; the response returns only the last 20,000
-characters of each stream. Credential-like variables inherited by the controller are removed before
-the explicit TaskSpec environment is applied. A probe result is candidate-owned evidence and cannot
-certify success; the Gateway never passes oracle data or paths to it.
-
-The Gateway controls which process is launched and what evidence is returned. It is not an operating
-system sandbox: a formal benchmark must run the whole trial in a container or similarly isolated
-worker if candidate code itself is untrusted or network/filesystem isolation is required.
-
-`HarnessGateway.certify()` is intentionally absent from the tool schemas. The trusted trial
-controller calls it after the Agent loop returns. A hidden TaskSpec may use different inputs and
-source evidence, but it must point at the same target workspace.
+An external integration creates one gateway for one Agent session:
 
 ```python
-from experiments.harness import FeedbackLevel, HarnessGateway, TrialProtocol, run_trial
+from experiments.harness import FeedbackLevel, HarnessGateway, TrialProtocol
 
 gateway = HarnessGateway(
-    task="benchmarks/tasks/tiny/task.yaml",
-    evidence_root=".torchport/p2/tiny/t0",
-    trial_dir="experiments/p2/runs/pilot/tiny/verdict/t0",
-    trial_id="t0",
+    task="public-task.json",
+    hidden_task="hidden-task.json",
+    evidence_root=".torchport/evidence",
+    trial_dir="runs/plantcamo-none-r0",
     protocol=TrialProtocol(
-        feedback=FeedbackLevel.VERDICT,
+        feedback=FeedbackLevel.DIAGNOSTIC,
         max_oracle_queries=10,
-        max_wall_seconds=3600,
+        max_wall_seconds=7200,
+        candidate_entry="run.py",
     ),
 )
 
-def agent(tool_schemas, call):
-    # A provider adapter sends only tool_schemas to the model and maps tool calls to call().
-    call("inspect")
-    return "agent_completed"
-
-result = run_trial(gateway, agent)
+tools = gateway.tool_schemas()
+result = gateway.call("inspect")
 ```
 
-Every response is saved under `tool-results/` and referenced by hash from `events.jsonl`.
-A trusted provider adapter should record raw token usage with `gateway.record_agent_event()`.
+The integration maps these schemas into the chosen mature Agent product. After the Agent session
+ends, the trusted controller calls `gateway.certify(stop_reason)`. The Harness deliberately contains
+no product-specific plugin and no direct model API client.
 
-## DeepSeek API
+## Repository candidate contract
 
-Copy the example beside the harness and fill only the key. Keeping this file out of the repository
-root lets `dsh web` start normally; DSH rejects launch-control variables from a workspace `.env`.
+New trials start from a complete upstream repository copy. The Agent can change repository modules,
+configuration, dependencies, tests, and the standard entry. A candidate is always a directory.
 
-```powershell
-Copy-Item experiments/harness/.env.example experiments/harness/.env
-notepad experiments/harness/.env
-```
+`run.py` is the default entry for current held-out tasks. It only imports and constructs the migrated
+repository implementation. It must not contain the whole migrated model. Task-specific hidden tests
+must also exercise the repository's normal imports, configuration, checkpoint loading, and inference
+path; a file-count heuristic cannot prove a real repository migration.
 
-```dotenv
-DEEPSEEK_API_KEY=your_key_here
-DEEPSEEK_BASE_URL=https://api.deepseek.com
-DEEPSEEK_MODEL=deepseek-flash
-```
+`candidate.py` freezes the final tree, rejects common credential files, records every delivered file,
+and saves Git review evidence when the workspace has a baseline commit. Official verification uses
+the frozen copy, so edits made after finalization cannot affect the result.
 
-Check the configuration without sending a request:
+## Directory responsibilities
 
-```powershell
-.venv\Scripts\python.exe -m experiments.harness.deepseek --check
-```
+| Path | Responsibility |
+| --- | --- |
+| `gateway.py` | TorchPort calls, feedback projection, budgets, event log, hidden certification |
+| `candidate.py` | Repository manifest, clean snapshot, Git status and diff |
+| `tooling.py` | Six stable TorchPort tool schemas and call validation |
+| `feedback.py` | Verdict, diagnostic, and localized response projections |
+| `orchestration/` | Trial matrix validation, frozen run plan, clean attempt copies and retry state |
+| `reporting/` | Read-only aggregation and performance measurement |
 
-Run a controlled trial:
-
-```powershell
-.venv\Scripts\python.exe -m experiments.harness.deepseek `
-  --env experiments/harness/.env `
-  --task benchmarks/tasks/tiny/task.yaml `
-  --prompt-file experiments/harness/prompt.example.md `
-  --feedback diagnostic `
-  --query-budget 10 `
-  --wall-seconds 3600 `
-  --trial-id tiny-diagnostic-0
-```
-
-For a pre-registered comparison, use the experiment controller instead of invoking trials one by
-one. It validates the complete task/condition/replicate matrix, verifies frozen artifact hashes,
-captures interpreter/package/GPU facts, and writes immutable `run-plan.json` and
-`runtime-snapshot.json` files before the first provider request:
-
-```powershell
-.venv\Scripts\python.exe -m experiments.harness.experiment `
-  experiments/p2/<experiment>/experiment.json `
-  --env experiments/harness/.env `
-  --allow-trusted-pilot `
-  --prepare-only
-
-.venv\Scripts\python.exe -m experiments.harness.experiment `
-  experiments/p2/<experiment>/experiment.json `
-  --env experiments/harness/.env `
-  --allow-trusted-pilot
-```
-
-`--allow-trusted-pilot` is required when the manifest has
-`isolation.formal_claims_allowed=false`. Such a run is useful for infrastructure validation but
-cannot support a formal isolation claim.
-
-Add task-specific Python distributions to the manifest's `runtime_packages` list. The runtime
-snapshot records their installed versions, or their absence, for both source and target
-interpreters in addition to TorchPort's core numeric packages. This is audit metadata; dependency
-installation remains an explicit worker setup step.
-
-Each planned trial is one denominator unit. The controller copies the frozen seed candidate into a
-new attempt directory, records progress atomically in `run-state.json`, and resumes completed
-trials. An infrastructure failure may be retried once by default; the retry starts from a fresh seed
-and remains an attempt of the same planned trial. The aggregate selects the first valid attempt, so
-retries never enlarge the Success@Budget denominator. Model failure, budget exhaustion, and a valid
-failed official verification are not retried.
-
-Formal runs require an attestation produced by the isolated worker:
-
-```powershell
-.venv\Scripts\python.exe -m experiments.harness.experiment `
-  experiments/p2/<experiment>/experiment.json `
-  --env experiments/harness/.env `
-  --worker-attestation path/to/worker-attestation.json
-```
-
-The example at `worker-attestation.example.json` deliberately contains `false` placeholders and
-cannot pass the gate accidentally. The worker must attest that the network and host filesystem are
-isolated, the candidate is the only writable mount, source and frozen inputs are read-only, and
-hidden artifacts are absent from the Agent mount. It must also record an immutable image digest.
-The JSON file is evidence and a controller gate; it does not create a sandbox. A container or other
-external supervisor must enforce these properties before emitting the attestation.
-
-Freeze the experiment id, replicate count, budgets, model, prompt, and sampling settings before a
-comparison. The controller writes `summary.json` automatically. The aggregate can also be rebuilt
-from the frozen plan without provider access:
-
-```powershell
-.venv\Scripts\python.exe -m experiments.harness.aggregate `
-  experiments/p2/tiny-smoke/run-plan.json `
-  --output experiments/p2/tiny-smoke/summary.json
-```
-
-Measure performance only after official verification has passed. This reuses normal capture,
-disables trace, and checks correctness after the benchmark loop:
-
-```powershell
-.venv\Scripts\python.exe -m experiments.harness.performance `
-  task.yaml path/to/official-verify.json `
-  --root .torchport/performance `
-  --trial performance-r0 `
-  --warmup 10 --iterations 30 `
-  --output performance.json
-```
-
-For a formal benchmark, also pass `--hidden-task` pointing to an immutable TaskSpec that uses the
-same target repository. The adapter uses non-thinking Chat Completions tool calls and records the
-provider's input, cached-input, output, reasoning, and total token classes in `events.jsonl`.
+The old DeepSeek/API Agent, restricted file tools, built-in web research, and model loop were removed.
+Historical pilot evidence remains under `experiments/p2/` and is not rewritten as a current result.
