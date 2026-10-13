@@ -1,4 +1,4 @@
-# TorchPort 跨对话工作说明
+# Jittor Harness 跨对话工作说明
 
 更新时间：2026-10-13
 当前开发分支：`codex/reorganize-repository`
@@ -17,8 +17,8 @@
 
 ## 项目要做什么
 
-TorchPort 服务于 PyTorch 到 Jittor 的仓库迁移。迁移 Agent 负责理解仓库、修改代码和提出
-修复；TorchPort 负责提供 Agent 不能凭空生成的事实：
+Jittor Harness 服务于 PyTorch 到 Jittor 的仓库迁移。迁移 Agent 负责理解仓库、修改代码和提出
+修复；内部 TorchPort 验证核心负责提供 Agent 不能凭空生成的事实：
 
 - 在冻结输入、权重、环境和协议下真实运行 PyTorch 与 Jittor。
 - 检查输入、参数、输出结构和数值结果，给出唯一且可复验的验收结果。

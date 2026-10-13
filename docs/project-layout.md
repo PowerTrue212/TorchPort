@@ -1,6 +1,6 @@
 # 项目目录说明
 
-TorchPort 是迁移 Agent 的执行与验收工具。核心代码只处理显式 TaskSpec、隔离执行、
+Jittor Harness 是项目的对外名称，`torchport` 是其内部验证包和 CLI。核心代码只处理显式 TaskSpec、隔离执行、
 证据采集和唯一判定；仓库理解与代码修改由外部代码 Agent 完成。
 
 ## 核心代码

@@ -1,6 +1,8 @@
-# Mature-Agent experiment harness
+# Jittor Harness
 
-This directory controls reproducible migration trials for mature code Agents. It does not call a
+Jittor Harness controls reproducible migration trials for mature code Agents. Its implementation
+stays in `experiments/harness/`; the internal validation package and CLI remain `torchport` for
+compatibility. It does not call a
 model API and does not replace an Agent's normal repository, Shell, Python, Git, test, or network
 tools.
 

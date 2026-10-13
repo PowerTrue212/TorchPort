@@ -1,11 +1,9 @@
 <div align="center">
-  <img src="docs/assets/torchport-showcase.png" alt="TorchPort 迁移与验证" width="100%">
-
-  <h1>TorchPort</h1>
+  <h1>Jittor Harness</h1>
 
   <p>
     <strong>供 PyTorch → Jittor 迁移 Agent 调用的可复现执行与验证工具。</strong><br>
-    TorchPort 为代码 Agent 提供冻结任务下的双端执行、证据采集和唯一验收，当前重点支持
+    Jittor Harness 为代码 Agent 提供冻结任务下的双端执行、证据采集和唯一验收，当前重点支持
     PyTorch 到 Jittor 的迁移。
   </p>
 
@@ -31,19 +29,22 @@
   </p>
 </div>
 
+Jittor Harness 是项目的对外名称。为了保持现有脚本和任务兼容，Python 包和命令行仍使用
+`torchport`；本文中的 TorchPort 特指 Harness 内部的执行与数值验证核心。
+
 ## 系统架构
 
 <div align="center">
-  <img src="docs/assets/torchport-architecture.png" alt="TorchPort 系统架构" width="100%">
+  <img src="docs/assets/torchport-architecture.png" alt="Jittor Harness 系统架构" width="100%">
 </div>
 
-TorchPort 的核心假设很简单：模型迁移不能只看代码是否被替换，更要看迁移后的模型能否保持数值行为与性能对齐。
+Jittor Harness 的核心假设很简单：模型迁移不能只看代码是否被替换，更要看迁移后的模型能否保持数值行为与性能对齐。
 
 系统由两层组成。外部代码 Agent 阅读未知 PyTorch 仓库、编写 Jittor candidate 并选择修复；TorchPort 按冻结任务执行双端模型、核验输入和参数、比较数值结果并返回可审计证据。下一阶段会把真实迁移中复验过的问题整理为有证据的问题库，供 Agent 在新任务中只读参考。
 
 ## 项目定位
 
-TorchPort 关注的是一个可复验的问题：
+Jittor Harness 关注的是一个可复验的问题：
 
 ```text
 给定一个未知 PyTorch 仓库，
@@ -66,7 +67,7 @@ TorchPort 关注的是一个可复验的问题：
 
 当前公开实验主要验证 PyTorch 到 Jittor 的迁移和数值一致性。昇腾等国产算力的完整端到端实验会在后续后端适配中补齐。
 
-## 为什么需要 TorchPort
+## 为什么需要 Jittor Harness
 
 普通转换器主要回答一个问题：
 
@@ -74,7 +75,7 @@ TorchPort 关注的是一个可复验的问题：
 代码能不能转过去？
 ```
 
-TorchPort 进一步回答：
+Jittor Harness 进一步回答：
 
 ```text
 迁移后的项目能不能真正运行？
@@ -106,14 +107,21 @@ python -m pip install -e ".[dev]"
 
 ```bash
 pytest tests -q
-ruff check .
+ruff check src tests benchmarks experiments/harness
 python -m build
 ```
 
-验证一个显式任务：
+先检查一个显式任务：
 
 ```bash
-PYTHONPATH=src python -m torchport verify benchmarks/tasks/tiny/task.yaml \
+PYTHONPATH=src python -m torchport inspect benchmarks/tasks/tiny/task.yaml
+```
+
+`benchmarks/tasks/tiny/task.yaml` 展示了双环境任务的完整结构，但其 Python 路径是实验机路径，
+不是跨机器默认值。复制该文件，把 `source.python`、`target.python` 和设备改为实际环境后再验收：
+
+```bash
+PYTHONPATH=src python -m torchport verify path/to/local-task.yaml \
   --root .torchport/harness \
   --trial t0
 ```

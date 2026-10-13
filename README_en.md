@@ -1,11 +1,9 @@
 <div align="center">
-  <img src="docs/assets/torchport-showcase.png" alt="TorchPort migration and verification" width="100%">
-
-  <h1>TorchPort</h1>
+  <h1>Jittor Harness</h1>
 
   <p>
     <strong>A PyTorch → Jittor migration and verification system for a domestic-first AI software stack.</strong><br>
-    TorchPort gives code agents reproducible dual execution, evidence capture, and one frozen
+    Jittor Harness gives code agents reproducible dual execution, evidence capture, and one frozen
     verification result for repository migrations, currently focused on PyTorch to Jittor.
   </p>
 
@@ -31,19 +29,23 @@
   </p>
 </div>
 
+Jittor Harness is the public project name. To preserve compatibility with existing tasks and
+scripts, the Python package and CLI remain `torchport`; in this document, TorchPort refers to the
+execution and numerical-verification core inside the Harness.
+
 ## Architecture
 
 <div align="center">
-  <img src="docs/assets/torchport-architecture.png" alt="TorchPort architecture" width="100%">
+  <img src="docs/assets/torchport-architecture.png" alt="Jittor Harness architecture" width="100%">
 </div>
 
-TorchPort starts from a narrow requirement: migration should be judged by execution and numerical behavior, not by whether source text has been rewritten.
+Jittor Harness starts from a narrow requirement: migration should be judged by execution and numerical behavior, not by whether source text has been rewritten.
 
 The system has two layers. An external code agent reads an unknown PyTorch repository, writes the Jittor candidate, and chooses repairs. TorchPort executes a frozen task, checks inputs and parameters, compares numerical results, and returns auditable evidence. The next phase will curate reproduced migration issues as read-only evidence for agents working on unseen tasks.
 
 ## Positioning
 
-TorchPort is not a collection of model-specific adapters, and it is not a one-pass conversion script. It addresses a reproducible migration question:
+Jittor Harness is not a collection of model-specific adapters, and it is not a one-pass conversion script. It addresses a reproducible migration question:
 
 ```text
 Given an unknown PyTorch repository,
@@ -74,7 +76,7 @@ TorchPort treats the domestic conversion platform as a sequence of verifiable la
 
 The current public evidence focuses on PyTorch-to-Jittor migration and numerical verification. Full Ascend-class backend experiments are part of the next backend-integration stage.
 
-## Why TorchPort
+## Why Jittor Harness
 
 Most converters ask:
 
@@ -82,7 +84,7 @@ Most converters ask:
 Can the code be converted?
 ```
 
-TorchPort asks:
+Jittor Harness asks:
 
 ```text
 Does the migrated project run?
@@ -114,14 +116,22 @@ Run basic checks:
 
 ```bash
 pytest tests -q
-ruff check .
+ruff check src tests benchmarks experiments/harness
 python -m build
 ```
 
-Verify an explicit task:
+Inspect an explicit task first:
 
 ```bash
-PYTHONPATH=src python -m torchport verify benchmarks/tasks/tiny/task.yaml \
+PYTHONPATH=src python -m torchport inspect benchmarks/tasks/tiny/task.yaml
+```
+
+`benchmarks/tasks/tiny/task.yaml` shows the complete dual-environment task structure, but its
+Python paths belong to the experiment host and are not portable defaults. Copy it, replace
+`source.python`, `target.python`, and the devices with the actual environments, then verify it:
+
+```bash
+PYTHONPATH=src python -m torchport verify path/to/local-task.yaml \
   --root .torchport/harness \
   --trial t0
 ```

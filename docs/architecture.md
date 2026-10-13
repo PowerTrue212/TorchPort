@@ -1,5 +1,8 @@
 # 架构说明
 
+Jittor Harness 是对外项目名；`torchport` 是其内部执行与验证核心的 Python 包和 CLI 名。
+两个名字分别表示完整 Agent 工作流和稳定的底层接口，不存在两套执行器。
+
 ## 依赖方向
 
 ```text
