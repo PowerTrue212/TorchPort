@@ -9,6 +9,7 @@ import numpy as np
 
 from torchport import noise
 from torchport.execution import write_json
+from torchport.verification import noise as noise_impl
 
 
 def _task(target_repo: str = "/repo/a") -> dict:
@@ -47,7 +48,7 @@ class NoiseTests(unittest.TestCase):
                 write_json(run_dir / "noise.json", {"noise_floor": 2e-6, "dominant_op": "sum_spatial"})
                 return {"ok": True, "seconds": 1.0}
 
-            with patch.object(noise, "execute", ok):
+            with patch.object(noise_impl, "execute", ok):
                 first = noise.calibrate(_task("/repo/a"), root)
                 second = noise.calibrate(_task("/repo/b"), root)
             self.assertTrue(first["ok"])
@@ -59,7 +60,7 @@ class NoiseTests(unittest.TestCase):
             def broken(side, args, *, run_dir, cache, timeout):
                 return {"ok": False, "seconds": 1.0, "stderr_tail": "ImportError: jittor"}
 
-            with patch.object(noise, "execute", broken):
+            with patch.object(noise_impl, "execute", broken):
                 failed = noise.calibrate({**_task(), "protocol": {"timeout": 60, "noise_probe": {"repeats": 3}}}, root)
             self.assertFalse(failed["ok"])
             self.assertEqual(failed["reason"], "NOISE_PROBE_FAILED")

@@ -1,0 +1,10 @@
+[i 1011 11:28:09.598258 16 compiler.py:956] Jittor(1.3.9.14) src: /root/autodl-tmp/jt-env/lib/python3.12/site-packages/jittor
+[i 1011 11:28:09.606424 16 compiler.py:957] g++ at /usr/bin/g++(11.4.0)
+[i 1011 11:28:09.606571 16 compiler.py:958] cache_path: /root/autodl-tmp/tp-jittor-atomic-20261011/home/.cache/jittor/jt1.3.9/g++11.4.0/py3.12.3/Linux-5.4.0-16x1e/IntelRXeonRSilx76/c5f1/default
+[i 1011 11:28:09.614758 16 __init__.py:412] Found /usr/local/cuda/bin/nvcc(12.8.93) at /usr/local/cuda/bin/nvcc.
+[i 1011 11:28:09.621348 16 __init__.py:412] Found addr2line(2.38) at /usr/bin/addr2line.
+[i 1011 11:28:09.875115 16 compiler.py:1013] cuda key:cu12.8.93_sm_86
+[i 1011 11:28:10.332460 16 __init__.py:227] Total mem: 408.77GB, using 16 procs for compiling.
+[i 1011 11:28:10.434087 16 jit_compiler.cc:28] Load cc_path: /usr/bin/g++
+[i 1011 11:28:10.672516 16 init.cc:63] Found cuda archs: [86,]
+[i 1011 11:28:11.029642 16 cuda_flags.cc:49] CUDA enabled.

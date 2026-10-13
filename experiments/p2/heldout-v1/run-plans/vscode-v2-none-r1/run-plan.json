@@ -1,0 +1,52 @@
+{
+  "schema_version": 1,
+  "experiment_id": "vscode-v2-diagnostic-r1",
+  "prepared_at": "2026-10-11",
+  "claim_scope": "single_condition_pilot_only",
+  "repository": "VSCode-v2-T stage2 (CODRGB)",
+  "model_provider": "DeepSeek Harness",
+  "model_id": null,
+  "model_id_status": "record_from_dsh_session_before_start",
+  "condition": {
+    "label": "none",
+    "feedback": "diagnostic",
+    "workspace": "D:\\tp-runs\\vscode-v2-none-r1",
+    "task": "experiments\\p2\\heldout-v1\\workspaces\\_tasks\\vscode-v2-none-r1.json",
+    "remote_agent_dir": "/root/autodl-tmp/agent/vscode-v2-none-r1",
+    "remote_task_root": "/root/autodl-tmp/tp-work/d83817e76bcb",
+    "prompt_sha256": "7cb2c27cf9c307759bae953548b03f5fecc44845ca37e41ca52db83195ef03c7",
+    "task_file_sha256": "c189cd2dccfaec55075b837d2c9f06cae89f3c36269c8e706232b06a20143ceb",
+    "initial_submission_sha256": "1692ce987ea7071ec56eb29a75495453157cddce6d4fcdeea3ecd4aa13d52c0b",
+    "candidate_identity": "89cc2fa9a831cf226bdcdb26eb9f6df848ba22553b4fd02eac1de726efc1c77c",
+    "task_digest": "4b3f9df65a88f80f3856382c0782870ca8216203af69e131467e900424f01588",
+    "remote_staged": true
+  },
+  "common": {
+    "protocol": "noise-envelope-v3",
+    "seed": 20261004,
+    "repeats": 3,
+    "pass_k": 2.0,
+    "floor_k": 4.0,
+    "noise_floor": "auto",
+    "wall_minutes": 180,
+    "max_turns": 200,
+    "token_budget": null,
+    "input_sha256": "0b2ae2650d0a0844c764e076271c0e9b8a41494fc4ee5f3608b174ae83c72017",
+    "weights_sha256": "fd75b194ace7d80b00997c25d268b1a1f40e1e75c1ed7d956b3322bebd73fdae"
+  },
+  "space_check": {
+    "remote_free_before": "7.5G",
+    "remote_used_percent_before": 86,
+    "historical_vscode_full_task_root": "4.2G",
+    "assessment": "sufficient_for_one_run_with_limited_margin"
+  },
+  "official_evaluator": {
+    "run_after_dsh_session": true,
+    "raw_report_visible_to_agent": false,
+    "result_fields_for_summary": [
+      "passed",
+      "e1_status",
+      "failure_code"
+    ]
+  }
+}

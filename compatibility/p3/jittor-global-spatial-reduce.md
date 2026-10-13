@@ -35,7 +35,7 @@
     "expected_failure": "avgpool_global and sum_spatial bitwise=False with N_env > 1e-6"
   },
   "repair": {
-    "description": "Split the single 2D reduction or express it as a matmul: x.mean(dims=(3,)).mean(dims=(2,)) gave N_env 0 and 1.6e-7 vs fp64; matmul(x.reshape(B*C,H*W), ones/(H*W)) gave N_env 0 and 2.3e-7. Both match PyTorch fp32 accuracy on this shape.",
+    "description": "Split the single 2D reduction or use a fixed-order tree. x.mean(dims=(3,)).mean(dims=(2,)) originally gave N_env 0 and 1.6e-7 vs fp64. A later 30-run causal probe measured 0 run-to-run difference and 2.17e-7 error for the two-stage sum, while a custom fixed CUDA tree also gave 0 and 2.18e-7. Three independent processes, 90 runs total, remained bitwise identical for both. A matmul form previously gave N_env 0 and 2.3e-7 on this shape.",
     "patch": null,
     "constraints": [
       "Verified on one shape only; the two-stage form is still a reduction and may become nondeterministic for other shapes.",
@@ -44,14 +44,15 @@
   },
   "evidence": {
     "before": "experiments/p2/heldout-v1/results/plantcamo-full-r0/v3/pc-v3_evidence_noise_5583b9df1378b6e6.json",
-    "after": null,
+    "after": "docs/evidence/jittor_atomic_reduction/results.json",
     "protocol_digest": null,
     "verified": false
   },
   "applicability": {
     "known": [
       "Jittor 1.3.9.14, RTX 3080 Ti sm_86, CUDA 12.8, conv_opt=1, shape (1,64,176,176).",
-      "TorchPort noise.calibrate reproduces the same per-op values automatically (sum_spatial 2.17e-6 dominant)."
+      "TorchPort noise.calibrate reproduces the same per-op values automatically (sum_spatial 2.17e-6 dominant).",
+      "The preserved generated sum and average-pool kernels call atomicAdd; replacing that merge with a fixed tree removes the observed variation on the tested shape."
     ],
     "unknown": [
       "Dependence on spatial size, channel count, batch and GPU model.",

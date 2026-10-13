@@ -1,0 +1,244 @@
+{
+  "method": {
+    "unit": "three-context unified-diff hunk",
+    "classification": "manual, mutually exclusive, dominant purpose of each hunk",
+    "source": "D:\\大学\\新芽\\apt",
+    "target": "D:\\大学\\新芽\\APT-Jittor",
+    "nonfunctional_policy": "excluded from headline functional proportions",
+    "scope_sensitivity": "four pure scope-reduction hunks are excluded in the sensitivity view"
+  },
+  "all_hunks": {
+    "totals": {
+      "hunks": 65,
+      "additions": 622,
+      "deletions": 500,
+      "changed_lines": 1122,
+      "code_additions": 401,
+      "code_deletions": 406,
+      "code_changed_lines": 807
+    },
+    "categories": {
+      "ENGINEERING": {
+        "hunks": 11,
+        "additions": 45,
+        "deletions": 327,
+        "changed_lines": 372,
+        "code_additions": 41,
+        "code_deletions": 260,
+        "code_changed_lines": 301,
+        "hunk_percent": 16.9,
+        "addition_percent": 7.2,
+        "changed_line_percent": 33.2,
+        "code_addition_percent": 10.2,
+        "code_changed_line_percent": 37.3,
+        "name": "工程、数据、权重与协议适配"
+      },
+      "API": {
+        "hunks": 26,
+        "additions": 100,
+        "deletions": 60,
+        "changed_lines": 160,
+        "code_additions": 51,
+        "code_deletions": 55,
+        "code_changed_lines": 106,
+        "hunk_percent": 40.0,
+        "addition_percent": 16.1,
+        "changed_line_percent": 14.3,
+        "code_addition_percent": 12.7,
+        "code_changed_line_percent": 13.1,
+        "name": "直接 API 映射"
+      },
+      "SEMANTIC": {
+        "hunks": 14,
+        "additions": 90,
+        "deletions": 66,
+        "changed_lines": 156,
+        "code_additions": 58,
+        "code_deletions": 50,
+        "code_changed_lines": 108,
+        "hunk_percent": 21.5,
+        "addition_percent": 14.5,
+        "changed_line_percent": 13.9,
+        "code_addition_percent": 14.5,
+        "code_changed_line_percent": 13.4,
+        "name": "框架语义/执行适配"
+      },
+      "NONFUNCTIONAL": {
+        "hunks": 9,
+        "additions": 19,
+        "deletions": 14,
+        "changed_lines": 33,
+        "code_additions": 6,
+        "code_deletions": 9,
+        "code_changed_lines": 15,
+        "hunk_percent": 13.8,
+        "addition_percent": 3.1,
+        "changed_line_percent": 2.9,
+        "code_addition_percent": 1.5,
+        "code_changed_line_percent": 1.9,
+        "name": "非功能性改动"
+      },
+      "REIMPLEMENT": {
+        "hunks": 5,
+        "additions": 368,
+        "deletions": 33,
+        "changed_lines": 401,
+        "code_additions": 245,
+        "code_deletions": 32,
+        "code_changed_lines": 277,
+        "hunk_percent": 7.7,
+        "addition_percent": 59.2,
+        "changed_line_percent": 35.7,
+        "code_addition_percent": 61.1,
+        "code_changed_line_percent": 34.3,
+        "name": "缺失依赖/能力重实现"
+      }
+    }
+  },
+  "functional_hunks": {
+    "totals": {
+      "hunks": 56,
+      "additions": 603,
+      "deletions": 486,
+      "changed_lines": 1089,
+      "code_additions": 395,
+      "code_deletions": 397,
+      "code_changed_lines": 792
+    },
+    "categories": {
+      "ENGINEERING": {
+        "hunks": 11,
+        "additions": 45,
+        "deletions": 327,
+        "changed_lines": 372,
+        "code_additions": 41,
+        "code_deletions": 260,
+        "code_changed_lines": 301,
+        "hunk_percent": 19.6,
+        "addition_percent": 7.5,
+        "changed_line_percent": 34.2,
+        "code_addition_percent": 10.4,
+        "code_changed_line_percent": 38.0,
+        "name": "工程、数据、权重与协议适配"
+      },
+      "API": {
+        "hunks": 26,
+        "additions": 100,
+        "deletions": 60,
+        "changed_lines": 160,
+        "code_additions": 51,
+        "code_deletions": 55,
+        "code_changed_lines": 106,
+        "hunk_percent": 46.4,
+        "addition_percent": 16.6,
+        "changed_line_percent": 14.7,
+        "code_addition_percent": 12.9,
+        "code_changed_line_percent": 13.4,
+        "name": "直接 API 映射"
+      },
+      "SEMANTIC": {
+        "hunks": 14,
+        "additions": 90,
+        "deletions": 66,
+        "changed_lines": 156,
+        "code_additions": 58,
+        "code_deletions": 50,
+        "code_changed_lines": 108,
+        "hunk_percent": 25.0,
+        "addition_percent": 14.9,
+        "changed_line_percent": 14.3,
+        "code_addition_percent": 14.7,
+        "code_changed_line_percent": 13.6,
+        "name": "框架语义/执行适配"
+      },
+      "REIMPLEMENT": {
+        "hunks": 5,
+        "additions": 368,
+        "deletions": 33,
+        "changed_lines": 401,
+        "code_additions": 245,
+        "code_deletions": 32,
+        "code_changed_lines": 277,
+        "hunk_percent": 8.9,
+        "addition_percent": 61.0,
+        "changed_line_percent": 36.8,
+        "code_addition_percent": 62.0,
+        "code_changed_line_percent": 35.0,
+        "name": "缺失依赖/能力重实现"
+      }
+    }
+  },
+  "functional_hunks_excluding_scope_only": {
+    "totals": {
+      "hunks": 52,
+      "additions": 600,
+      "deletions": 245,
+      "changed_lines": 845,
+      "code_additions": 392,
+      "code_deletions": 206,
+      "code_changed_lines": 598
+    },
+    "categories": {
+      "API": {
+        "hunks": 26,
+        "additions": 100,
+        "deletions": 60,
+        "changed_lines": 160,
+        "code_additions": 51,
+        "code_deletions": 55,
+        "code_changed_lines": 106,
+        "hunk_percent": 50.0,
+        "addition_percent": 16.7,
+        "changed_line_percent": 18.9,
+        "code_addition_percent": 13.0,
+        "code_changed_line_percent": 17.7,
+        "name": "直接 API 映射"
+      },
+      "SEMANTIC": {
+        "hunks": 14,
+        "additions": 90,
+        "deletions": 66,
+        "changed_lines": 156,
+        "code_additions": 58,
+        "code_deletions": 50,
+        "code_changed_lines": 108,
+        "hunk_percent": 26.9,
+        "addition_percent": 15.0,
+        "changed_line_percent": 18.5,
+        "code_addition_percent": 14.8,
+        "code_changed_line_percent": 18.1,
+        "name": "框架语义/执行适配"
+      },
+      "ENGINEERING": {
+        "hunks": 7,
+        "additions": 42,
+        "deletions": 86,
+        "changed_lines": 128,
+        "code_additions": 38,
+        "code_deletions": 69,
+        "code_changed_lines": 107,
+        "hunk_percent": 13.5,
+        "addition_percent": 7.0,
+        "changed_line_percent": 15.1,
+        "code_addition_percent": 9.7,
+        "code_changed_line_percent": 17.9,
+        "name": "工程、数据、权重与协议适配"
+      },
+      "REIMPLEMENT": {
+        "hunks": 5,
+        "additions": 368,
+        "deletions": 33,
+        "changed_lines": 401,
+        "code_additions": 245,
+        "code_deletions": 32,
+        "code_changed_lines": 277,
+        "hunk_percent": 9.6,
+        "addition_percent": 61.3,
+        "changed_line_percent": 47.5,
+        "code_addition_percent": 62.5,
+        "code_changed_line_percent": 46.3,
+        "name": "缺失依赖/能力重实现"
+      }
+    }
+  }
+}

@@ -295,7 +295,11 @@ def test_ensure_weights_skips_upload_on_cache_hit(
 ) -> None:
     runner = _load_runner(monkeypatch, tmp_path, {"TP_REMOTE_ROOT": "/remote/root"})
     commands: list[str] = []
-    monkeypatch.setattr(runner, "_run", lambda client, command, timeout=0: (commands.append(command), (0, "", ""))[1])
+    monkeypatch.setattr(
+        runner.transport,
+        "run",
+        lambda client, command, timeout=0: (commands.append(command), (0, "", ""))[1],
+    )
 
     class NoSftp:
         def open_sftp(self) -> None:

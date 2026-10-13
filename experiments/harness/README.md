@@ -13,6 +13,20 @@ counts the cost of obtaining that evidence.
 
 All conditions use the same TorchPort evaluator. Only the response shown to the Agent changes.
 
+## Code layout
+
+- `gateway.py` owns one trial's state, budgets, tool dispatch, event log, and final certification.
+- `tooling.py`, `workspace.py`, and `feedback.py` define the tool contract, repository boundary,
+  and the three feedback projections independently of provider code.
+- `agents/` contains provider and research adapters; adding a general-purpose Agent should require
+  an adapter here, not another evaluator or file-access implementation.
+- `orchestration/` validates and freezes manifests, creates isolated attempts, and resumes or retries
+  infrastructure failures.
+- `reporting/` reads frozen evidence to aggregate outcomes or measure already-correct candidates.
+
+The old `deepseek.py`, `aggregate.py`, and `performance.py` module paths remain executable
+compatibility entry points. New code should import their implementations from the subpackages above.
+
 The diagnostic allowlist excludes module, file, line, operator, tensor name, first divergence,
 `summary`, `problems`, and `next`. Localized feedback adds scope, invocation, operator, first
 divergence, available input/output evidence, and error jump.

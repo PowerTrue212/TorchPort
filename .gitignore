@@ -85,3 +85,21 @@ CamoFormer/env.sh
 
 # 运行期进程号文件。
 *.pid
+
+# Held-out COD 迁移候选源码、权重和运行产物保存在本地。
+heldout/
+experiments/p2/heldout-v1/workspaces/*
+!experiments/p2/heldout-v1/workspaces/README.md
+experiments/p2/heldout-v1/results/plantcamo-full-r1/
+experiments/p2/heldout-v1/results/vscode-v2-none-r1/
+experiments/p2/heldout-v1/results/vscode-v2-full-r0/*.jsonl
+
+# CamoFormer 下载数据和 checkpoint 体积较大，由实验说明记录来源与摘要。
+CamoFormer/data/
+CamoFormer/checkpoint/
+
+# 历史 RAFT V4 Flash 工作区包含源码副本、权重、trace 和运行产物，只保留在本机。
+RAFT_DSH_V4_FLASH/
+
+# 仓库根不是 Node 项目；该空 lockfile 可能由误在根目录执行 npm 产生。
+/package-lock.json

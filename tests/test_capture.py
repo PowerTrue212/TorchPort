@@ -30,8 +30,8 @@ from torchport.verify import judge
 def _identity_patches(module, names):
     return (
         patch.object(OpTrace, "_modules", return_value=[(module, names)]),
-        patch("torchport.capture.find_tensor", side_effect=lambda value, _kind: value),
-        patch("torchport.capture.to_array", side_effect=lambda value, _kind: np.asarray(value)),
+        patch("torchport.capture.tracing.find_tensor", side_effect=lambda value, _kind: value),
+        patch("torchport.capture.tracing.to_array", side_effect=lambda value, _kind: np.asarray(value)),
     )
 
 
@@ -100,11 +100,11 @@ class ModuleInputTests(unittest.TestCase):
         value = ((tensor, 4), {"mask": tensor, "enabled": True})
 
         with (
-            patch("torchport.capture._tensor_type", return_value=Tensor),
-            patch("torchport.capture._to_numpy", side_effect=lambda item, _kind: item.numpy()),
+            patch("torchport.capture.model._tensor_type", return_value=Tensor),
+            patch("torchport.capture.model._to_numpy", side_effect=lambda item, _kind: item.numpy()),
         ):
             encoded = _encode_call_value(value, "source", arrays, identities)
-        with patch("torchport.capture._from_numpy", side_effect=lambda item, _kind: Tensor(item)):
+        with patch("torchport.capture.model._from_numpy", side_effect=lambda item, _kind: Tensor(item)):
             decoded = _decode_call_value(encoded, arrays, "target")
 
         self.assertEqual(len(arrays), 1)
@@ -180,7 +180,7 @@ class StateTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             path = self._save(Path(directory))
             target = Model({"w": Tensor(np.zeros((2, 2), dtype=np.float32))})
-            with patch("torchport.capture._to_numpy", side_effect=lambda t, _k: t.numpy()):
+            with patch("torchport.capture.model._to_numpy", side_effect=lambda t, _k: t.numpy()):
                 state = load_state(target, path)
         self.assertEqual(state["loaded"], 1)
         self.assertEqual(state["value_mismatch"], [])
@@ -192,7 +192,7 @@ class StateTests(unittest.TestCase):
             fake_torch = SimpleNamespace(from_numpy=lambda value: value)
             with (
                 patch.dict(sys.modules, {"torch": fake_torch}),
-                patch("torchport.capture._to_numpy", side_effect=lambda t, _k: t.numpy()),
+                patch("torchport.capture.model._to_numpy", side_effect=lambda t, _k: t.numpy()),
             ):
                 state = load_state(source, path, kind="source")
 
@@ -203,7 +203,7 @@ class StateTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             path = self._save(Path(directory))
             target = Model({"w": Tensor(np.zeros((2, 2), dtype=np.float32))}, corrupt=True)
-            with patch("torchport.capture._to_numpy", side_effect=lambda t, _k: t.numpy()):
+            with patch("torchport.capture.model._to_numpy", side_effect=lambda t, _k: t.numpy()):
                 state = load_state(target, path)
         self.assertEqual(state["loaded"], 0)
         self.assertEqual(state["value_mismatch"], ["w"])
@@ -212,7 +212,7 @@ class StateTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             path = self._save(Path(directory))
             target = Model({"w": Tensor(np.zeros((3, 2), dtype=np.float32))})
-            with patch("torchport.capture._to_numpy", side_effect=lambda t, _k: t.numpy()):
+            with patch("torchport.capture.model._to_numpy", side_effect=lambda t, _k: t.numpy()):
                 state = load_state(target, path)
         self.assertEqual(state["loaded"], 0)
         self.assertEqual(state["missing"], ["w"])
@@ -259,24 +259,24 @@ class StateTests(unittest.TestCase):
                 "oracle": str(oracle),
             }
             with (
-                patch("torchport.capture._framework", return_value={}),
-                patch("torchport.capture._check_bridge"),
-                patch("torchport.capture.load_scope", return_value={}),
-                patch("torchport.capture.load_model", return_value=FakeModel()),
+                patch("torchport.capture.runner._framework", return_value={}),
+                patch("torchport.capture.runner._check_bridge"),
+                patch("torchport.capture.runner.load_scope", return_value={}),
+                patch("torchport.capture.runner.load_model", return_value=FakeModel()),
                 patch(
-                    "torchport.capture.load_state",
+                    "torchport.capture.runner.load_state",
                     return_value={"total": 1, "loaded": 1, "missing": [], "value_mismatch": []},
                 ),
-                patch("torchport.capture._from_numpy", side_effect=lambda value, _kind: value),
-                patch("torchport.capture.add_hooks", side_effect=fake_hooks),
-                patch("torchport.capture._call_model", return_value=np.asarray([5.0], dtype=np.float32)),
-                patch("torchport.capture._synchronize"),
+                patch("torchport.capture.runner._from_numpy", side_effect=lambda value, _kind: value),
+                patch("torchport.capture.runner.add_hooks", side_effect=fake_hooks),
+                patch("torchport.capture.runner._call_model", return_value=np.asarray([5.0], dtype=np.float32)),
+                patch("torchport.capture.runner._synchronize"),
                 patch(
-                    "torchport.capture.to_arrays",
+                    "torchport.capture.runner.to_arrays",
                     side_effect=lambda value, _kind, key: {key: np.asarray(value)},
                 ),
                 patch(
-                    "torchport.capture.calibrate_source_modules",
+                    "torchport.capture.runner.calibrate_source_modules",
                     return_value=({}, {}, {}, {"failed": []}),
                 ),
             ):
@@ -311,7 +311,7 @@ class StateTests(unittest.TestCase):
                     "extra": Tensor(np.ones((1,), dtype=np.float32)),
                 }
             )
-            with patch("torchport.capture._to_numpy", side_effect=lambda t, _k: t.numpy()):
+            with patch("torchport.capture.model._to_numpy", side_effect=lambda t, _k: t.numpy()):
                 state = load_state(target, path)
         tensor = {
             "name": "output",

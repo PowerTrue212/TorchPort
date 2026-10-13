@@ -9,6 +9,7 @@ import numpy as np
 
 from experiments.harness.protocol import LOCALIZATION_FIELDS
 from torchport import diagnosis
+from torchport.diagnosis import tracing as diagnosis_tracing
 from torchport.task import normalize
 
 
@@ -89,7 +90,7 @@ class DiagnosisTests(unittest.TestCase):
                     "capture": {"isolated": {"succeeded": 1}} if kind == "target" else {},
                 }
 
-            with patch.object(diagnosis, "run_side", fake_run):
+            with patch.object(diagnosis_tracing, "run_side", fake_run):
                 report = diagnosis.trace(task, root / "evidence", trial="trace-0")
 
             location = diagnosis.localize(report)
@@ -126,7 +127,7 @@ class DiagnosisTests(unittest.TestCase):
                 "artifacts": {},
                 "execution": {"stderr_tail": "warning: noise\ntorchport: [Errno 28] No space left on device"},
             }
-            with patch.object(diagnosis, "run_side", lambda *_a, **_k: failed):
+            with patch.object(diagnosis_tracing, "run_side", lambda *_a, **_k: failed):
                 report = diagnosis.trace(task, root / "evidence", trial="trace-0")
             location = diagnosis.localize(report)
 
@@ -194,11 +195,11 @@ class DiagnosisTests(unittest.TestCase):
 
             with (
                 patch.object(
-                    diagnosis,
+                    diagnosis_tracing,
                     "build_oracle",
                     return_value={"ok": True, "dir": str(frozen), "physical_cost": {}},
                 ),
-                patch.object(diagnosis, "run_side", fake_run),
+                patch.object(diagnosis_tracing, "run_side", fake_run),
             ):
                 diagnosis.trace(task, evidence, trial="t0")
 
@@ -219,8 +220,8 @@ class DiagnosisTests(unittest.TestCase):
             task = _task(root / "repos")
             never = lambda *_a, **_k: (_ for _ in ()).throw(AssertionError("must not run"))  # noqa: E731
             with (
-                patch.object(diagnosis.shutil, "disk_usage", lambda _p: usage(10, 9, 1024)),
-                patch.object(diagnosis, "run_side", never),
+                patch.object(diagnosis_tracing.shutil, "disk_usage", lambda _p: usage(10, 9, 1024)),
+                patch.object(diagnosis_tracing, "run_side", never),
             ):
                 report = diagnosis.trace(task, root / "evidence", trial="t0")
             location = diagnosis.localize(report)

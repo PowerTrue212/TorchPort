@@ -1,0 +1,42 @@
+{
+  "custom_operator_files": [
+    "alt_cuda_corr/correlation.cpp",
+    "alt_cuda_corr/correlation_kernel.cu"
+  ],
+  "dependency_files": [
+    "alt_cuda_corr/setup.py"
+  ],
+  "entrypoints": [
+    "demo.py",
+    "evaluate.py",
+    "train.py"
+  ],
+  "framework_signals": {
+    "pytorch": 11
+  },
+  "frameworks": [
+    "pytorch"
+  ],
+  "risks": [
+    "检测到 C++、CUDA 或动态库文件，需要自定义算子语义分析。"
+  ],
+  "root": "data-fs://RAFT/source/princeton-vl-raft",
+  "source_files": [
+    "alt_cuda_corr/setup.py",
+    "core/__init__.py",
+    "core/corr.py",
+    "core/datasets.py",
+    "core/extractor.py",
+    "core/raft.py",
+    "core/update.py",
+    "core/utils/__init__.py",
+    "core/utils/augmentor.py",
+    "core/utils/flow_viz.py",
+    "core/utils/frame_utils.py",
+    "core/utils/utils.py",
+    "demo.py",
+    "evaluate.py",
+    "train.py"
+  ],
+  "weight_files": []
+}

@@ -12,6 +12,7 @@ import numpy as np
 
 from torchport import oracle as harness
 from torchport.task import normalize, tree_hash
+from torchport.verification import runner as verification_runner
 
 
 def _task(base: Path, repeats: int = 3, target: str = "target") -> dict:
@@ -75,7 +76,7 @@ class FakeExec:
 
 class HarnessTests(unittest.TestCase):
     def _verify(self, fake: FakeExec, repeats: int = 3) -> dict:
-        with tempfile.TemporaryDirectory() as tmp, patch.object(harness, "execute", fake):
+        with tempfile.TemporaryDirectory() as tmp, patch.object(verification_runner, "execute", fake):
             root = Path(tmp)
             return harness.verify(_task(root / "repos", repeats), root / "harness")
 
@@ -113,9 +114,9 @@ class HarnessTests(unittest.TestCase):
             root = Path(tmp)
             task = _task(root / "repos", 1)
             harness_root = root / "harness"
-            with patch.object(harness, "execute", FakeExec()):
+            with patch.object(verification_runner, "execute", FakeExec()):
                 self.assertTrue(harness.verify(task, harness_root)["passed"])
-            with patch.object(harness, "execute", FakeExec(crash=True)):
+            with patch.object(verification_runner, "execute", FakeExec(crash=True)):
                 report = harness.verify(task, harness_root, trial="t1")
             self.assertFalse(report["passed"])
 
@@ -125,7 +126,7 @@ class HarnessTests(unittest.TestCase):
             task = _task(root / "repos", 1)
             harness_root = root / "harness"
             fake = FakeExec()
-            with patch.object(harness, "execute", fake):
+            with patch.object(verification_runner, "execute", fake):
                 first = harness.build_oracle(task, harness_root)
                 harness.build_oracle(task, harness_root)
             self.assertEqual(fake.calls["source"], 1)
@@ -133,7 +134,7 @@ class HarnessTests(unittest.TestCase):
             self.assertEqual(harness.load_oracle(task, harness_root)["reason"], "ORACLE_INVALID")
 
     def test_source_edit_rebuilds_oracle(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp, patch.object(harness, "execute", FakeExec()) as run:
+        with tempfile.TemporaryDirectory() as tmp, patch.object(verification_runner, "execute", FakeExec()) as run:
             root = Path(tmp)
             repos, harness_root = root / "repos", root / "harness"
             before = _task(repos, 1)
@@ -155,7 +156,7 @@ class HarnessTests(unittest.TestCase):
         self.assertFalse(harness.evaluate(meta, {}, task["protocol"])["passed"])
 
     def test_identity_mismatch_rejected(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp, patch.object(harness, "execute", FakeExec()):
+        with tempfile.TemporaryDirectory() as tmp, patch.object(verification_runner, "execute", FakeExec()):
             root = Path(tmp)
             task = _task(root / "repos", 1)
             harness_root = root / "harness"
@@ -166,7 +167,7 @@ class HarnessTests(unittest.TestCase):
                 harness.evaluate(meta, run, task["protocol"])
 
     def test_different_target_cannot_reuse_candidate_artifact(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp, patch.object(harness, "execute", FakeExec()):
+        with tempfile.TemporaryDirectory() as tmp, patch.object(verification_runner, "execute", FakeExec()):
             root = Path(tmp)
             repos, harness_root = root / "repos", root / "harness"
             first_task = _task(repos, 1, "target-a")
@@ -202,8 +203,8 @@ class HarnessTests(unittest.TestCase):
         self.assertEqual(before, after)
 
     def test_trials_use_separate_caches(self) -> None:
-        a = harness._cache(Path("r"), "t0", "target", None)
-        b = harness._cache(Path("r"), "t1", "target", None)
+        a = verification_runner._cache(Path("r"), "t0", "target", None)
+        b = verification_runner._cache(Path("r"), "t1", "target", None)
         self.assertNotEqual(a, b)
 
 

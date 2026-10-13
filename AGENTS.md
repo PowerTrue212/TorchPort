@@ -153,7 +153,7 @@ CamoFormer 候选已经可以完整运行，参数与结构检查通过，但冻
 5. hidden task、oracle 和 evaluator secret 不能进入 Agent 可见工作区。
 6. 不把随机初始化前向对齐写成真实数据集任务效果；任务级成功需要真实 checkpoint 和数据集指标。
 7. 不把首次越过容差的位置写成已经确认的根因。
-8. 新功能优先组合现有 `task/execution/capture/oracle/parity/verify/diagnosis`，不要建立第二套执行器、
+8. 新功能优先组合现有 `contracts/runtime/capture/comparison/verification/diagnosis`，不要建立第二套执行器、
    比较器或成功判定。
 
 ## 关键目录

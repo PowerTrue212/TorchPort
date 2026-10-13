@@ -1,0 +1,864 @@
+{
+  "rule": {
+    "source": "src/torchport/parity.py::compare_noise_calibrated",
+    "definition": "per-module tensor: noise = max(err(source,fp64), err(source,alt)); pass iff err(target,fp64) <= k*noise + atol_floor for BOTH max_abs and p99; ALL modules gate (not leaf-only); default k=8, atol_floor=1e-7.",
+    "k_used_in_this_report": 8.0,
+    "note": "本报告的全部数字都用 k=8、全模块 gating 重新计算，不信任源 JSON 里存的 k（多数文件存的是探索期 k=4）或 gating（早期 3080 Ti 文件的 gating 字段只标记叶子模块）。"
+  },
+  "data_sources": {
+    "3080 Ti": {
+      "correct_random": "CamoFormer\\outputs\\dsh-web-camoformer\\probe\\trace-module-isolation-calibrated-r3.json",
+      "correct_encoder_ckpt": "CamoFormer\\outputs\\dsh-web-camoformer\\probe\\trace-encoder-ckpt-r1.json",
+      "source_repeat": "CamoFormer\\outputs\\dsh-web-camoformer\\probe\\trace-source-repeat-r1.json",
+      "convopt0": "CamoFormer\\outputs\\dsh-web-camoformer\\probe\\trace-convopt0-r1.json",
+      "mut_ln_eps": "CamoFormer\\outputs\\dsh-web-camoformer\\probe\\negctl\\trace-ln_eps.json",
+      "mut_mask_residual": "CamoFormer\\outputs\\dsh-web-camoformer\\probe\\negctl\\trace-mask_residual.json",
+      "mut_gelu_tanh": "CamoFormer\\outputs\\dsh-web-camoformer\\probe\\negctl\\trace-gelu_tanh.json",
+      "mut_l2_eps": "CamoFormer\\outputs\\dsh-web-camoformer\\probe\\negctl\\trace-l2_eps.json"
+    },
+    "V100": {
+      "correct_random": "CamoFormer\\outputs\\dsh-web-camoformer\\probe\\trace-v100-baseline-r6.json",
+      "mut_ln_eps": "CamoFormer\\outputs\\dsh-web-camoformer\\probe\\negctl\\trace-v100-ln_eps.json",
+      "mut_mask_residual": "CamoFormer\\outputs\\dsh-web-camoformer\\probe\\negctl\\trace-v100-mask_residual.json",
+      "mut_gelu_tanh": "CamoFormer\\outputs\\dsh-web-camoformer\\probe\\negctl\\trace-v100-gelu_tanh.json",
+      "mut_l2_eps": "CamoFormer\\outputs\\dsh-web-camoformer\\probe\\negctl\\trace-v100-l2_eps.json"
+    }
+  },
+  "fig_a_ratio_distribution": {
+    "rows": [
+      {
+        "gpu": "3080 Ti",
+        "run": "correct_random",
+        "max_ratio_k8_allmodule": 1.8362836647902712,
+        "n_failed_k8_allmodule": 0,
+        "passed_k8_allmodule": true
+      },
+      {
+        "gpu": "3080 Ti",
+        "run": "correct_encoder_ckpt",
+        "max_ratio_k8_allmodule": 3.8940492509130076,
+        "n_failed_k8_allmodule": 0,
+        "passed_k8_allmodule": true
+      },
+      {
+        "gpu": "3080 Ti",
+        "run": "source_repeat",
+        "max_ratio_k8_allmodule": 1.8362836647902712,
+        "n_failed_k8_allmodule": 0,
+        "passed_k8_allmodule": true
+      },
+      {
+        "gpu": "3080 Ti",
+        "run": "convopt0",
+        "max_ratio_k8_allmodule": 248.286171061201,
+        "n_failed_k8_allmodule": 12,
+        "passed_k8_allmodule": false
+      },
+      {
+        "gpu": "3080 Ti",
+        "run": "mut_ln_eps",
+        "max_ratio_k8_allmodule": 26.975331696986782,
+        "n_failed_k8_allmodule": 12,
+        "passed_k8_allmodule": false
+      },
+      {
+        "gpu": "3080 Ti",
+        "run": "mut_mask_residual",
+        "max_ratio_k8_allmodule": 23119907.908561934,
+        "n_failed_k8_allmodule": 20,
+        "passed_k8_allmodule": false
+      },
+      {
+        "gpu": "3080 Ti",
+        "run": "mut_gelu_tanh",
+        "max_ratio_k8_allmodule": 264.92400182799696,
+        "n_failed_k8_allmodule": 35,
+        "passed_k8_allmodule": false
+      },
+      {
+        "gpu": "3080 Ti",
+        "run": "mut_l2_eps",
+        "max_ratio_k8_allmodule": 1.8362836647902712,
+        "n_failed_k8_allmodule": 0,
+        "passed_k8_allmodule": true
+      },
+      {
+        "gpu": "V100",
+        "run": "correct_random",
+        "max_ratio_k8_allmodule": 3.1668911718252697,
+        "n_failed_k8_allmodule": 0,
+        "passed_k8_allmodule": true
+      },
+      {
+        "gpu": "V100",
+        "run": "mut_ln_eps",
+        "max_ratio_k8_allmodule": 25.974044659233204,
+        "n_failed_k8_allmodule": 15,
+        "passed_k8_allmodule": false
+      },
+      {
+        "gpu": "V100",
+        "run": "mut_mask_residual",
+        "max_ratio_k8_allmodule": 22872965.035835046,
+        "n_failed_k8_allmodule": 20,
+        "passed_k8_allmodule": false
+      },
+      {
+        "gpu": "V100",
+        "run": "mut_gelu_tanh",
+        "max_ratio_k8_allmodule": 692.6951241599483,
+        "n_failed_k8_allmodule": 26,
+        "passed_k8_allmodule": false
+      },
+      {
+        "gpu": "V100",
+        "run": "mut_l2_eps",
+        "max_ratio_k8_allmodule": 3.226055356525243,
+        "n_failed_k8_allmodule": 0,
+        "passed_k8_allmodule": true
+      }
+    ]
+  },
+  "fig_b_verdict_matrix": {
+    "rows": [
+      {
+        "gpu": "3080 Ti",
+        "run": "correct_random",
+        "isolated_operator_strict_passed": false,
+        "output_fp32_inference_passed": false,
+        "noise_calibrated_k8_passed": true,
+        "output_mismatched_elements": 574,
+        "output_compared_elements": 131072
+      },
+      {
+        "gpu": "3080 Ti",
+        "run": "correct_encoder_ckpt",
+        "isolated_operator_strict_passed": false,
+        "output_fp32_inference_passed": false,
+        "noise_calibrated_k8_passed": true,
+        "output_mismatched_elements": 38,
+        "output_compared_elements": 131072
+      },
+      {
+        "gpu": "3080 Ti",
+        "run": "source_repeat",
+        "isolated_operator_strict_passed": false,
+        "output_fp32_inference_passed": false,
+        "noise_calibrated_k8_passed": true,
+        "output_mismatched_elements": 575,
+        "output_compared_elements": 131072
+      },
+      {
+        "gpu": "3080 Ti",
+        "run": "convopt0",
+        "isolated_operator_strict_passed": false,
+        "output_fp32_inference_passed": false,
+        "noise_calibrated_k8_passed": false,
+        "output_mismatched_elements": 57050,
+        "output_compared_elements": 131072
+      },
+      {
+        "gpu": "3080 Ti",
+        "run": "mut_ln_eps",
+        "isolated_operator_strict_passed": false,
+        "output_fp32_inference_passed": false,
+        "noise_calibrated_k8_passed": false,
+        "output_mismatched_elements": 535,
+        "output_compared_elements": 131072
+      },
+      {
+        "gpu": "3080 Ti",
+        "run": "mut_mask_residual",
+        "isolated_operator_strict_passed": false,
+        "output_fp32_inference_passed": false,
+        "noise_calibrated_k8_passed": false,
+        "output_mismatched_elements": 65534,
+        "output_compared_elements": 131072
+      },
+      {
+        "gpu": "3080 Ti",
+        "run": "mut_gelu_tanh",
+        "isolated_operator_strict_passed": false,
+        "output_fp32_inference_passed": false,
+        "noise_calibrated_k8_passed": false,
+        "output_mismatched_elements": 28231,
+        "output_compared_elements": 131072
+      },
+      {
+        "gpu": "3080 Ti",
+        "run": "mut_l2_eps",
+        "isolated_operator_strict_passed": false,
+        "output_fp32_inference_passed": false,
+        "noise_calibrated_k8_passed": true,
+        "output_mismatched_elements": 569,
+        "output_compared_elements": 131072
+      },
+      {
+        "gpu": "V100",
+        "run": "correct_random",
+        "isolated_operator_strict_passed": false,
+        "output_fp32_inference_passed": false,
+        "noise_calibrated_k8_passed": true,
+        "output_mismatched_elements": 66359,
+        "output_compared_elements": 131072
+      },
+      {
+        "gpu": "V100",
+        "run": "mut_ln_eps",
+        "isolated_operator_strict_passed": false,
+        "output_fp32_inference_passed": false,
+        "noise_calibrated_k8_passed": false,
+        "output_mismatched_elements": 66325,
+        "output_compared_elements": 131072
+      },
+      {
+        "gpu": "V100",
+        "run": "mut_mask_residual",
+        "isolated_operator_strict_passed": false,
+        "output_fp32_inference_passed": false,
+        "noise_calibrated_k8_passed": false,
+        "output_mismatched_elements": 74534,
+        "output_compared_elements": 131072
+      },
+      {
+        "gpu": "V100",
+        "run": "mut_gelu_tanh",
+        "isolated_operator_strict_passed": false,
+        "output_fp32_inference_passed": false,
+        "noise_calibrated_k8_passed": false,
+        "output_mismatched_elements": 65428,
+        "output_compared_elements": 131072
+      },
+      {
+        "gpu": "V100",
+        "run": "mut_l2_eps",
+        "isolated_operator_strict_passed": false,
+        "output_fp32_inference_passed": false,
+        "noise_calibrated_k8_passed": true,
+        "output_mismatched_elements": 66373,
+        "output_compared_elements": 131072
+      }
+    ],
+    "ln_eps_vs_correct_wholenet_output_mismatch": {
+      "ln_eps_mismatched_elements": 535,
+      "l2_eps_mismatched_elements": 569,
+      "correct_random_mismatched_elements": 574,
+      "note": "整网 fp32-inference 固定容差下三者失败元素数接近（ln_eps=535，l2_eps=569，correct_random=574，out of 131072），说明固定容差不能可靠区分 ln_eps 这个有效 mutation 和干净基线；需要用 noise-calibrated 的 ratio（ln_eps≈27 vs correct≤3.9）才能分开。"
+    }
+  },
+  "fig_c_leaf_vs_allmodule": {
+    "leaf_only": {
+      "n_tensors": 135,
+      "max_ratio": 1.8362836647902712,
+      "n_failed_k8": 0,
+      "failed_names": []
+    },
+    "all_module": {
+      "n_tensors": 271,
+      "max_ratio": 23119907.908561934,
+      "n_failed_k8": 20,
+      "failed_names": [
+        "model.decoder.MSA5.F_TA",
+        "model.decoder.MSA5.B_TA",
+        "model.decoder.MSA5",
+        "model.decoder.MSA4.F_TA",
+        "model.decoder.MSA4.B_TA",
+        "model.decoder.MSA4",
+        "model.decoder.MSA3.F_TA",
+        "model.decoder.MSA3.B_TA",
+        "model.decoder.MSA3",
+        "model.decoder.MSA2.F_TA",
+        "model.decoder.MSA2.B_TA",
+        "model.decoder.MSA2",
+        "model.decoder.1",
+        "model.decoder.2",
+        "model.decoder.3",
+        "model.decoder.4",
+        "model.1",
+        "model.2",
+        "model.3",
+        "model.4"
+      ]
+    },
+    "non_leaf_only": {
+      "n_tensors": 136,
+      "max_ratio": 23119907.908561934,
+      "failed_names": [
+        "model.decoder.MSA5.F_TA",
+        "model.decoder.MSA5.B_TA",
+        "model.decoder.MSA5",
+        "model.decoder.MSA4.F_TA",
+        "model.decoder.MSA4.B_TA",
+        "model.decoder.MSA4",
+        "model.decoder.MSA3.F_TA",
+        "model.decoder.MSA3.B_TA",
+        "model.decoder.MSA3",
+        "model.decoder.MSA2.F_TA",
+        "model.decoder.MSA2.B_TA",
+        "model.decoder.MSA2",
+        "model.decoder.1",
+        "model.decoder.2",
+        "model.decoder.3",
+        "model.decoder.4",
+        "model.1",
+        "model.2",
+        "model.3",
+        "model.4"
+      ]
+    }
+  },
+  "fig_d_ratio_vs_depth": {
+    "correct_random (random weights, correct)": {
+      "n": 271,
+      "max_ratio": 1.8362836647902712
+    },
+    "correct_encoder_ckpt (real PVTv2 encoder, correct)": {
+      "n": 271,
+      "max_ratio": 3.8940492509130076
+    },
+    "mut_ln_eps (effective negative control)": {
+      "n": 271,
+      "max_ratio": 26.975331696986782
+    }
+  },
+  "fig_e_repeatability": {
+    "rows": [
+      {
+        "gpu": "3080 Ti",
+        "run": "correct_encoder_ckpt",
+        "target_mismatched_elements": 34491,
+        "target_max_abs": 0.00018787384033203125,
+        "target_compared_elements": 12939264
+      },
+      {
+        "gpu": "3080 Ti",
+        "run": "source_repeat",
+        "source_mismatched_elements": 0,
+        "source_max_abs": 0.0,
+        "target_mismatched_elements": 20975,
+        "target_max_abs": 0.0038299560546875,
+        "target_compared_elements": 12939264
+      },
+      {
+        "gpu": "3080 Ti",
+        "run": "convopt0",
+        "source_mismatched_elements": 0,
+        "source_max_abs": 0.0,
+        "target_mismatched_elements": 72158,
+        "target_max_abs": 0.116912841796875,
+        "target_compared_elements": 12939264
+      },
+      {
+        "gpu": "3080 Ti",
+        "run": "mut_ln_eps",
+        "target_mismatched_elements": 21216,
+        "target_max_abs": 0.004364013671875,
+        "target_compared_elements": 12939264
+      },
+      {
+        "gpu": "3080 Ti",
+        "run": "mut_mask_residual",
+        "target_mismatched_elements": 33337,
+        "target_max_abs": 0.01201629638671875,
+        "target_compared_elements": 12939264
+      },
+      {
+        "gpu": "3080 Ti",
+        "run": "mut_gelu_tanh",
+        "target_mismatched_elements": 21362,
+        "target_max_abs": 0.005279541015625,
+        "target_compared_elements": 12939264
+      },
+      {
+        "gpu": "3080 Ti",
+        "run": "mut_l2_eps",
+        "target_mismatched_elements": 20883,
+        "target_max_abs": 0.00421142578125,
+        "target_compared_elements": 12939264
+      },
+      {
+        "gpu": "V100",
+        "run": "correct_random",
+        "source_mismatched_elements": 0,
+        "source_max_abs": 0.0,
+        "target_mismatched_elements": 13399,
+        "target_max_abs": 0.0036773681640625,
+        "target_compared_elements": 12939264
+      },
+      {
+        "gpu": "V100",
+        "run": "mut_ln_eps",
+        "source_mismatched_elements": 0,
+        "source_max_abs": 0.0,
+        "target_mismatched_elements": 14439,
+        "target_max_abs": 0.00433349609375,
+        "target_compared_elements": 12939264
+      },
+      {
+        "gpu": "V100",
+        "run": "mut_mask_residual",
+        "source_mismatched_elements": 0,
+        "source_max_abs": 0.0,
+        "target_mismatched_elements": 22887,
+        "target_max_abs": 0.015411376953125,
+        "target_compared_elements": 12939264
+      },
+      {
+        "gpu": "V100",
+        "run": "mut_gelu_tanh",
+        "source_mismatched_elements": 0,
+        "source_max_abs": 0.0,
+        "target_mismatched_elements": 14837,
+        "target_max_abs": 0.0030517578125,
+        "target_compared_elements": 12939264
+      },
+      {
+        "gpu": "V100",
+        "run": "mut_l2_eps",
+        "source_mismatched_elements": 0,
+        "source_max_abs": 0.0,
+        "target_mismatched_elements": 14555,
+        "target_max_abs": 0.00518035888671875,
+        "target_compared_elements": 12939264
+      }
+    ]
+  },
+  "fig_f_task_level": {
+    "datasets": [
+      "CAMO",
+      "CHAMELEON",
+      "COD10K",
+      "NC4K"
+    ],
+    "per_dataset": {
+      "CAMO": {
+        "fraction_pixels_differing": 0.0002757310235959727,
+        "mean_absolute_difference_0_255": 0.0002757310235959727,
+        "image_count": 250,
+        "metric_deltas": {
+          "mae": 6.39957969950089e-09,
+          "mean_e": 2.7105022115669897e-08,
+          "s_measure": 7.776400978709574e-08,
+          "weighted_f": 6.189243939580535e-08
+        }
+      },
+      "CHAMELEON": {
+        "fraction_pixels_differing": 0.0001793884900144491,
+        "mean_absolute_difference_0_255": 0.0001793884900144491,
+        "image_count": 76,
+        "metric_deltas": {
+          "mae": 7.139892659741021e-09,
+          "mean_e": 1.0183421506049228e-07,
+          "s_measure": 8.6684183830954e-08,
+          "weighted_f": 7.599704254790396e-08
+        }
+      },
+      "COD10K": {
+        "fraction_pixels_differing": 0.0001506177470326339,
+        "mean_absolute_difference_0_255": 0.0001506177470326339,
+        "image_count": 2026,
+        "metric_deltas": {
+          "mae": 3.684277119497814e-10,
+          "mean_e": 8.012413621472092e-09,
+          "s_measure": 9.380999199670725e-09,
+          "weighted_f": 2.81802027268796e-08
+        }
+      },
+      "NC4K": {
+        "fraction_pixels_differing": 0.00018556052709071036,
+        "mean_absolute_difference_0_255": 0.00018556052709071036,
+        "image_count": 4121,
+        "metric_deltas": {
+          "mae": 9.82738532218086e-09,
+          "mean_e": 4.7001738279206506e-08,
+          "s_measure": 4.933075470336945e-08,
+          "weighted_f": 7.502091736721894e-08
+        }
+      }
+    },
+    "per_image_fraction_stats": {
+      "n_images": 6473,
+      "min": 0.0,
+      "max": 0.0016718106995884773,
+      "mean": 0.00017871509786443628,
+      "median": 0.00012813370473537604
+    }
+  },
+  "fig_g_margin": {
+    "correct_ratios": [
+      [
+        "3080 Ti/correct_random",
+        1.8362836647902712
+      ],
+      [
+        "3080 Ti/correct_encoder_ckpt",
+        3.8940492509130076
+      ],
+      [
+        "V100/correct_random",
+        3.1668911718252697
+      ]
+    ],
+    "effective_mutant_ratios": [
+      [
+        "3080 Ti/mut_ln_eps",
+        26.975331696986782
+      ],
+      [
+        "3080 Ti/mut_mask_residual",
+        23119907.908561934
+      ],
+      [
+        "3080 Ti/mut_gelu_tanh",
+        264.92400182799696
+      ],
+      [
+        "V100/mut_ln_eps",
+        25.974044659233204
+      ],
+      [
+        "V100/mut_mask_residual",
+        22872965.035835046
+      ],
+      [
+        "V100/mut_gelu_tanh",
+        692.6951241599483
+      ]
+    ],
+    "max_correct_ratio": 3.8940492509130076,
+    "min_effective_mutant_ratio": 25.974044659233204,
+    "separation_margin_factor": 6.670189046310411,
+    "k_default": 8.0,
+    "k_default_separates": true
+  },
+  "rejudged_table": [
+    {
+      "gpu": "3080 Ti",
+      "run": "correct_random",
+      "max_ratio_k8_allmodule": 1.8362836647902712,
+      "n_failed_k8_allmodule": 0,
+      "n_tensors": 271,
+      "passed_k8_allmodule": true,
+      "failed_names_sample": [],
+      "stored_k_in_file": 4.0,
+      "stored_gating_tensors_in_file": 135,
+      "stored_total_tensors_in_file": 271,
+      "wholenet_output_passed_fp32_inference": false,
+      "wholenet_output_mismatched_elements": 574,
+      "wholenet_output_compared_elements": 131072,
+      "isolated_operator_strict_passed": false,
+      "target_framework": {
+        "cache_path": "/root/autodl-tmp/tp-dsh-web/77ba3e7e1559/evidence/cache/camoformer-source-fp32-trace-r3-trace-target/target-_root_autodl-tmp_jt-env_bin_python/jittor/.cache/jittor/jt1.3.9/g++11.4.0/py3.12.3/Linux-5.4.0-16x25/IntelRXeonRSilx76/c5f1/default/cu12.8.93_sm_86",
+        "device": "cuda",
+        "name": "jittor",
+        "version": "1.3.9.14"
+      }
+    },
+    {
+      "gpu": "3080 Ti",
+      "run": "correct_encoder_ckpt",
+      "max_ratio_k8_allmodule": 3.8940492509130076,
+      "n_failed_k8_allmodule": 0,
+      "n_tensors": 271,
+      "passed_k8_allmodule": true,
+      "failed_names_sample": [],
+      "stored_k_in_file": 4.0,
+      "stored_gating_tensors_in_file": 135,
+      "stored_total_tensors_in_file": 271,
+      "wholenet_output_passed_fp32_inference": false,
+      "wholenet_output_mismatched_elements": 38,
+      "wholenet_output_compared_elements": 131072,
+      "isolated_operator_strict_passed": false,
+      "target_framework": {
+        "cache_path": "/root/autodl-tmp/tp-dsh-web/eef784eff0c3/evidence/cache/camoformer-encoder-ckpt-r1-trace-target/target-_root_autodl-tmp_jt-env_bin_python/jittor/.cache/jittor/jt1.3.9/g++11.4.0/py3.12.3/Linux-5.4.0-16x25/IntelRXeonRSilx76/c5f1/default/cu12.8.93_sm_86",
+        "device": "cuda",
+        "name": "jittor",
+        "version": "1.3.9.14"
+      }
+    },
+    {
+      "gpu": "3080 Ti",
+      "run": "source_repeat",
+      "max_ratio_k8_allmodule": 1.8362836647902712,
+      "n_failed_k8_allmodule": 0,
+      "n_tensors": 271,
+      "passed_k8_allmodule": true,
+      "failed_names_sample": [],
+      "stored_k_in_file": 8.0,
+      "stored_gating_tensors_in_file": 135,
+      "stored_total_tensors_in_file": 271,
+      "wholenet_output_passed_fp32_inference": false,
+      "wholenet_output_mismatched_elements": 575,
+      "wholenet_output_compared_elements": 131072,
+      "isolated_operator_strict_passed": false,
+      "target_framework": {
+        "cache_path": "/root/autodl-tmp/tp-dsh-web/77ba3e7e1559/evidence/cache/camoformer-source-repeat-r1-trace-target/target-_root_autodl-tmp_jt-env_bin_python/jittor/.cache/jittor/jt1.3.9/g++11.4.0/py3.12.3/Linux-5.4.0-16x25/IntelRXeonRSilx76/c5f1/default/cu12.8.93_sm_86",
+        "device": "cuda",
+        "name": "jittor",
+        "version": "1.3.9.14"
+      }
+    },
+    {
+      "gpu": "3080 Ti",
+      "run": "convopt0",
+      "max_ratio_k8_allmodule": 248.286171061201,
+      "n_failed_k8_allmodule": 12,
+      "n_tensors": 271,
+      "passed_k8_allmodule": false,
+      "failed_names_sample": [
+        "model.encoder.patch_embed4.0",
+        "model.encoder.0",
+        "model.decoder.0",
+        "model.decoder.1",
+        "model.decoder.2"
+      ],
+      "stored_k_in_file": 8.0,
+      "stored_gating_tensors_in_file": 135,
+      "stored_total_tensors_in_file": 271,
+      "wholenet_output_passed_fp32_inference": false,
+      "wholenet_output_mismatched_elements": 57050,
+      "wholenet_output_compared_elements": 131072,
+      "isolated_operator_strict_passed": false,
+      "target_framework": {
+        "cache_path": "/root/autodl-tmp/tp-dsh-web/b7a702432fab/evidence/cache/camoformer-convopt0-r1-trace-target/target-_root_autodl-tmp_jt-env_bin_python/jittor/.cache/jittor/jt1.3.9/g++11.4.0/py3.12.3/Linux-5.4.0-16x25/IntelRXeonRSilx76/c5f1/default/cu12.8.93_sm_86",
+        "device": "cuda",
+        "name": "jittor",
+        "version": "1.3.9.14"
+      }
+    },
+    {
+      "gpu": "3080 Ti",
+      "run": "mut_ln_eps",
+      "max_ratio_k8_allmodule": 26.975331696986782,
+      "n_failed_k8_allmodule": 12,
+      "n_tensors": 271,
+      "passed_k8_allmodule": false,
+      "failed_names_sample": [
+        "model.decoder.MSA5.F_TA.norm1.body",
+        "model.decoder.MSA5.F_TA.norm1",
+        "model.decoder.MSA5.F_TA.norm2.body",
+        "model.decoder.MSA5.F_TA.norm2",
+        "model.decoder.MSA5.B_TA.norm1.body"
+      ],
+      "stored_k_in_file": 4.0,
+      "stored_gating_tensors_in_file": 135,
+      "stored_total_tensors_in_file": 271,
+      "wholenet_output_passed_fp32_inference": false,
+      "wholenet_output_mismatched_elements": 535,
+      "wholenet_output_compared_elements": 131072,
+      "isolated_operator_strict_passed": false,
+      "target_framework": {
+        "cache_path": "/root/autodl-tmp/tp-dsh-web/99a29a3cee30/evidence/cache/camoformer-negctl-ln_eps-r1-trace-target/target-_root_autodl-tmp_jt-env_bin_python/jittor/.cache/jittor/jt1.3.9/g++11.4.0/py3.12.3/Linux-5.4.0-16x25/IntelRXeonRSilx76/c5f1/default/cu12.8.93_sm_86",
+        "device": "cuda",
+        "name": "jittor",
+        "version": "1.3.9.14"
+      }
+    },
+    {
+      "gpu": "3080 Ti",
+      "run": "mut_mask_residual",
+      "max_ratio_k8_allmodule": 23119907.908561934,
+      "n_failed_k8_allmodule": 20,
+      "n_tensors": 271,
+      "passed_k8_allmodule": false,
+      "failed_names_sample": [
+        "model.decoder.MSA5.F_TA",
+        "model.decoder.MSA5.B_TA",
+        "model.decoder.MSA5",
+        "model.decoder.MSA4.F_TA",
+        "model.decoder.MSA4.B_TA"
+      ],
+      "stored_k_in_file": 4.0,
+      "stored_gating_tensors_in_file": 135,
+      "stored_total_tensors_in_file": 271,
+      "wholenet_output_passed_fp32_inference": false,
+      "wholenet_output_mismatched_elements": 65534,
+      "wholenet_output_compared_elements": 131072,
+      "isolated_operator_strict_passed": false,
+      "target_framework": {
+        "cache_path": "/root/autodl-tmp/tp-dsh-web/124450d37701/evidence/cache/camoformer-negctl-mask_residual-r1-trace-target/target-_root_autodl-tmp_jt-env_bin_python/jittor/.cache/jittor/jt1.3.9/g++11.4.0/py3.12.3/Linux-5.4.0-16x25/IntelRXeonRSilx76/c5f1/default/cu12.8.93_sm_86",
+        "device": "cuda",
+        "name": "jittor",
+        "version": "1.3.9.14"
+      }
+    },
+    {
+      "gpu": "3080 Ti",
+      "run": "mut_gelu_tanh",
+      "max_ratio_k8_allmodule": 264.92400182799696,
+      "n_failed_k8_allmodule": 35,
+      "n_tensors": 271,
+      "passed_k8_allmodule": false,
+      "failed_names_sample": [
+        "model.decoder.MSA5.F_TA.ffn",
+        "model.decoder.MSA5.F_TA",
+        "model.decoder.MSA5.B_TA.ffn",
+        "model.decoder.MSA5.B_TA",
+        "model.decoder.MSA5.TA.ffn"
+      ],
+      "stored_k_in_file": 4.0,
+      "stored_gating_tensors_in_file": 135,
+      "stored_total_tensors_in_file": 271,
+      "wholenet_output_passed_fp32_inference": false,
+      "wholenet_output_mismatched_elements": 28231,
+      "wholenet_output_compared_elements": 131072,
+      "isolated_operator_strict_passed": false,
+      "target_framework": {
+        "cache_path": "/root/autodl-tmp/tp-dsh-web/89f107d33d46/evidence/cache/camoformer-negctl-gelu_tanh-r1-trace-target/target-_root_autodl-tmp_jt-env_bin_python/jittor/.cache/jittor/jt1.3.9/g++11.4.0/py3.12.3/Linux-5.4.0-16x25/IntelRXeonRSilx76/c5f1/default/cu12.8.93_sm_86",
+        "device": "cuda",
+        "name": "jittor",
+        "version": "1.3.9.14"
+      }
+    },
+    {
+      "gpu": "3080 Ti",
+      "run": "mut_l2_eps",
+      "max_ratio_k8_allmodule": 1.8362836647902712,
+      "n_failed_k8_allmodule": 0,
+      "n_tensors": 271,
+      "passed_k8_allmodule": true,
+      "failed_names_sample": [],
+      "stored_k_in_file": 4.0,
+      "stored_gating_tensors_in_file": 135,
+      "stored_total_tensors_in_file": 271,
+      "wholenet_output_passed_fp32_inference": false,
+      "wholenet_output_mismatched_elements": 569,
+      "wholenet_output_compared_elements": 131072,
+      "isolated_operator_strict_passed": false,
+      "target_framework": {
+        "cache_path": "/root/autodl-tmp/tp-dsh-web/51280f7d4af4/evidence/cache/camoformer-negctl-l2_eps-r1-trace-target/target-_root_autodl-tmp_jt-env_bin_python/jittor/.cache/jittor/jt1.3.9/g++11.4.0/py3.12.3/Linux-5.4.0-16x25/IntelRXeonRSilx76/c5f1/default/cu12.8.93_sm_86",
+        "device": "cuda",
+        "name": "jittor",
+        "version": "1.3.9.14"
+      }
+    },
+    {
+      "gpu": "V100",
+      "run": "correct_random",
+      "max_ratio_k8_allmodule": 3.1668911718252697,
+      "n_failed_k8_allmodule": 0,
+      "n_tensors": 271,
+      "passed_k8_allmodule": true,
+      "failed_names_sample": [],
+      "stored_k_in_file": 8.0,
+      "stored_gating_tensors_in_file": 135,
+      "stored_total_tensors_in_file": 271,
+      "wholenet_output_passed_fp32_inference": false,
+      "wholenet_output_mismatched_elements": 66359,
+      "wholenet_output_compared_elements": 131072,
+      "isolated_operator_strict_passed": false,
+      "target_framework": {
+        "cache_path": "/root/data-fs/tp/runs/603e6a083e8c/evidence/cache/v100-baseline-r6-trace-target/target-_root_data-fs_tp_target_bin_python/jittor/.cache/jittor/jt1.3.9/g++7.5.0/py3.12.9/Linux-5.15.0-1xb6/IntelRXeonRSilx76/1de9/default/cu11.3.109_sm_70",
+        "device": "cuda",
+        "name": "jittor",
+        "version": "1.3.9.14"
+      }
+    },
+    {
+      "gpu": "V100",
+      "run": "mut_ln_eps",
+      "max_ratio_k8_allmodule": 25.974044659233204,
+      "n_failed_k8_allmodule": 15,
+      "n_tensors": 271,
+      "passed_k8_allmodule": false,
+      "failed_names_sample": [
+        "model.decoder.MSA5.F_TA.norm1.body",
+        "model.decoder.MSA5.F_TA.norm1",
+        "model.decoder.MSA5.F_TA.norm2.body",
+        "model.decoder.MSA5.F_TA.norm2",
+        "model.decoder.MSA5.F_TA"
+      ],
+      "stored_k_in_file": 8.0,
+      "stored_gating_tensors_in_file": 135,
+      "stored_total_tensors_in_file": 271,
+      "wholenet_output_passed_fp32_inference": false,
+      "wholenet_output_mismatched_elements": 66325,
+      "wholenet_output_compared_elements": 131072,
+      "isolated_operator_strict_passed": false,
+      "target_framework": {
+        "cache_path": "/root/data-fs/tp/runs/0dc8f4b99ec3/evidence/cache/v100-ln_eps-r1-trace-target/target-_root_data-fs_tp_target_bin_python/jittor/.cache/jittor/jt1.3.9/g++7.5.0/py3.12.9/Linux-5.15.0-1xb6/IntelRXeonRSilx76/1de9/default/cu11.3.109_sm_70",
+        "device": "cuda",
+        "name": "jittor",
+        "version": "1.3.9.14"
+      }
+    },
+    {
+      "gpu": "V100",
+      "run": "mut_mask_residual",
+      "max_ratio_k8_allmodule": 22872965.035835046,
+      "n_failed_k8_allmodule": 20,
+      "n_tensors": 271,
+      "passed_k8_allmodule": false,
+      "failed_names_sample": [
+        "model.decoder.MSA5.F_TA",
+        "model.decoder.MSA5.B_TA",
+        "model.decoder.MSA5",
+        "model.decoder.MSA4.F_TA",
+        "model.decoder.MSA4.B_TA"
+      ],
+      "stored_k_in_file": 8.0,
+      "stored_gating_tensors_in_file": 135,
+      "stored_total_tensors_in_file": 271,
+      "wholenet_output_passed_fp32_inference": false,
+      "wholenet_output_mismatched_elements": 74534,
+      "wholenet_output_compared_elements": 131072,
+      "isolated_operator_strict_passed": false,
+      "target_framework": {
+        "cache_path": "/root/data-fs/tp/runs/77c82dc61015/evidence/cache/v100-mask_residual-r1-trace-target/target-_root_data-fs_tp_target_bin_python/jittor/.cache/jittor/jt1.3.9/g++7.5.0/py3.12.9/Linux-5.15.0-1xb6/IntelRXeonRSilx76/1de9/default/cu11.3.109_sm_70",
+        "device": "cuda",
+        "name": "jittor",
+        "version": "1.3.9.14"
+      }
+    },
+    {
+      "gpu": "V100",
+      "run": "mut_gelu_tanh",
+      "max_ratio_k8_allmodule": 692.6951241599483,
+      "n_failed_k8_allmodule": 26,
+      "n_tensors": 271,
+      "passed_k8_allmodule": false,
+      "failed_names_sample": [
+        "model.decoder.MSA5.F_TA.ffn",
+        "model.decoder.MSA5.F_TA",
+        "model.decoder.MSA5.B_TA.ffn",
+        "model.decoder.MSA5.B_TA",
+        "model.decoder.MSA5.TA.ffn"
+      ],
+      "stored_k_in_file": 8.0,
+      "stored_gating_tensors_in_file": 135,
+      "stored_total_tensors_in_file": 271,
+      "wholenet_output_passed_fp32_inference": false,
+      "wholenet_output_mismatched_elements": 65428,
+      "wholenet_output_compared_elements": 131072,
+      "isolated_operator_strict_passed": false,
+      "target_framework": {
+        "cache_path": "/root/data-fs/tp/runs/2c22e89b78db/evidence/cache/v100-gelu_tanh-r1-trace-target/target-_root_data-fs_tp_target_bin_python/jittor/.cache/jittor/jt1.3.9/g++7.5.0/py3.12.9/Linux-5.15.0-1xb6/IntelRXeonRSilx76/1de9/default/cu11.3.109_sm_70",
+        "device": "cuda",
+        "name": "jittor",
+        "version": "1.3.9.14"
+      }
+    },
+    {
+      "gpu": "V100",
+      "run": "mut_l2_eps",
+      "max_ratio_k8_allmodule": 3.226055356525243,
+      "n_failed_k8_allmodule": 0,
+      "n_tensors": 271,
+      "passed_k8_allmodule": true,
+      "failed_names_sample": [],
+      "stored_k_in_file": 8.0,
+      "stored_gating_tensors_in_file": 135,
+      "stored_total_tensors_in_file": 271,
+      "wholenet_output_passed_fp32_inference": false,
+      "wholenet_output_mismatched_elements": 66373,
+      "wholenet_output_compared_elements": 131072,
+      "isolated_operator_strict_passed": false,
+      "target_framework": {
+        "cache_path": "/root/data-fs/tp/runs/d0f1d749cbcf/evidence/cache/v100-l2_eps-r1-trace-target/target-_root_data-fs_tp_target_bin_python/jittor/.cache/jittor/jt1.3.9/g++7.5.0/py3.12.9/Linux-5.15.0-1xb6/IntelRXeonRSilx76/1de9/default/cu11.3.109_sm_70",
+        "device": "cuda",
+        "name": "jittor",
+        "version": "1.3.9.14"
+      }
+    }
+  ]
+}

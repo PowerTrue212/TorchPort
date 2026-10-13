@@ -6,8 +6,8 @@ from pathlib import Path
 from typing import Any, Sequence
 
 from . import __version__
+from .comparison import TOLERANCE_PROFILES, compare_tensor_archives
 from .doctor import build_doctor_report
-from .parity import TOLERANCE_PROFILES, compare_tensor_archives
 
 
 def _print_json(value: Any) -> None:
@@ -68,9 +68,9 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def _harness(args: Any) -> tuple[dict[str, Any], int]:
-    from .execution import read_json
-    from .oracle import build_oracle, evaluate, load_oracle, run_side, verify
-    from .task import load_task
+    from .contracts import load_task
+    from .runtime import read_json
+    from .verification import build_oracle, evaluate, load_oracle, run_side, verify
 
     task = load_task(args.task)
     root = args.root.resolve()
@@ -105,7 +105,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             return capture_main(str(args.job))
 
         if args.command == "_noise":
-            from .noise import main as noise_main
+            from .verification.noise import main as noise_main
 
             return noise_main(str(args.job))
 
@@ -115,8 +115,8 @@ def main(argv: Sequence[str] | None = None) -> int:
             return code
 
         if args.command == "inspect":
+            from .contracts import load_task
             from .diagnosis import inspect_task
-            from .task import load_task
 
             _print_json(inspect_task(load_task(args.task)))
             return 0

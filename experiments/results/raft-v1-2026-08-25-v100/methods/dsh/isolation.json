@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "generated_at_utc": "2026-08-25T04:23:00.2521415Z",
+  "method": "dsh",
+  "profile": "web",
+  "workspace": "data-fs://RAFT/workspaces/dsh/repo",
+  "overlay": "data-fs://RAFT/isolation/dsh-pure.patch.yml",
+  "overlay_sha256": "ac76d79975e7562964714ca6fc645dfe595ede3ffae465a72fed9d4bee4b812a",
+  "dsh_command": "redacted-local-path://dsh.cmd",
+  "installed_torchport_plugin": true,
+  "active_torchport_plugin": false,
+  "overlay_disabled": true,
+  "forbidden_environment_removed": [
+    "TORCHPORT_PYTHON",
+    "TORCHPORT_PYTHONPATH",
+    "TORCHPORT_TRACE_DIR"
+  ],
+  "passed": true,
+  "dsh_version": "0.1.1-rc.2"
+}

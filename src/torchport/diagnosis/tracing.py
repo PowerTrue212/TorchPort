@@ -1,4 +1,4 @@
-"""供受控 Agent 调用的公开检查、trace 和首次分歧定位。"""
+"""双端 trace、聚焦采集与模块隔离诊断。"""
 
 from __future__ import annotations
 
@@ -9,10 +9,7 @@ from typing import Any
 
 import numpy as np
 
-from .execution import add_physical_cost, read_json, run_physical_cost, write_json
-from .noise import per_tensor_floors
-from .oracle import build_oracle, run_side
-from .parity import (
+from ..comparison import (
     ENVELOPE_V3,
     TOLERANCE_PROFILES,
     called_modules,
@@ -21,6 +18,9 @@ from .parity import (
     compare_noise_calibrated,
     compare_tensor_archives,
 )
+from ..runtime import add_physical_cost, read_json, run_physical_cost, write_json
+from ..verification import build_oracle, run_side
+from ..verification.noise import per_tensor_floors
 
 
 def _trace_noise_floor(task: dict[str, Any], root: Path, trial: str) -> tuple[float, dict[str, float] | None]:
@@ -38,33 +38,6 @@ def _tolerance_profile(task: dict[str, Any]) -> str:
     """trace 的输出与重复性比较用固定容差；噪声包络协议（v2/v3）没有固定容差，退回 fp32-inference。"""
     profile = task["protocol"]["profile"]
     return profile if profile in TOLERANCE_PROFILES else "fp32-inference"
-
-
-def inspect_task(task: dict[str, Any]) -> dict[str, Any]:
-    """返回公开任务契约，不读取或生成 oracle。"""
-    def side(name: str) -> dict[str, Any]:
-        value = task[name]
-        return {
-            "repo": value["repo"],
-            "entry": value["entry"],
-            "model": value["model"],
-            "args": value["args"],
-            "kwargs": value["kwargs"],
-            "device": value["device"],
-            "python": value.get("python"),
-        }
-
-    return {
-        "kind": "torchport.inspect",
-        "task_id": task["task_id"],
-        "task_digest": task["digest"],
-        "source": side("source"),
-        "target": side("target"),
-        "inputs": task["inputs"],
-        "protocol": task["protocol"],
-        "checkpoint": {"provided": bool(task.get("weights")), "sha256": task.get("weights_sha")},
-        "candidate_identity": task["target_identity"],
-    }
 
 
 # trace 聚焦：首次分歧及其之前 FOCUS_WINDOW 个张量所属模块；磁盘余量低于下限时不启动。
@@ -327,92 +300,3 @@ def _failed_trace(
         "source_run": run if stage == "source" else source,
         "target_run": run if stage == "target" else None,
     }
-
-
-def localize(report: dict[str, Any]) -> dict[str, Any]:
-    """从已有 trace 报告提取固定的一处首次分歧；不重新访问 oracle。"""
-    if report.get("status") in {"run_failed", "evidence_missing"}:
-        return {
-            "kind": "torchport.localization",
-            "passed": False,
-            "stage": report.get("stage"),
-            "failure_code": report.get("failure_code"),
-            "reason": report.get("reason"),
-            "first_divergence": None,
-        }
-    strict = report.get("strict") or {}
-    output = report.get("output") or {}
-    # 协议 v3：隔离比较按 max(D, N_env) 判定，固定容差会被 Jittor 后端波动先触发而指错模块
-    v3 = (report.get("isolated") or {}).get("envelope_v3")
-    if v3 is not None:
-        return _localize_v3(report, v3)
-    first = strict.get("first_divergence") or output.get("first_gating_divergence")
-    tensors = strict.get("tensors") or output.get("tensors") or []
-    detail = next((item for item in tensors if item.get("name") == (first or {}).get("name")), None)
-    name = str((first or {}).get("name") or "")
-    base, marker, count = name.rpartition("#")
-    invocation = int(count) if marker and count.isdigit() else 1
-    scope_name = base if marker and count.isdigit() else name
-    operator = None
-    if scope_name.startswith("op."):
-        operator = scope_name.removeprefix("op.")
-        scope_name = None
-    position = (first or {}).get("position")
-    previous = tensors[position - 1] if isinstance(position, int) and position > 0 else None
-    current_error = (detail or {}).get("max_absolute_error")
-    previous_error = (previous or {}).get("max_absolute_error")
-    error_jump = (
-        float(current_error) - float(previous_error)
-        if current_error is not None and previous_error is not None
-        else None
-    )
-    return {
-        "kind": "torchport.localization",
-        "passed": bool(report.get("passed")),
-        "stage": None if report.get("passed") else ("trace" if strict.get("first_divergence") else "output"),
-        "scope": scope_name,
-        "invocation": invocation,
-        "operator": operator,
-        "first_divergence": first,
-        "evidence": {"input": None, "output": detail},
-        "error_jump": error_jump,
-        "metrics": strict.get("metrics") or output.get("metrics"),
-    }
-
-
-def _localize_v3(report: dict[str, Any], v3: dict[str, Any]) -> dict[str, Any]:
-    """字段与 localize 相同；误差跳变用相对误差（v3 隔离报告没有逐元素绝对误差）。
-
-    没有 fail 时退回首个 marginal：温和错误（如 eps 写反）在隔离运行中常落在 pass_k 与 floor_k 之间。
-    """
-    first = v3.get("first_divergence") or v3.get("first_marginal")
-    tensors = v3.get("tensors") or []
-    detail = next((item for item in tensors if item.get("name") == (first or {}).get("name")), None)
-    name = str((first or {}).get("name") or "")
-    base, marker, count = name.rpartition("#")
-    invocation = int(count) if marker and count.isdigit() else 1
-    position = (first or {}).get("position")
-    index = next((i for i, item in enumerate(tensors) if item.get("position") == position), None)
-    previous = tensors[index - 1] if index else None
-    current_error = (detail or {}).get("relative_error")
-    previous_error = (previous or {}).get("relative_error")
-    return {
-        "kind": "torchport.localization",
-        "passed": bool(report.get("passed")),
-        "stage": "trace" if first else None,
-        "scope": (base if marker and count.isdigit() else name) or None,
-        "invocation": invocation,
-        "operator": None,
-        "first_divergence": first,
-        "evidence": {"input": None, "output": detail},
-        "error_jump": (
-            float(current_error) - float(previous_error)
-            if current_error is not None and previous_error is not None
-            else None
-        ),
-        "metrics": v3.get("metrics"),
-    }
-
-
-def load_and_localize(path: str | Path) -> dict[str, Any]:
-    return localize(read_json(Path(path).resolve()))

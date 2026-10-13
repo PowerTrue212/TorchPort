@@ -37,6 +37,11 @@ dsh plugin --profile web add "$PWD"
 `TORCHPORT_RUNNER` 设为空；也可用 `TORCHPORT_PYTHON`、`TORCHPORT_PYTHONPATH` 和
 `TORCHPORT_TRACE_DIR` 覆盖其他路径。
 
+`TP_FEEDBACK=diagnostic` 时，插件只注册 `inspect`、`run`、`evaluate`、`verify`，并且
+`run` 只允许 normal 模式；远端 runner 还会再次裁剪 `evaluate/verify` 响应并拒绝所有
+定位命令。`TP_FEEDBACK=localized`（默认）才注册六个工具并返回完整定位证据。反馈条件必须在
+启动 `dsh web` 前设置，不能在同一个会话中途改变。
+
 包内 `torchport.patch.yml` 会自动插入 `torchport` 插件行。API 密钥只通过进程环境或
 DSH 凭据系统提供。
 

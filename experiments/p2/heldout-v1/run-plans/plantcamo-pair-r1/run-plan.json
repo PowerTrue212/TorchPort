@@ -1,0 +1,59 @@
+{
+  "schema_version": 1,
+  "experiment_id": "plantcamo-diagnostic-vs-localized-r1",
+  "prepared_at": "2026-10-10",
+  "claim_scope": "paired_pilot_only",
+  "repository": "PlantCamo",
+  "model_provider": "DeepSeek Harness",
+  "model_id": null,
+  "model_id_status": "record_from_dsh_session_before_start",
+  "order": [
+    "none",
+    "full"
+  ],
+  "common": {
+    "protocol": "noise-envelope-v3",
+    "seed": 20261004,
+    "repeats": 3,
+    "pass_k": 2.0,
+    "floor_k": 4.0,
+    "noise_floor": "auto",
+    "wall_minutes": 180,
+    "max_turns": 200,
+    "token_budget": null,
+    "input_sha256": "0a285430578e4df560ce191619c3b8ec9d63d0e0179372ca6d9a5a4c2dd0d6b4",
+    "weights_sha256": "f9a9d4a222d30ddef887ec0a6618f2ce88d3abae4f6585ee61477f2e2633601a",
+    "initial_submission_sha256": "141401319cd66e1e0a2d3aa0206134f817c832bca308f84034c7d4f6ecf1a8aa",
+    "candidate_identity": "7a493dbfcbe0c25a6fd3e27d37f60194826e1bd90fa5c168e550a29dbe436591",
+    "task_digest": "da1fc146b7b1e23d63c4a7b6d274fce37bbd1c952734b352d8d3e5b7bb6670b4"
+  },
+  "conditions": [
+    {
+      "label": "none",
+      "feedback": "diagnostic",
+      "workspace": "D:\\tp-runs\\plantcamo-none-r1",
+      "task": "experiments\\p2\\heldout-v1\\workspaces\\_tasks\\plantcamo-none-r1.json",
+      "prompt_sha256": "f501fb014138c798f0439183cb3352d50d1236dbc48da045d41bfd97ef9f79c2",
+      "task_file_sha256": "ab3308c6d789359d928b80c5be14cffe6d8f456c270107fbe81e3117eeaaf7e2",
+      "remote_staged": true
+    },
+    {
+      "label": "full",
+      "feedback": "localized",
+      "workspace": "D:\\tp-runs\\plantcamo-full-r1",
+      "task": "experiments\\p2\\heldout-v1\\workspaces\\_tasks\\plantcamo-full-r1.json",
+      "prompt_sha256": "a40128808c6ed47cf6cc2cd3c5d3937be00b9ae08830f675b957078ed66bb093",
+      "task_file_sha256": "3282abed3493ae3f1a188277f3fe62a2f7be084204d9322c9eb83f08b6dbfc3a",
+      "remote_staged": true
+    }
+  ],
+  "official_evaluator": {
+    "run_after_dsh_session": true,
+    "raw_report_visible_to_agent": false,
+    "result_fields_for_summary": [
+      "passed",
+      "e1_status",
+      "failure_code"
+    ]
+  }
+}

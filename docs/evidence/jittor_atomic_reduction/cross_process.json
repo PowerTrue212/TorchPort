@@ -1,0 +1,74 @@
+{
+  "schema_version": 1,
+  "trial_count": 3,
+  "runs_per_trial": 30,
+  "aggregate_90_runs": {
+    "builtin_avgpool": {
+      "bitwise_equal": false,
+      "max_mismatched_elements": 64,
+      "max_abs_run_diff": 4.563480615615845e-08,
+      "max_relative_l2_run_diff": 1.9278907716386627e-06
+    },
+    "builtin_sum_spatial": {
+      "bitwise_equal": false,
+      "max_mismatched_elements": 64,
+      "max_abs_run_diff": 0.001495361328125,
+      "max_relative_l2_run_diff": 1.8729886043397922e-06
+    },
+    "explicit_atomic": {
+      "bitwise_equal": false,
+      "max_mismatched_elements": 64,
+      "max_abs_run_diff": 0.001068115234375,
+      "max_relative_l2_run_diff": 1.3927266271867322e-06
+    },
+    "fixed_tree": {
+      "bitwise_equal": true,
+      "max_mismatched_elements": 0,
+      "max_abs_run_diff": 0.0,
+      "max_relative_l2_run_diff": 0.0
+    },
+    "two_stage_sum": {
+      "bitwise_equal": true,
+      "max_mismatched_elements": 0,
+      "max_abs_run_diff": 0.0,
+      "max_relative_l2_run_diff": 0.0
+    }
+  },
+  "first_run_across_processes": {
+    "builtin_avgpool": {
+      "bitwise_equal": false,
+      "max_mismatched_elements": 64,
+      "max_abs_run_diff": 2.7474015951156616e-08,
+      "max_relative_l2_run_diff": 1.8186377521404042e-06
+    },
+    "builtin_sum_spatial": {
+      "bitwise_equal": false,
+      "max_mismatched_elements": 64,
+      "max_abs_run_diff": 0.000640869140625,
+      "max_relative_l2_run_diff": 1.245976724394919e-06
+    },
+    "explicit_atomic": {
+      "bitwise_equal": false,
+      "max_mismatched_elements": 63,
+      "max_abs_run_diff": 0.0004425048828125,
+      "max_relative_l2_run_diff": 1.0257139294038556e-06
+    },
+    "fixed_tree": {
+      "bitwise_equal": true,
+      "max_mismatched_elements": 0,
+      "max_abs_run_diff": 0.0,
+      "max_relative_l2_run_diff": 0.0
+    },
+    "two_stage_sum": {
+      "bitwise_equal": true,
+      "max_mismatched_elements": 0,
+      "max_abs_run_diff": 0.0,
+      "max_relative_l2_run_diff": 0.0
+    }
+  },
+  "trial_result_sha256": {
+    "trial-0": "cad813eed948d077774adb31f046d378d95be11ed439c24f5d826059dabeefe7",
+    "trial-1": "9faf1ab43c13fe930f7db43a068e7c3782e91bd94b12231835239f04da87187f",
+    "trial-2": "fcf8c45859f688f193ef3d1b2f9a82012815ea8102abc5cfc761a4932dede972"
+  }
+}

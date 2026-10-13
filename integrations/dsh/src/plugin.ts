@@ -7,6 +7,7 @@ export const name = "torchport";
 export const inject = ["tools"];
 
 export interface Config {
+  feedback: string;
   python: string;
   pythonPath?: string;
   runner?: string;
@@ -15,6 +16,7 @@ export interface Config {
 }
 
 export const Config: z<Config> = z.object({
+  feedback: z.string().default("localized"),
   python: z.string().default("python"),
   pythonPath: z.string().default(""),
   runner: z.string().default(""),

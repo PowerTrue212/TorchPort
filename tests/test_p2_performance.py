@@ -37,9 +37,12 @@ class P2PerformanceTests(unittest.TestCase):
         runs = iter([_run("cold", 10, 12.5, 4.0), _run("warm", 20, 20.5, 2.0)])
         with (
             tempfile.TemporaryDirectory() as temporary,
-            patch("experiments.harness.performance.build_oracle", return_value=oracle),
-            patch("experiments.harness.performance.run_side", side_effect=lambda *_a, **_k: next(runs)),
-            patch("experiments.harness.performance.evaluate", return_value={"passed": True}),
+            patch("experiments.harness.reporting.performance.build_oracle", return_value=oracle),
+            patch(
+                "experiments.harness.reporting.performance.run_side",
+                side_effect=lambda *_a, **_k: next(runs),
+            ),
+            patch("experiments.harness.reporting.performance.evaluate", return_value={"passed": True}),
         ):
             report = measure_performance(
                 task,

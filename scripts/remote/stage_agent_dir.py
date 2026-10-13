@@ -10,14 +10,16 @@ import sys
 from pathlib import Path, PurePosixPath
 from typing import Any
 
-from dsh_torchport import (
-    REMOTE_SOURCE_PYTHON,
-    _cached_weights_path,
-    _inside_workspace,
-    _local_weights,
-    _remote_base,
-)
-from ssh_exec import connect
+SCRIPT_DIR = Path(__file__).resolve().parent
+if str(SCRIPT_DIR) not in sys.path:
+    sys.path.insert(0, str(SCRIPT_DIR))
+
+from ssh_exec import connect  # noqa: E402
+from torchport_remote import bundle  # noqa: E402
+from torchport_remote.config import load_settings  # noqa: E402
+
+SETTINGS = load_settings(Path(__file__).resolve().parents[2])
+REMOTE_SOURCE_PYTHON = SETTINGS.source_python
 
 AGENT_ROOT = PurePosixPath("/root/autodl-tmp/agent")
 WORKSPACE_NAME = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]*")
@@ -64,14 +66,14 @@ def _remote_shape(client: Any, path: PurePosixPath) -> tuple[list[int], str]:
 
 
 def _sources(task_path: Path, task: dict[str, Any]) -> list[tuple[str, PurePosixPath, bool]]:
-    base = _remote_base(task_path)
+    base = bundle.remote_base(task_path, SETTINGS)
     sources = []
     for index, item in enumerate(task.get("inputs") or []):
-        local = _inside_workspace(item["path"])
+        local = bundle.inside_workspace(item["path"], SETTINGS)
         sources.append((local.name, base / "inputs" / f"{index}-{local.name}", True))
-    if weights := _local_weights(task_path, task):
+    if weights := bundle.local_weights(task_path, task, SETTINGS):
         local, sha = weights
-        sources.append((local.name, _cached_weights_path(local, sha), False))
+        sources.append((local.name, bundle.cached_weights_path(local, sha, SETTINGS), False))
     return sources
 
 
@@ -79,7 +81,7 @@ def stage(workspace_name: str, task_argument: str | Path) -> None:
     if not WORKSPACE_NAME.fullmatch(workspace_name) or workspace_name in {".", ".."}:
         raise ValueError("workspace-name 只能包含字母、数字、点、下划线和连字符")
 
-    task_path = _inside_workspace(task_argument)
+    task_path = bundle.inside_workspace(task_argument, SETTINGS)
     task: dict[str, Any] = json.loads(task_path.read_text("utf-8"))
     sources = _sources(task_path, task)
     names = [name.casefold() for name, _, _ in sources]

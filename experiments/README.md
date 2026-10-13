@@ -2,6 +2,49 @@
 
 本目录用于把真实仓库验证转成可复现实验数据，而不是只记录“跑通了几个样本”。
 
+## 实验数据分层
+
+实验数据分为两层，避免把大体积运行态文件直接提交到 Git：
+
+```text
+V100 / data-fs（原始事实层）
+├── source、checkpoint、fixture、reference
+├── method workspace / submission
+├── flow、source/target/weights NPZ
+└── 完整 session log、trace 和 evaluator attempts
+
+experiments/（可公开证据层）
+├── results/<run-id>/
+│   ├── manifest.json
+│   ├── protocol.json
+│   ├── summary.json
+│   ├── methods/<method>/{result,rounds,termination,agent_metrics}.json
+│   └── torchport/{certificate,compare_fp32,compare_strict}.json
+└── figures/<study>/
+    ├── data.csv
+    ├── figure-spec.json
+    ├── audit.json
+    └── plot.png
+
+experiments/p2/<study>/
+├── experiment.json       预注册的 trial、条件和预算
+├── summary.json          只读聚合器生成的便携汇总
+└── performance.json      正确性通过后的独立正常执行性能
+```
+
+`run-id` 使用不可变的“任务-协议-日期-硬件”形式，例如
+`raft-v1-2026-08-25-v100`。`manifest.json` 只记录公开文件以及未提交原始文件的逻辑
+路径、SHA256、字节数和保留位置；公开 JSON 中的绝对路径必须改写为相对路径或
+`data-fs://...`，不得包含主机用户名、密钥或远端连接参数。`data/current.json` 是由这些
+run bundle 派生的绘图索引，不作为原始事实来源。
+
+正确性与成本分表：主表仍以 `RN && NA` 定义成功；成本表主要记录 agent 从任务开始到
+通过/停止终态的 elapsed time，并以 `active_agent` / `session_wall` 标明计时口径；
+evaluator elapsed 另列。agent turns、model/tool calls 和 provider 原生 token 字段作为
+可选原始数据。缺失值
+使用 `null`/`not_recorded`，cache-read token 单列，不与 input token 直接相加。不同
+provider/model 的 token 口径不能直接解释为等价成本。
+
 实验目标：
 
 - 使用同一批 PyTorch 仓库，对比官方 Jittor 转换器、纯 Codex、纯 DSH、DSH + TorchPort。

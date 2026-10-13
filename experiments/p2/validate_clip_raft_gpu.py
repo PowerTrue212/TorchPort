@@ -9,9 +9,9 @@ from typing import Any, Sequence
 
 from experiments.harness.gateway import HarnessGateway
 from experiments.harness.protocol import FeedbackLevel, TrialProtocol
-from torchport.execution import write_json
-from torchport.oracle import verify
-from torchport.task import load_task
+from torchport.contracts import load_task
+from torchport.runtime import write_json
+from torchport.verification import verify
 
 PROBE = """\
 import json

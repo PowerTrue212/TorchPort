@@ -1,0 +1,39 @@
+{
+  "condition": null,
+  "trial_id": null,
+  "dsh_session_id": null,
+  "model_id": null,
+  "started_at": null,
+  "ended_at": null,
+  "wall_seconds": null,
+  "steps": null,
+  "usage": {
+    "input_tokens": null,
+    "cached_input_tokens": null,
+    "output_tokens": null,
+    "reasoning_tokens": null,
+    "provider_total_tokens": null,
+    "cost": null,
+    "currency": null
+  },
+  "stop_reason": null,
+  "tool_calls_by_name": {},
+  "agent_ssh_audit": {
+    "path": null,
+    "sha256": null,
+    "violations": null
+  },
+  "official_verify": {
+    "path": null,
+    "sha256": null,
+    "passed": null,
+    "e1_status": null,
+    "failure_code": null
+  },
+  "e2": {
+    "path": null,
+    "sha256": null,
+    "passed": null
+  },
+  "notes": []
+}

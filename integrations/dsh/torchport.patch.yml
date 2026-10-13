@@ -2,6 +2,7 @@
     - id: torchport
       name: '@torchport/dsh-plugin'
       config:
+        feedback: !!js "process.env.TP_FEEDBACK || 'localized'"
         python: !!js "process.env.TORCHPORT_PYTHON || 'python'"
         pythonPath: !!js "process.env.TORCHPORT_PYTHONPATH || 'src'"
         runner: !!js "process.env.TORCHPORT_RUNNER ?? 'scripts/remote/dsh_torchport.py'"

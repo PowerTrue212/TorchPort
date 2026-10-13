@@ -1,0 +1,13 @@
+{
+  "source": "experiments/results/raft-v1-2026-08-25-v100/summary.json",
+  "generated_from": "frozen PyTorch reference and common-evaluator Jittor outputs",
+  "shared_flow_color_wheel": true,
+  "shared_error_color_scale": true,
+  "feature_source": "experiments/data/tensors/raft_features.npz",
+  "feature_reduction": "sqrt(mean(channel_value ** 2)) for each spatial location",
+  "shared_paired_feature_scale": true,
+  "feature_data_is_synthetic": false,
+  "agent_cost_plot_included": false,
+  "missing_agent_costs_imputed": false,
+  "pure_dsh_terminal_status": "stopped_failed"
+}

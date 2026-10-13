@@ -1,0 +1,3 @@
+method,tensor,strict_rtol,strict_atol,strict_mismatches,total_elements,source
+Codex,feature.0,1e-5,1e-6,10048,786432,experiments/results/raft-v1-2026-08-25-v100/reports/deepseek_strict_analysis.md
+DSH + TorchPort,feature.0,1e-5,1e-6,797,786432,experiments/results/raft-v1-2026-08-25-v100/torchport/compare_strict.json

@@ -8,17 +8,22 @@ DSH / 其他迁移 Agent
         ▼
 TorchPort CLI
         │
-        ├── task：冻结双端入口、输入、权重、设备和协议
-        ├── execution：隔离子进程、环境、超时、日志和缓存
+        ├── contracts：冻结 TaskSpec、双端内容身份与 oracle key
+        ├── runtime：隔离子进程、环境、超时、日志、缓存与物理成本
         ├── capture：采集输入、状态、最终输出和可选 trace
-        ├── oracle：冻结 source 证据并校验复用身份
-        ├── parity：独立比较 NPZ 张量
-        └── verify：唯一验收判定
+        ├── comparison：独立比较张量、包络、模块配置和任务指标
+        ├── verification：运行 candidate、管理 oracle 并给出唯一判定
+        └── diagnosis：公开检查、trace 与首次分歧定位
 ```
 
 TorchPort 不读取未知仓库后自动改写代码。仓库理解、迁移策略和代码修复属于 Agent；
 TorchPort 只处理显式任务、可复验证据和经过准入的迁移问题条目。DSH 插件依赖
 TorchPort CLI，核心不导入 DSH，也不维护第二套工具协议。
+
+核心依赖保持单向：`contracts → runtime/capture → comparison → verification`；
+`diagnosis` 复用同一运行、采集、比较和 oracle 能力，只增加诊断编排。顶层
+`task.py`、`execution.py`、`parity.py`、`oracle.py`、`verify.py` 和 `noise.py`
+仅为历史调用保留兼容导入，新代码不再依赖这些入口。
 
 ## 稳定契约
 
@@ -76,6 +81,11 @@ task.yaml
 
 `trace` 和 `localize` 组合同一执行器、采集器和比较器，不建立第二套 harness。P2 的
 反馈裁剪、Agent 文件权限和成本计数位于 `experiments/harness/`，不进入判断核心。
+
+Harness 自身也分层：`agents/` 适配模型 API 与网络研究，`tooling.py` 定义工具协议，
+`workspace.py` 约束文件访问，`feedback.py` 实施反馈裁剪，`orchestration/` 冻结并执行
+run plan，`reporting/` 只读聚合结果。远端 DSH 入口同样只做转发；配置、bundle、SSH
+传输、反馈裁剪和命令编排位于 `scripts/remote/torchport_remote/`。
 
 ## 有证据的迁移问题库
 

@@ -1,0 +1,15 @@
+{
+  "run_id": "raft-v1-2026-08-25-v100",
+  "success_definition": "RN == true AND NA == true",
+  "method_status": {
+    "codex": "passed",
+    "dsh": "stopped_failed",
+    "dsh_torchport": "passed"
+  },
+  "caveats": [
+    "pure DSH was user-stopped and is reported as stopped_failed with RN=true, NA=false.",
+    "The recorded pure DSH session exposed TorchPort tool schemas but made zero forbidden TorchPort calls; it is not a clean isolated baseline.",
+    "DSH + TorchPort passes the common FP32 evaluator but TorchPort strict remains false.",
+    "Complete agent elapsed/token accounting is currently available only for pure DSH; missing values are not zero."
+  ]
+}

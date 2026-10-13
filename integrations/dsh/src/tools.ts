@@ -41,6 +41,7 @@ function render(_args: unknown, value: RunResult) {
 }
 
 export function registerTools(ctx: Context, config: Config): void {
+  const localized = config.feedback !== "diagnostic";
   ctx.tools.register(defineTool({
     name: "torchport_inspect",
     timeoutMs: config.timeoutMs,
@@ -57,7 +58,7 @@ export function registerTools(ctx: Context, config: Config): void {
     parameters: {
       ...taskParams,
       side: { type: "string", required: true, enum: ["source", "target"] },
-      mode: { type: "string", enum: ["normal", "trace"] },
+      mode: { type: "string", enum: localized ? ["normal", "trace"] : ["normal"] },
     },
     output: { schema: outputSchema, render },
     execute: (args, exec) => {
@@ -83,23 +84,25 @@ export function registerTools(ctx: Context, config: Config): void {
     ),
   }));
 
-  ctx.tools.register(defineTool({
-    name: "torchport_trace",
-    timeoutMs: config.timeoutMs,
-    description: "以同一输入和状态采集双端 trace。对应 torchport trace。",
-    parameters: taskParams,
-    output: { schema: outputSchema, render },
-    execute: (args, exec) => runTool(config, harnessArgs("trace", args), exec),
-  }));
+  if (localized) {
+    ctx.tools.register(defineTool({
+      name: "torchport_trace",
+      timeoutMs: config.timeoutMs,
+      description: "以同一输入和状态采集双端 trace。对应 torchport trace。",
+      parameters: taskParams,
+      output: { schema: outputSchema, render },
+      execute: (args, exec) => runTool(config, harnessArgs("trace", args), exec),
+    }));
 
-  ctx.tools.register(defineTool({
-    name: "torchport_localize",
-    timeoutMs: config.timeoutMs,
-    description: "从已有 trace 报告提取首次分歧。对应 torchport localize。",
-    parameters: { report: { type: "string", required: true, description: "trace 报告路径" } },
-    output: { schema: outputSchema, render },
-    execute: (args, exec) => runTool(config, ["localize", String(args.report)], exec),
-  }));
+    ctx.tools.register(defineTool({
+      name: "torchport_localize",
+      timeoutMs: config.timeoutMs,
+      description: "从已有 trace 报告提取首次分歧。对应 torchport localize。",
+      parameters: { report: { type: "string", required: true, description: "trace 报告路径" } },
+      output: { schema: outputSchema, render },
+      execute: (args, exec) => runTool(config, ["localize", String(args.report)], exec),
+    }));
+  }
 
   ctx.tools.register(defineTool({
     name: "torchport_verify",

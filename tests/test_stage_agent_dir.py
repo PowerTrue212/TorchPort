@@ -65,20 +65,9 @@ class _Client:
 def _load(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path, client: _Client
 ) -> Any:
-    def inside(path: str | Path) -> Path:
-        value = Path(path)
-        return value if value.is_absolute() else tmp_path / value
-
-    dsh = types.ModuleType("dsh_torchport")
-    dsh.REMOTE_ROOT = PurePosixPath("/tp")
-    dsh.REMOTE_SOURCE_PYTHON = "/source/python"
-    dsh._remote_base = lambda task: PurePosixPath("/tp/task-hash")
-    dsh._inside_workspace = inside
-    dsh._local_weights = lambda task, raw: (inside(raw["weights"]), "weight-sha")
-    dsh._cached_weights_path = (
-        lambda local, sha: PurePosixPath("/tp/weights-cache") / sha / local.name
-    )
-    monkeypatch.setitem(sys.modules, "dsh_torchport", dsh)
+    monkeypatch.setenv("TP_PROJECT_ROOT", str(tmp_path))
+    monkeypatch.setenv("TP_REMOTE_ROOT", "/tp")
+    monkeypatch.setenv("TP_REMOTE_SOURCE_PYTHON", "/source/python")
 
     ssh_exec = types.ModuleType("ssh_exec")
     ssh_exec.connect = lambda: client
@@ -90,6 +79,12 @@ def _load(
     module = importlib.util.module_from_spec(spec)
     monkeypatch.setitem(sys.modules, module_name, module)
     spec.loader.exec_module(module)
+    monkeypatch.setattr(module.bundle, "remote_base", lambda task, settings: PurePosixPath("/tp/task-hash"))
+    monkeypatch.setattr(
+        module.bundle,
+        "local_weights",
+        lambda task, raw, settings: (tmp_path / raw["weights"], "weight-sha"),
+    )
     return module
 
 

@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "method": "dsh",
+  "status": "stopped_failed",
+  "success": false,
+  "terminated_at_utc": "2026-08-25T08:55:49.7928030Z",
+  "terminated_by": "user",
+  "reason": "Pure DSH was stopped after Round 1 without achieving stable numerical alignment.",
+  "method_integrity": {
+    "runtime_tool_isolation_enforced": false,
+    "torchport_tools_exposed_to_model": true,
+    "forbidden_torchport_calls_observed": 0,
+    "note": "The recorded DSH session was launched with the ordinary web profile before the isolated launcher was introduced. No TorchPort call occurred, but tool visibility means the run is not a clean isolated baseline."
+  },
+  "last_public_evaluator": {
+    "result_sha256": "efa8f352d94577b7a7051767b270764332fcb364e22c25faad88a6b76ce66dc1",
+    "flow_up_sha256": "f069bedf01f3ef17aa3f37965124c451d234e6105476bb2e2fe7f9f65dddda02",
+    "rn": true,
+    "na": false,
+    "rounds": 1,
+    "max_error": 0.0002664327621459961,
+    "mean_error": 6.571474921483282e-06
+  },
+  "final_workspace": {
+    "evaluated": false,
+    "local_submission_sha256": "d6f22b8c62c08c4e07dd64cc59bf9a2d6e5175d67470068728ff1b872f6b3726",
+    "remote_submission_sha256": "aef7104f01dc09187f8e8b4ed3d63c991a77007419409d174806b8aa6f033068",
+    "note": "Both workspace copies changed after the last public evaluator and were not accepted as final results."
+  }
+}

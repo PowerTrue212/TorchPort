@@ -1,0 +1,8 @@
+# Install into the existing PyTorch/CUDA source environment.
+# Do not install torch/torchvision here: keep the V100 host's matching frozen builds
+# (PyTorch 2.6.0+cu124 and torchvision 0.21.0+cu124).
+numpy==1.26.4
+Pillow==11.1.0
+ftfy==6.3.1
+regex==2024.11.6
+tqdm==4.67.1

@@ -22,21 +22,21 @@
     "summary": "The same inputs and parameters can produce different float32 output bits, mismatch counts, and maximum errors across target runs."
   },
   "discrepancy": {
-    "description": "On sm_70, five executions of the same input gave max_run_diff=7.153e-7 for a 1x1 Conv2d, 9.537e-7 for a 3x3 Conv2d, and 1.144e-5 for sum(dim=1). The generated sum kernel assigns different channel-strided partial sums to GPU threads and calls atomicAdd on the same output element; the generated conv kernel does the same for channel/kernel partial sums. Atomic addition makes each update indivisible but does not define the arrival order of updates from different threads. Because float32 addition is not associative, a different arrival order can change low bits. On sm_86, the CamoFormer evidence independently records repeat differences at both module and whole-network level. This entry does not claim that every reduction is nondeterministic: the same sm_70 probe's mean(dim=-1), depthwise Conv2d, Linear, and interpolation cases were bitwise stable for the tested shapes."
+    "description": "On sm_86, 30 executions of a fixed (1,64,176,176) input gave relative run-to-run differences of 1.84e-6 for sum over (H,W), 1.93e-6 for AdaptiveAvgPool2d(1), and 1.82e-7 for a conv_opt=1 3x3 Conv2d. Their preserved generated kernels all call atomicAdd. An explicit multi-block atomic sum varied by 1.39e-6, while the same sum implemented as a fixed shared-memory tree was bitwise identical across 30 runs. Three independent processes, 90 runs total, reproduced the split: all atomic paths varied and the fixed tree did not. On sm_70, five executions previously gave max_run_diff=7.153e-7 for a 1x1 Conv2d, 9.537e-7 for a 3x3 Conv2d, and 1.144e-5 for sum(dim=1). Atomic addition makes each update indivisible but does not define the arrival order of updates from different threads. Because float32 addition is not associative, a different arrival order can change low bits. This entry does not claim that every reduction is nondeterministic."
   },
   "reproduction": {
-    "fixture": "CamoFormer/outputs/dsh-web-camoformer/probe/probe_jt_determinism.py",
+    "fixture": "docs/evidence/jittor_atomic_reduction/probe.py",
     "task": "CamoFormer target repeatability",
     "instructions": [
-      "Use Jittor 1.3.9.14 with CUDA enabled and set conv_opt=1 before importing Jittor.",
-      "Run probe_jt_determinism.py in one process; it evaluates each operation five times with the same NumPy input and reports the largest difference from the first output.",
-      "For the sm_70 confirmation, use the environment recorded in docs/development/remote-v100-env.md and preserve JITTOR_HOME and cache_path inside the probe directory.",
-      "Inspect the generated *_op.cc files and confirm that the REDUCE=2 sum and the seven-dimensional Conv2d fused graph merge partial sums with atomicAdd."
+      "Use Jittor 1.3.9.14 with CUDA enabled and set conv_opt=1 and use_cutlass=0 before importing Jittor.",
+      "Run probe.py with a dedicated JITTOR_HOME. It evaluates built-in sum, AdaptiveAvgPool2d(1), explicit atomic sum, fixed-tree sum, two-stage sum, and Conv2d 30 times on one fixed input.",
+      "Repeat the process three times and run summarize_trials.py over the saved outputs.npz files.",
+      "Inspect the preserved kernels under docs/evidence/jittor_atomic_reduction/kernels/."
     ],
     "expected_failure": "At least one tested float32 conv_opt=1 Conv2d or non-last-dimension sum has max_run_diff greater than zero."
   },
   "repair": {
-    "description": "No end-to-end repair is verified. conv_opt=0 routes eligible convolution through cuDNN and made the isolated convolution probe bitwise stable on sm_86, but the CamoFormer whole-network result became worse for an unconfirmed reason. Disabling tensor cores, the tuner, or JIT kernel search did not remove the observed whole-network variation. A deterministic reduction implementation has not been tested.",
+    "description": "An isolated deterministic reduction is verified: one CUDA block per output and a fixed shared-memory tree produced identical bits in 90 runs across three processes, and reduced relative error versus fp64 from about 1e-6 to 2.18e-7. Splitting the spatial sum into two stages was also bitwise stable and reached 2.17e-7. No end-to-end model repair is verified. conv_opt=0 routes eligible convolution through cuDNN and made the isolated convolution probe bitwise stable on sm_86, but the CamoFormer whole-network result became worse for an unconfirmed reason.",
     "patch": null,
     "constraints": [
       "Do not treat a wider tolerance, fewer compared outputs, or averaging repeat results as a repair.",
@@ -46,21 +46,20 @@
   },
   "evidence": {
     "before": "CamoFormer/outputs/dsh-web-camoformer/probe/trace-noise-calibrated-repeat-tolerance-fp32.json",
-    "after": null,
-    "protocol_digest": "sha256:4fc61e4eeb3f3ab07f453d75425af5cc9a7db6f3a88260cbeca3e5f9dbee25ab",
+    "after": "docs/evidence/jittor_atomic_reduction/results.json",
+    "protocol_digest": "sha256:b047cdcf7990ac884b0cdbaa9b27180390baf401c8cb4c9cacdb5df1e6d01b8e",
     "verified": false
   },
   "applicability": {
     "known": [
-      "Jittor 1.3.9.14, NVIDIA GeForce RTX 3080 Ti, sm_86, CUDA 12.8: CamoFormer target repeatability varies at module and whole-network level.",
+      "Jittor 1.3.9.14, NVIDIA GeForce RTX 3080 Ti, sm_86, CUDA 12.8: exact generated kernels for global sum, AdaptiveAvgPool2d(1), and conv_opt=1 Conv2d contain atomicAdd; the isolated causal control is preserved locally.",
       "Jittor 1.3.9.14, Tesla V100-SXM2-16GB, sm_70, CUDA 11.3: direct probe reproduces nonzero differences for conv_opt=1 Conv2d and sum(dim=1), and the generated kernels contain atomicAdd.",
       "CamoFormer with conv_opt=1, whose ordinary Conv2d graph uses reindex, broadcast, multiply, and reduce(add)."
     ],
     "unknown": [
-      "The exact generated sm_86 kernel was not preserved locally, so the atomicAdd code path was confirmed directly on sm_70 and inferred for the same Jittor 1.3.9.14 graph on sm_86.",
       "Which shapes, dtypes, reduction axes, thread schedules, drivers, or newer Jittor versions are bitwise stable.",
       "Why conv_opt=0 made isolated convolutions deterministic on sm_86 but worsened the full CamoFormer comparison.",
-      "Whether a deterministic custom reduction or another backend setting can make the frozen end-to-end verify pass.",
+      "Whether replacing the affected reductions can make the frozen end-to-end verify pass.",
       "The installed wheel declares AtomicTunerPass and SharedReducePass but omits their .cc implementations; the exact pass-internal rule that chooses atomic lowering remains unconfirmed."
     ]
   },
@@ -71,7 +70,36 @@
 }
 ```
 
+## sm_86 因果对照（2026-10-11）
+
+同一个 `(1,64,176,176)` float32 输入在 RTX 3080 Ti 上重复 30 次。随后再启动两个独立进程，
+共得到 90 次输出。内置空间求和、全局平均池化和显式多块原子归约均发生逐位变化；固定归约树和
+两步归约的 90 次输出全部逐位相同。
+
+| 实现 | 30 次最大运行间相对差异 | 相对 fp64 最大误差 | 逐位一致 |
+| --- | ---: | ---: | :---: |
+| Jittor 空间求和 | 1.84e-6 | 1.29e-6 | 否 |
+| Jittor 全局平均池化 | 1.93e-6 | 1.45e-6 | 否 |
+| 显式 `atomicAdd` | 1.39e-6 | 9.98e-7 | 否 |
+| 固定归约树 | 0 | 2.18e-7 | 是 |
+| 两步求和 | 0 | 2.17e-7 | 是 |
+| Jittor 3×3 卷积 | 1.82e-7 | 未计算 | 否 |
+
+三次独立进程的第一次输出之间也呈现同样分界。完整结果见
+`docs/evidence/jittor_atomic_reduction/results.json` 和 `cross_process.json`，原始归约输出保存在
+`trials/*/outputs.npz`。
+
 ## 源码和生成内核证据
+
+本次 sm_86 生成内核已保存在 `docs/evidence/jittor_atomic_reduction/kernels/`：
+
+- `builtin_sum_spatial_op.cc:66-73` 和 `builtin_avgpool_op.cc:66-73`：各线程先计算局部和，再对同一
+  输出地址调用 `atomicAdd`。
+- `conv3x3_op.cc:140-147`：`conv_opt=1` 的融合卷积对通道和卷积核位置求局部和，再用
+  `atomicAdd` 合并到输出。
+- `explicit_atomic_op.cc:132-139`：因果对照中的显式多块原子归约。
+- `fixed_tree_op.cc:103-120`：一个输出只交给一个线程块，按固定二叉树顺序合并共享内存中的
+  部分和，没有 `atomicAdd`。
 
 以下行号来自远端只读安装目录
 `/root/data-fs/tp/target/lib/python3.12/site-packages/jittor`：
