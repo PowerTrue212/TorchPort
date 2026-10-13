@@ -23,7 +23,7 @@ PYTHONPATH=src python -m experiments.p2.prepare_clip_raft \
 - 每个隐藏输入的 SHA256。
 
 每个 trial 只通过 `experiments.harness.deepseek` 暴露的 Gateway 操作。正式汇总使用物化后
-的 `experiment.json`，不得并入 `CLIP/outputs` 或 `RAFT/results` 中的历史数据。
+的 `experiment.json`，不得并入 `migrations/CLIP/outputs` 或 `migrations/RAFT/results` 中的历史数据。
 
 当前 RTX 3080 Ti worker 没有 container、podman、docker 或 bubblewrap。`probe` 和 target
 执行虽然不会收到 hidden path 或 provider credential，但仍与 controller 共享宿主文件系统，

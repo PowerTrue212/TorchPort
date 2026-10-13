@@ -22,14 +22,11 @@ PyTorch 源码、空 submission、输入、权重、v3 协议和预算相同。P
 两个远端目录都已预置冻结输入和完整 checkpoint。不要把 `_tasks`、评测结果或 control 目录复制进
 Agent 工作区。
 
-启动前先从当前目录版本刷新一次插件，并记录 DSH 实际模型标识；`run-plan.json` 中的 `model_id`
-在记录前保持 `null`，不能事后凭印象补写。
+> 这份 r1 启动记录依赖已经移除的旧 DSH plugin，只用于解释历史试跑，不能直接启动新实验。
+> 新实验必须先提供与当前 Agent 版本匹配的外部适配层，并重新冻结工具映射和反馈裁剪。
 
-```bat
-cd /d D:\科研\TorchPort\integrations\dsh
-npm test
-dsh plugin --profile web add .
-```
+启动前记录 Agent 的实际模型标识；`run-plan.json` 中的 `model_id` 在记录前保持 `null`，
+不能事后凭印象补写。
 
 ## 启动 none
 

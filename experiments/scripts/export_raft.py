@@ -9,9 +9,8 @@ import shutil
 from pathlib import Path
 from typing import Any
 
-
 ROOT = Path(__file__).resolve().parents[2]
-DEFAULT_RAFT = ROOT / "RAFT"
+DEFAULT_RAFT = ROOT / "migrations" / "RAFT"
 DEFAULT_RUN_ID = "raft-v1-2026-08-25-v100"
 METHODS = ("codex", "dsh", "dsh_torchport")
 

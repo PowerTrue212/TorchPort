@@ -45,7 +45,7 @@
     ]
   },
   "evidence": {
-    "before": "CamoFormer/outputs/dsh-web-camoformer/probe/trace-noise-calibrated-repeat-tolerance-fp32.json",
+    "before": "migrations/CamoFormer/outputs/dsh-web-camoformer/probe/trace-noise-calibrated-repeat-tolerance-fp32.json",
     "after": "docs/evidence/jittor_atomic_reduction/results.json",
     "protocol_digest": "sha256:b047cdcf7990ac884b0cdbaa9b27180390baf401c8cb4c9cacdb5df1e6d01b8e",
     "verified": false
@@ -131,11 +131,11 @@
 设备级证据分别为：
 
 - sm_86 / CUDA 12.8：
-  `CamoFormer/outputs/dsh-web-camoformer/probe/trace-noise-calibrated-repeat-tolerance-fp32.json`；
-  汇总见 `CamoFormer/outputs/dsh-web-camoformer/README.md:206-231`。
+  `migrations/CamoFormer/outputs/dsh-web-camoformer/probe/trace-noise-calibrated-repeat-tolerance-fp32.json`；
+  汇总见 `migrations/CamoFormer/outputs/dsh-web-camoformer/README.md:206-231`。
 - sm_70 / CUDA 11.3：
-  `CamoFormer/outputs/dsh-web-camoformer/probe/trace-v100-baseline-r6.json` 与远端短探针输出；
-  汇总见 `CamoFormer/outputs/dsh-web-camoformer/probe/v100-report.md:1-24,41-50`。
+  `migrations/CamoFormer/outputs/dsh-web-camoformer/probe/trace-v100-baseline-r6.json` 与远端短探针输出；
+  汇总见 `migrations/CamoFormer/outputs/dsh-web-camoformer/probe/v100-report.md:1-24,41-50`。
 
 ## 对重复 verify 的影响
 

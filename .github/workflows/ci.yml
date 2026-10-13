@@ -21,19 +21,3 @@ jobs:
       - run: ruff check src tests benchmarks
       - if: matrix.python == '3.12'
         run: python -m build
-
-  dsh:
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: integrations/dsh
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: npm
-          cache-dependency-path: integrations/dsh/package-lock.json
-      - run: npm ci
-      - run: npm test
-      - run: npm run pack:check

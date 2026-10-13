@@ -70,19 +70,19 @@
 
 | 文件（相对仓库根目录） | GPU / 后端 | 权重 | 用途 |
 | --- | --- | --- | --- |
-| `CamoFormer/outputs/dsh-web-camoformer/probe/trace-module-isolation-calibrated-r3.json` | 3080 Ti, sm_86, source 关 TF32 | 随机权重 | 正确基线（随机权重） |
-| `CamoFormer/outputs/dsh-web-camoformer/probe/trace-encoder-ckpt-r1.json` | 3080 Ti, sm_86 | 真实 PVTv2-B4 encoder，decoder 随机（`complete=false`） | 正确基线（部分真实权重） |
-| `CamoFormer/outputs/dsh-web-camoformer/probe/trace-source-repeat-r1.json` | 3080 Ti, sm_86 | 随机权重 | 候选身份与 r3 相同，用于目标端重复性对照（见 `isolated.repeatability`） |
-| `CamoFormer/outputs/dsh-web-camoformer/probe/trace-convopt0-r1.json` | 3080 Ti, sm_86, target `conv_opt=0` | 随机权重 | 后端变体（非语义突变），验证 target 后端配置敏感性 |
-| `CamoFormer/outputs/dsh-web-camoformer/probe/negctl/trace-ln_eps.json` | 3080 Ti | 随机权重 | 负对照：LayerNorm eps 改变 |
-| `CamoFormer/outputs/dsh-web-camoformer/probe/negctl/trace-mask_residual.json` | 3080 Ti | 随机权重 | 负对照：mask 作用到整个残差而非仅 q/k |
-| `CamoFormer/outputs/dsh-web-camoformer/probe/negctl/trace-gelu_tanh.json` | 3080 Ti | 随机权重 | 负对照：GELU 用 tanh 近似替代 erf 精确式 |
-| `CamoFormer/outputs/dsh-web-camoformer/probe/negctl/trace-l2_eps.json` | 3080 Ti | 随机权重 | 负对照：L2 归一化 eps 改变（当前输入下无数值效果） |
-| `CamoFormer/outputs/dsh-web-camoformer/probe/trace-v100-baseline-r6.json` | V100, sm_70, source 关 TF32 | 随机权重 | 正确基线（第二类 GPU 交叉验证） |
-| `CamoFormer/outputs/dsh-web-camoformer/probe/negctl/trace-v100-{ln_eps,mask_residual,gelu_tanh,l2_eps}.json` | V100 | 随机权重 | 同一组负对照在 V100 上复现 |
-| `CamoFormer/outputs/dsh-web-camoformer/probe/v100-report.md` | V100 | — | 人工整理的 V100 对照摘要，用于交叉核对本报告的重判结果 |
-| `CamoFormer/outputs/task-metrics/metrics-torch.json`、`metrics-jittor.json` | 3080 Ti（任务级） | **真实训练 checkpoint**（`CamoFormer-trained`） | 任务级指标（MAE/mean_E/S-measure/weighted-F），CAMO/CHAMELEON/COD10K/NC4K 四个真实数据集 |
-| `CamoFormer/outputs/task-metrics/torch-vs-jittor-pixel-comparison.json` | 3080 Ti（任务级） | 同上 | 逐图像素级差异（0-255 量化后的预测图） |
+| `migrations/CamoFormer/outputs/dsh-web-camoformer/probe/trace-module-isolation-calibrated-r3.json` | 3080 Ti, sm_86, source 关 TF32 | 随机权重 | 正确基线（随机权重） |
+| `migrations/CamoFormer/outputs/dsh-web-camoformer/probe/trace-encoder-ckpt-r1.json` | 3080 Ti, sm_86 | 真实 PVTv2-B4 encoder，decoder 随机（`complete=false`） | 正确基线（部分真实权重） |
+| `migrations/CamoFormer/outputs/dsh-web-camoformer/probe/trace-source-repeat-r1.json` | 3080 Ti, sm_86 | 随机权重 | 候选身份与 r3 相同，用于目标端重复性对照（见 `isolated.repeatability`） |
+| `migrations/CamoFormer/outputs/dsh-web-camoformer/probe/trace-convopt0-r1.json` | 3080 Ti, sm_86, target `conv_opt=0` | 随机权重 | 后端变体（非语义突变），验证 target 后端配置敏感性 |
+| `migrations/CamoFormer/outputs/dsh-web-camoformer/probe/negctl/trace-ln_eps.json` | 3080 Ti | 随机权重 | 负对照：LayerNorm eps 改变 |
+| `migrations/CamoFormer/outputs/dsh-web-camoformer/probe/negctl/trace-mask_residual.json` | 3080 Ti | 随机权重 | 负对照：mask 作用到整个残差而非仅 q/k |
+| `migrations/CamoFormer/outputs/dsh-web-camoformer/probe/negctl/trace-gelu_tanh.json` | 3080 Ti | 随机权重 | 负对照：GELU 用 tanh 近似替代 erf 精确式 |
+| `migrations/CamoFormer/outputs/dsh-web-camoformer/probe/negctl/trace-l2_eps.json` | 3080 Ti | 随机权重 | 负对照：L2 归一化 eps 改变（当前输入下无数值效果） |
+| `migrations/CamoFormer/outputs/dsh-web-camoformer/probe/trace-v100-baseline-r6.json` | V100, sm_70, source 关 TF32 | 随机权重 | 正确基线（第二类 GPU 交叉验证） |
+| `migrations/CamoFormer/outputs/dsh-web-camoformer/probe/negctl/trace-v100-{ln_eps,mask_residual,gelu_tanh,l2_eps}.json` | V100 | 随机权重 | 同一组负对照在 V100 上复现 |
+| `migrations/CamoFormer/outputs/dsh-web-camoformer/probe/v100-report.md` | V100 | — | 人工整理的 V100 对照摘要，用于交叉核对本报告的重判结果 |
+| `migrations/CamoFormer/outputs/task-metrics/metrics-torch.json`、`metrics-jittor.json` | 3080 Ti（任务级） | **真实训练 checkpoint**（`CamoFormer-trained`） | 任务级指标（MAE/mean_E/S-measure/weighted-F），CAMO/CHAMELEON/COD10K/NC4K 四个真实数据集 |
+| `migrations/CamoFormer/outputs/task-metrics/torch-vs-jittor-pixel-comparison.json` | 3080 Ti（任务级） | 同上 | 逐图像素级差异（0-255 量化后的预测图） |
 
 权重设置混用提醒：模块隔离的"正确基线"用的是随机权重或随机权重+部分真实 encoder；
 任务级指标用的是**完整真实训练 checkpoint**。两组实验不是同一个权重设置下的对照，
@@ -197,7 +197,7 @@ k=8 落在这个区间内，但区间上界主要由样本量很小的 4 个负�
 本报告的全部"PASS/FAIL"都来自 `trace`/`isolated.calibrated`，是诊断证据，不是
 `verify`。CamoFormer 冻结协议（`fp32-inference`，启用 source TF32）下的正式验收结果
 **保持不变、保持失败**：`PARITY_FAILED`，详见
-`CamoFormer/outputs/dsh-web-camoformer/README.md` 第 4 节。本报告中"正确基线通过
+`migrations/CamoFormer/outputs/dsh-web-camoformer/README.md` 第 4 节。本报告中"正确基线通过
 noise-calibrated"不能、也没有被用来声称冻结任务已经通过。
 
 ## 9. 威胁有效性

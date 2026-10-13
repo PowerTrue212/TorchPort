@@ -31,7 +31,11 @@ def _write(path: Path, value: dict[str, Any]) -> None:
 
 def _copy_seed(task: str, destination: Path) -> None:
     source = (
-        ROOT / task.upper() / "source" / ("openai-clip" if task == "clip" else "princeton-vl-raft")
+        ROOT
+        / "migrations"
+        / task.upper()
+        / "source"
+        / ("openai-clip" if task == "clip" else "princeton-vl-raft")
     )
     if not source.is_dir():
         raise FileNotFoundError(f"先准备冻结的 {task} source：{source}")
@@ -40,7 +44,10 @@ def _copy_seed(task: str, destination: Path) -> None:
         destination,
         ignore=shutil.ignore_patterns(".git", "__pycache__", "*.pyc"),
     )
-    shutil.copy2(ROOT / task.upper() / "templates" / "submission.py", destination / "submission.py")
+    shutil.copy2(
+        ROOT / "migrations" / task.upper() / "templates" / "submission.py",
+        destination / "submission.py",
+    )
     shutil.copy2(
         ROOT / "benchmarks" / "tasks" / task / "target_adapter.py",
         destination / "torchport_adapter.py",
@@ -48,7 +55,7 @@ def _copy_seed(task: str, destination: Path) -> None:
 
 
 def _hidden_inputs(task: str, private: Path) -> list[Path]:
-    prepared = ROOT / task.upper() / "shared" / "prepared"
+    prepared = ROOT / "migrations" / task.upper() / "shared" / "prepared"
     private.mkdir(parents=True, exist_ok=True)
     if task == "clip":
         values = [
@@ -95,7 +102,7 @@ def _task_spec(
     source_python: Path,
     target_python: Path,
 ) -> dict[str, Any]:
-    base = ROOT / task.upper()
+    base = ROOT / "migrations" / task.upper()
     weights = base / "shared" / "prepared" / "weights_fp32.npz"
     source_child = base / "source" / ("openai-clip" if task == "clip" else "princeton-vl-raft")
     dtypes = ("float32", "int64") if task == "clip" else ("float32", "float32")
@@ -146,7 +153,7 @@ def materialize(
         task: _hidden_inputs(task, output / "private" / task) for task in ("clip", "raft")
     }
     for task in ("clip", "raft"):
-        prepared = ROOT / task.upper() / "shared" / "prepared"
+        prepared = ROOT / "migrations" / task.upper() / "shared" / "prepared"
         public_inputs = (
             [prepared / "images.npy", prepared / "tokens.npy"]
             if task == "clip"

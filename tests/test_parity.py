@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 
-from torchport.parity import compare_tensor_archives
+from torchport.comparison import compare_tensor_archives
 
 
 class TensorParityTests(unittest.TestCase):
@@ -268,7 +268,7 @@ class NoiseCalibratedTests(unittest.TestCase):
         return paths
 
     def test_candidate_within_noise_passes_and_outlier_fails(self) -> None:
-        from torchport.parity import compare_noise_calibrated
+        from torchport.comparison import compare_noise_calibrated
 
         truth = np.linspace(-1, 1, 100)
         ref = (truth + 1e-6).astype(np.float32)
@@ -295,7 +295,7 @@ class NoiseCalibratedTests(unittest.TestCase):
         self.assertEqual(report["metrics"]["failed_reported_tensors"], 1)
 
     def test_composite_module_outlier_also_fails_report(self) -> None:
-        from torchport.parity import compare_noise_calibrated
+        from torchport.comparison import compare_noise_calibrated
 
         baseline = np.linspace(-1, 1, 100)
         reference = baseline.astype(np.float32)
@@ -319,7 +319,7 @@ class NoiseCalibratedTests(unittest.TestCase):
         self.assertEqual(report["metrics"]["failed_tensors"], 1)
 
     def test_leaf_key_strips_call_index_and_output_index(self) -> None:
-        from torchport.parity import _leaf_key
+        from torchport.comparison import _leaf_key
 
         leaves = {"model.encoder.block1.0.attn"}
         self.assertTrue(_leaf_key("model.encoder.block1.0.attn#3", leaves))

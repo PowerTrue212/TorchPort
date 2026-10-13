@@ -33,7 +33,7 @@ Codex、DSH、DSH + TorchPort 迁移到 Jittor，然后用同一个 evaluator �
 ## 目录与生成产物
 
 ```text
-CLIP/
+migrations/CLIP/
 ├── experiment.json              # 唯一冻结参数
 ├── prompts/                     # 三方法独立提示词和权限边界
 ├── scripts/                     # 准备、建工作区、计轮、评估、画图
@@ -51,7 +51,7 @@ Jittor 环境无需安装 PyTorch 即可读取同一份权重。
 
 ## V100 上的准备
 
-从 TorchPort 根目录上传整个 `CLIP` 目录后：
+从 TorchPort 根目录上传整个 `migrations/CLIP` 目录后：
 
 ```bash
 cd /data/L202500448/torchport/CLIP
@@ -137,7 +137,7 @@ outputs/method_table.png   # Method | RN | NA | Max Error | Rounds
 
 ```bash
 python -m compileall -q scripts templates tests
-python -m pytest CLIP/tests -q
+python -m pytest migrations/CLIP/tests -q
 ```
 
 真正的 reference 和 Jittor forward 必须到同一台 V100 上运行，本地 CPU 结果不计入

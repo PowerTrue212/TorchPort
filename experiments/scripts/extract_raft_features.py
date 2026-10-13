@@ -7,9 +7,8 @@ from pathlib import Path
 
 import numpy as np
 
-
 ROOT = Path(__file__).resolve().parents[2]
-TRACE = ROOT / "RAFT" / "results" / "dsh_torchport" / "traces"
+TRACE = ROOT / "migrations" / "RAFT" / "results" / "dsh_torchport" / "traces"
 DATA = ROOT / "experiments" / "data" / "tensors"
 FIGURE = ROOT / "experiments" / "figures" / "fig_raft"
 

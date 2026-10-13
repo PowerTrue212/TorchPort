@@ -103,8 +103,8 @@ def materialize(
     conditions: Sequence[str] = CONDITIONS,
     experiment_id: str = "p2-camoformer-cod-v41-final-20261004",
 ) -> dict[str, Any]:
-    source = ROOT / "CamoFormer" / "source" / "HVision-NKU-CamoFormer"
-    reference = ROOT / "CamoFormer" / "reference" / "CamoFormer-Jittor"
+    source = ROOT / "migrations" / "CamoFormer" / "source" / "HVision-NKU-CamoFormer"
+    reference = ROOT / "migrations" / "CamoFormer" / "reference" / "CamoFormer-Jittor"
     if _revision(source) != SOURCE_REVISION:
         raise ValueError(f"CamoFormer source revision 必须为 {SOURCE_REVISION}")
     if reference.exists() and _revision(reference) != REFERENCE_REVISION:
@@ -117,7 +117,7 @@ def materialize(
     fixtures = output / "fixtures"
     fixtures.mkdir(parents=True, exist_ok=True)
     prompt = output / "prompt.md"
-    shutil.copy2(ROOT / "CamoFormer" / "prompt-agent-zh.md", prompt)
+    shutil.copy2(ROOT / "migrations" / "CamoFormer" / "prompt-agent-zh.md", prompt)
     rng = np.random.default_rng(20261004)
     public_input = fixtures / "public-image.npy"
     hidden_input = fixtures / "hidden-image.npy"
@@ -132,7 +132,10 @@ def materialize(
             if workspace.exists():
                 raise FileExistsError(f"拒绝覆盖已有 trial workspace：{workspace}")
             workspace.mkdir(parents=True)
-            shutil.copy2(ROOT / "CamoFormer" / "templates" / "submission.py", workspace)
+            shutil.copy2(
+                ROOT / "migrations" / "CamoFormer" / "templates" / "submission.py",
+                workspace,
+            )
             shutil.copy2(
                 ROOT / "benchmarks" / "tasks" / "camoformer" / "target_adapter.py",
                 workspace / "torchport_adapter.py",

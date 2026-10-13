@@ -27,11 +27,12 @@ elif mode == "target":
 
     sys.path.insert(0, sys.argv[2])
     from submission import load_model  # noqa: E402
+
     from torchport.capture import module_config  # noqa: E402
 
     json.dump(module_config(load_model()), open(sys.argv[3], "w"))
 else:
-    from torchport.parity import compare_module_config
+    from torchport.comparison import compare_module_config
 
     report = compare_module_config(json.load(open(sys.argv[2])), json.load(open(sys.argv[3])))
     print("compared_keys", report["compared_keys"], "common_modules", report["common_modules"],

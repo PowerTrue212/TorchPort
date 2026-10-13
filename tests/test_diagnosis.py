@@ -9,8 +9,8 @@ import numpy as np
 
 from experiments.harness.protocol import LOCALIZATION_FIELDS
 from torchport import diagnosis
+from torchport.contracts import normalize
 from torchport.diagnosis import tracing as diagnosis_tracing
-from torchport.task import normalize
 
 
 def _task(root: Path) -> dict:
@@ -138,7 +138,7 @@ class DiagnosisTests(unittest.TestCase):
         self.assertIn("No space left on device", location["reason"])
 
     def test_focus_modules_window_around_first_divergence(self) -> None:
-        from torchport.execution import write_json
+        from torchport.runtime import write_json
 
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
@@ -156,7 +156,7 @@ class DiagnosisTests(unittest.TestCase):
         self.assertEqual(focus, ["blk", "blk.0", "m17", "m18", "m19"])
 
     def test_focused_trace_separates_frozen_oracle_from_module_evidence(self) -> None:
-        from torchport.execution import write_json
+        from torchport.runtime import write_json
 
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)

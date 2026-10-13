@@ -7,9 +7,8 @@ from unittest.mock import patch
 
 import numpy as np
 
-from torchport import noise
-from torchport.execution import write_json
-from torchport.verification import noise as noise_impl
+from torchport.runtime import write_json
+from torchport.verification import noise
 
 
 def _task(target_repo: str = "/repo/a") -> dict:
@@ -48,7 +47,7 @@ class NoiseTests(unittest.TestCase):
                 write_json(run_dir / "noise.json", {"noise_floor": 2e-6, "dominant_op": "sum_spatial"})
                 return {"ok": True, "seconds": 1.0}
 
-            with patch.object(noise_impl, "execute", ok):
+            with patch.object(noise, "execute", ok):
                 first = noise.calibrate(_task("/repo/a"), root)
                 second = noise.calibrate(_task("/repo/b"), root)
             self.assertTrue(first["ok"])
@@ -60,7 +59,7 @@ class NoiseTests(unittest.TestCase):
             def broken(side, args, *, run_dir, cache, timeout):
                 return {"ok": False, "seconds": 1.0, "stderr_tail": "ImportError: jittor"}
 
-            with patch.object(noise_impl, "execute", broken):
+            with patch.object(noise, "execute", broken):
                 failed = noise.calibrate({**_task(), "protocol": {"timeout": 60, "noise_probe": {"repeats": 3}}}, root)
             self.assertFalse(failed["ok"])
             self.assertEqual(failed["reason"], "NOISE_PROBE_FAILED")
@@ -71,7 +70,7 @@ if __name__ == "__main__":
 
 
 def test_reduce_shape_takes_largest_global_reduction_from_source() -> None:
-    from torchport.noise import reduce_shape
+    from torchport.verification.noise import reduce_shape
 
     config = {
         "a.pool": {"class": "AdaptiveAvgPool2d", "output_size": [1, 1]},
@@ -92,7 +91,7 @@ def test_reduce_shape_takes_largest_global_reduction_from_source() -> None:
 def test_probe_spec_explicit_task_value_overrides_derived_shape(tmp_path) -> None:
     import json
 
-    from torchport.noise import probe_spec
+    from torchport.verification.noise import probe_spec
 
     config, shapes = tmp_path / "config.json", tmp_path / "shapes.json"
     config.write_text(json.dumps({"p": {"class": "GroupNorm"}}))
@@ -105,7 +104,7 @@ def test_probe_spec_explicit_task_value_overrides_derived_shape(tmp_path) -> Non
 
 
 def test_per_tensor_floors_use_op_family_and_fall_back_for_composites() -> None:
-    from torchport.noise import per_tensor_floors
+    from torchport.verification.noise import per_tensor_floors
 
     config = {
         "model.backbone.norm1": {"class": "LayerNorm"},

@@ -16,7 +16,7 @@ from PIL import Image, ImageOps
 
 ROOT = Path(__file__).resolve().parents[4]
 OUT = Path(__file__).resolve().parent
-COD10K_ZIP = ROOT / "CamoFormer" / "data" / "TestDataset.zip"
+COD10K_ZIP = ROOT / "migrations" / "CamoFormer" / "data" / "TestDataset.zip"
 COD10K_MEMBER = "TestDataset/COD10K/Image/COD10K-CAM-1-Aquatic-1-BatFish-2.jpg"
 PLANT_ZIP = ROOT / "heldout" / "plantcamo" / "data" / "PlantCAMO1250.zip"
 PLANT_MEMBER = "PlantCAMO1250/test/rgb/PC_Abronia_latifolia_1042.jpg"

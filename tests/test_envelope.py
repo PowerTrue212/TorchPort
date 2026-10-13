@@ -6,8 +6,8 @@ from pathlib import Path
 
 import numpy as np
 
-from torchport.parity import _l2, compare_envelope, compare_metric_envelope
-from torchport.verify import judge
+from torchport.comparison import _l2, compare_envelope, compare_metric_envelope
+from torchport.verification import judge
 
 
 def test_l2_matches_linalg_norm() -> None:
@@ -98,7 +98,7 @@ class EnvelopeV3Tests(unittest.TestCase):
         return self._save("ref", 0.0, 1), [self._save(f"v{i}", 1e-6, 10 + i) for i in range(3)]
 
     def test_order_of_target_runs_does_not_change_verdict(self) -> None:
-        from torchport.parity import compare_envelope_v3
+        from torchport.comparison import compare_envelope_v3
 
         reference, variants = self._envelope()
         good, bad = self._save("good", 5e-7, 20), self._save("bad", 1e-4, 21)
@@ -109,7 +109,7 @@ class EnvelopeV3Tests(unittest.TestCase):
         self.assertEqual(forward["metrics"]["max_ratio"], backward["metrics"]["max_ratio"])
 
     def test_target_noise_is_reported_not_added_to_limit(self) -> None:
-        from torchport.parity import compare_envelope_v3
+        from torchport.comparison import compare_envelope_v3
 
         reference, variants = self._envelope()
         # v2 会因两次 target 互相差很远而放宽上限；v3 只报告 unstable
@@ -119,7 +119,7 @@ class EnvelopeV3Tests(unittest.TestCase):
         self.assertGreater(report["metrics"]["unstable_tensors"], 0)
 
     def test_three_bands(self) -> None:
-        from torchport.parity import compare_envelope_v3
+        from torchport.comparison import compare_envelope_v3
 
         reference, variants = self._envelope()
         d = compare_envelope_v3(reference, variants, [reference])["tensors"][0]["source_noise"]
@@ -135,7 +135,7 @@ class EnvelopeV3Tests(unittest.TestCase):
         self.assertEqual(compare_envelope_v3(reference, variants, [scaled("f", 4.0)])["status"], "fail")
 
     def test_output_elementwise_catches_local_error(self) -> None:
-        from torchport.parity import compare_envelope_v3
+        from torchport.comparison import compare_envelope_v3
 
         reference, variants = self._envelope()
         ref = np.load(reference)
@@ -148,7 +148,7 @@ class EnvelopeV3Tests(unittest.TestCase):
         self.assertEqual(report["status"], "fail")
 
     def test_noise_floor_raises_basis_without_using_candidate_noise(self) -> None:
-        from torchport.parity import compare_envelope_v3
+        from torchport.comparison import compare_envelope_v3
 
         reference, variants = self._envelope()
         # 层误差约 1e-5，约为 D 的 7 倍；输出不加噪声，只考察层判定
@@ -161,7 +161,7 @@ class EnvelopeV3Tests(unittest.TestCase):
         self.assertEqual(floored["noise_floor"], 2e-5)
 
     def test_batch_variant_far_from_others_is_excluded(self) -> None:
-        from torchport.parity import compare_envelope_v3
+        from torchport.comparison import compare_envelope_v3
 
         reference, variants = self._envelope()
         batch = self._save("batch", 1e-2, 40)  # 批内相关导致的大差异不能撑大包络
@@ -227,7 +227,7 @@ class MetricEnvelopeTests(unittest.TestCase):
 
 class ModuleConfigTests(unittest.TestCase):
     def test_reports_eps_swap_and_ignores_class_and_int_tuple_forms(self) -> None:
-        from torchport.parity import compare_module_config
+        from torchport.comparison import compare_module_config
 
         # PlantCamo 实例：backbone.norm1 源为 1e-6、候选写成 1e-5；类名不同不算差异；
         # Conv 的 (1, 1) 与 1 视为相同。
@@ -265,7 +265,7 @@ class ModuleConfigTests(unittest.TestCase):
         self.assertEqual(config, {"norm": {"class": "Norm", "eps": 1e-6, "normalized_shape": [8]}})
 
     def test_mismatch_in_uncalled_module_is_marked_unused(self) -> None:
-        from torchport.parity import called_modules, compare_module_config
+        from torchport.comparison import called_modules, compare_module_config
 
         # PlantCamo 实例：fm1..4 定义了但前向中没有调用，其 align_corners 差异是死代码
         with tempfile.TemporaryDirectory() as temporary:
@@ -328,7 +328,7 @@ if __name__ == "__main__":
 
 class IsolatedV3Tests(unittest.TestCase):
     def test_backend_noise_below_floor_passes_and_real_error_is_first(self) -> None:
-        from torchport.parity import compare_isolated_v3
+        from torchport.comparison import compare_isolated_v3
 
         root = Path(tempfile.mkdtemp())
         rng = np.random.default_rng(5)
@@ -378,8 +378,8 @@ class IsolatedV3Tests(unittest.TestCase):
 
 
 def test_isolated_v3_per_op_floor_exposes_layernorm_eps_and_localize_falls_back_to_marginal(tmp_path) -> None:
+    from torchport.comparison import compare_isolated_v3
     from torchport.diagnosis import _localize_v3
-    from torchport.parity import compare_isolated_v3
 
     rng = np.random.default_rng(5)
     ref = rng.standard_normal(4096)

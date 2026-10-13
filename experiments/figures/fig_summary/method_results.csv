@@ -1,8 +1,8 @@
 model,method,rn,na,rounds,status,source
-CLIP,Codex,true,true,0,passed,CLIP/outputs/summary.json
-CLIP,DSH,true,true,0,passed,CLIP/outputs/summary.json
-CLIP,DSH + TorchPort,true,true,0,passed,CLIP/outputs/summary.json
-RAFT,Codex,true,true,5,passed,RAFT/outputs/summary.json
-RAFT,DSH,true,false,1,stopped_failed,RAFT/outputs/summary.json
-RAFT,DSH + TorchPort,true,true,1,passed,RAFT/outputs/summary.json
+CLIP,Codex,true,true,0,passed,migrations/CLIP/outputs/summary.json
+CLIP,DSH,true,true,0,passed,migrations/CLIP/outputs/summary.json
+CLIP,DSH + TorchPort,true,true,0,passed,migrations/CLIP/outputs/summary.json
+RAFT,Codex,true,true,5,passed,migrations/RAFT/outputs/summary.json
+RAFT,DSH,true,false,1,stopped_failed,migrations/RAFT/outputs/summary.json
+RAFT,DSH + TorchPort,true,true,1,passed,migrations/RAFT/outputs/summary.json
 RAFT,DSH V4 Flash + TP,true,true,3,passed,RAFT_DSH_V4_FLASH/results/dsh_torchport/result.json

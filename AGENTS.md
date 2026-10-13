@@ -36,14 +36,13 @@ TorchPort 当前不是自动代码转换器，也不负责替 Agent 猜入口、
 
 ### 成熟的代码 Agent
 
-DSH、Codex 等成熟 Agent 应保留正常的仓库浏览、搜索、编辑、Shell、Python、测试和网络
+成熟代码 Agent 应保留正常的仓库浏览、搜索、编辑、Shell、Python、测试和网络
 检索能力。TorchPort 作为附加验证工具接入，环境负责隔离 hidden task、oracle、凭据和最终
 evaluator，并记录调用与成本。
 
-DSH 插件只映射六个命令：`inspect`、`run`、`evaluate`、`verify`、`trace`、`localize`。
-安装和工作方式见 [DSH 插件说明](integrations/dsh/README.md)。用户自己运行 `dsh web`；项目
-Agent 不代替用户启动它。远端 GPU 连接只从 `~/.tp_ssh.env` 读取，密码和主机信息不能写入
-仓库。
+当前不维护特定 Agent 产品的仓库内插件。成熟 Agent 通过公开 CLI 或外部适配层调用
+`inspect`、`run`、`evaluate`、`verify`、`trace`、`localize`。远端 GPU 连接只从
+`~/.tp_ssh.env` 读取，密码和主机信息不能写入仓库。
 
 ### 直接调用模型 API 或本地代码模型
 
@@ -79,7 +78,7 @@ P2 比较三种反馈：
 ## 已经完成什么
 
 - P0：TaskSpec、source oracle、candidate 身份、负例和唯一验收结果已经闭环。
-- P1：双端独立环境、运行记录、重复验收、DSH 六命令插件已经闭环。
+- P1：双端独立环境、运行记录和重复验收已经闭环。
 - P2：反馈裁剪、DeepSeek API adapter、事件记录、成本聚合和 tiny GPU smoke 已完成最小闭环。
 - CLIP/RAFT：已经完成基础设施与接口覆盖审计；历史结果不能直接用于正式效率排名。
 - CamoFormer：已完成一次真实 COD 仓库迁移，并暴露出 TF32、固定容差和 target 数值波动对
@@ -135,10 +134,10 @@ CamoFormer 候选已经可以完整运行，参数与结构检查通过，但冻
   `evaltools`）：PyTorch 复现论文；Jittor 1100/1100 参数加载，四数据集 S/wF/E/MAE 与
   PyTorch 差值均约 1e-7，逐图最大差 1/255，阈值 128 翻转像素 < 1e-6。随机权重整网大误差
   来自未训练网络的条件数放大，不是实现错误。Jittor 推理耗时约为 PyTorch 的 4.2 倍。
-  证据：`CamoFormer/outputs/task-metrics/`。
+  证据：`migrations/CamoFormer/outputs/task-metrics/`。
 
-完整说明和原始证据入口见 [CamoFormer 实验记录](CamoFormer/outputs/dsh-web-camoformer/README.md)
-和 `CamoFormer/outputs/dsh-web-camoformer/probe/` 下的 trace、negctl 与 `probe_jt_*` 证据。
+完整说明和原始证据入口见 [CamoFormer 实验记录](migrations/CamoFormer/outputs/dsh-web-camoformer/README.md)
+和 `migrations/CamoFormer/outputs/dsh-web-camoformer/probe/` 下的 trace、negctl 与 `probe_jt_*` 证据。
 
 仍未完成：Jittor 不确定性根因（源码级确认）、`conv_opt=0` 整网更差的原因、Jittor 推理
 性能差距、noise-calibrated 是否升级为正式协议。若建立新容差或关闭 TF32 的新协议，必须作为新协议
@@ -162,10 +161,9 @@ CamoFormer 候选已经可以完整运行，参数与结构检查通过，但冻
 | --- | --- |
 | `src/torchport/` | 冻结任务、双端执行、证据采集、比较和验收核心 |
 | `tests/` | 核心契约与负例测试 |
-| `integrations/dsh/` | 成熟 DSH Agent 使用的六命令插件 |
 | `experiments/harness/` | 直接调用模型 API 时使用的实验控制器 |
 | `benchmarks/tasks/` | 小型、显式、可复现的任务定义 |
-| `CLIP/`、`RAFT/`、`CamoFormer/`、`apt/` | 真实迁移工作区、提示词和证据 |
+| `migrations/` | 真实迁移工作区、提示词和仓库专用证据 |
 | `compatibility/` | 历史规则和后续 P3 问题条目 |
 | `experiments/results/`、`submissions/`、`deliverables/` | 需要长期保存的结果和报告 |
 
@@ -180,9 +178,6 @@ CamoFormer 候选已经可以完整运行，参数与结构检查通过，但冻
 
 # 检查本次改动的 Python 文件；全仓旧绘图脚本可能仍有独立 Ruff 问题
 .\.venv\Scripts\ruff.exe check <changed-files>
-
-# DSH 插件
-npm test --prefix integrations/dsh
 
 # 查看 CLI
 .\.venv\Scripts\python.exe -m torchport --help

@@ -3,7 +3,7 @@
 ## 依赖方向
 
 ```text
-DSH / 其他迁移 Agent
+外部代码 Agent
         │ 编写或修改 candidate，生成显式 task
         ▼
 TorchPort CLI
@@ -17,13 +17,12 @@ TorchPort CLI
 ```
 
 TorchPort 不读取未知仓库后自动改写代码。仓库理解、迁移策略和代码修复属于 Agent；
-TorchPort 只处理显式任务、可复验证据和经过准入的迁移问题条目。DSH 插件依赖
-TorchPort CLI，核心不导入 DSH，也不维护第二套工具协议。
+TorchPort 只处理显式任务、可复验证据和经过准入的迁移问题条目。Agent 通过 CLI 或受控
+Harness 使用 TorchPort，核心不绑定某个 Agent 产品，也不维护第二套工具协议。
 
 核心依赖保持单向：`contracts → runtime/capture → comparison → verification`；
-`diagnosis` 复用同一运行、采集、比较和 oracle 能力，只增加诊断编排。顶层
-`task.py`、`execution.py`、`parity.py`、`oracle.py`、`verify.py` 和 `noise.py`
-仅为历史调用保留兼容导入，新代码不再依赖这些入口。
+`diagnosis` 复用同一运行、采集、比较和 oracle 能力，只增加诊断编排。内部和外部调用都
+使用这些 canonical package，不再保留平面的历史导入入口。
 
 ## 稳定契约
 
@@ -60,7 +59,7 @@ task.yaml
                                ▼
                          verify result
                                │
-                         DSH / CI / 报告
+                         Agent / CI / 报告
 ```
 
 普通验收使用 `mode=normal`，不会回放 source 的中间算子输出。`mode=trace` 属于诊断
@@ -84,8 +83,8 @@ task.yaml
 
 Harness 自身也分层：`agents/` 适配模型 API 与网络研究，`tooling.py` 定义工具协议，
 `workspace.py` 约束文件访问，`feedback.py` 实施反馈裁剪，`orchestration/` 冻结并执行
-run plan，`reporting/` 只读聚合结果。远端 DSH 入口同样只做转发；配置、bundle、SSH
-传输、反馈裁剪和命令编排位于 `scripts/remote/torchport_remote/`。
+run plan，`reporting/` 只读聚合结果。远端辅助入口只做转发；配置、bundle、SSH 传输、
+反馈裁剪和命令编排位于 `scripts/remote/torchport_remote/`。
 
 ## 有证据的迁移问题库
 
@@ -94,9 +93,3 @@ run plan，`reporting/` 只读聚合结果。远端 DSH 入口同样只做转发
 每条记录保存触发条件、差异、最小复现、修复、before/after 证据、适用范围和未知项。
 首版使用普通 JSON 和确定性字段过滤；不会自动执行修复，也不会把首次分歧升级为根因。
 完整准入规则见 [P3 有证据的迁移问题库](p3-verified-issues.md)。
-
-## DSH 插件
-
-DSH 负责读取仓库和修改 candidate。插件只暴露运行 candidate、正式验收、读取首次
-分歧、传递修复建议和生成报告五类工具。插件的 `passed`、`failure_code` 和 `next`
-全部来自 TorchPort 结果，不能根据日志或嵌套字段重新推导成功。

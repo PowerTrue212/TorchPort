@@ -1,6 +1,6 @@
 # APT PyTorch → Jittor 三方法完整训练对比（冻结版）
 
-这个目录按 TorchPort 现有 `CLIP/` 的实验骨架组织，但实验语义不同：CLIP 是固定权重
+这个目录按 TorchPort 现有 `migrations/CLIP/` 实验骨架组织，但实验语义不同：CLIP 是固定权重
 的一次推理对齐；APT 必须从 ImageNet-21k 预训练 ViT-B/16 开始，依次完成 CIFAR-100
 的 10 个 class-incremental tasks，每个 task 训练 30 epochs，最后再对完整 10,000 张
 测试集推理。
@@ -48,7 +48,7 @@ Inference 不提供 task identity。三种方法的指标只由 common evaluator
 ## 与 CLIP 同构的目录
 
 ```text
-apt/
+migrations/apt/
 ├── assets/                       # 固定 APT source ZIP + CIFAR-100 archive
 ├── experiment.json               # 唯一冻结参数
 ├── prompts/                      # Codex / DSH / DSH+TorchPort 权限边界
@@ -169,6 +169,6 @@ outputs/method_table.png       # RN | Avg Acc | Forgetting | Delta Acc | Rounds
 
 ```powershell
 python -m compileall -q scripts templates tests
-python -m pytest apt/tests -q
-python apt/scripts/validate_protocol.py --stage assets
+python -m pytest migrations/apt/tests -q
+python migrations/apt/scripts/validate_protocol.py --stage assets
 ```

@@ -10,8 +10,8 @@ from unittest.mock import patch
 
 import numpy as np
 
-from torchport import oracle as harness
-from torchport.task import normalize, tree_hash
+from torchport import verification as harness
+from torchport.contracts import normalize, tree_hash
 from torchport.verification import runner as verification_runner
 
 

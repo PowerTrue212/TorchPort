@@ -8,8 +8,8 @@ from pathlib import Path
 
 from experiments.harness.aggregate import aggregate
 from experiments.harness.experiment import execute_run_plan, preflight, prepare_run_plan
-from torchport.execution import write_json
-from torchport.task import file_hash
+from torchport.contracts import file_hash
+from torchport.runtime import write_json
 
 
 def _fixture(root: Path, *, formal: bool = False) -> Path:

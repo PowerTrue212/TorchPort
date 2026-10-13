@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import unittest
 
-from torchport.verify import judge, judge_repeats
+from torchport.verification import judge, judge_repeats
 
 
 def _info(weights: int = 4, loaded: int = 4, digest: str | None = "in") -> tuple[dict, dict]:

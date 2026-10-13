@@ -7,7 +7,7 @@ tensor 的裁决，输出图表和 summary.json。
 用法（推荐用带 matplotlib 的解释器）：
     E:\\Anaconda\\python.exe docs/evidence/noise_calibrated/build_evidence.py
 
-不写 src/、scripts/ 等受保护目录；只读 CamoFormer/ 和 compatibility/ 下的既有证据，
+不写 src/、scripts/ 等受保护目录；只读 migrations/CamoFormer/ 和 compatibility/ 下的既有证据，
 只写本目录下的 figs/ 和 summary.json。
 """
 
@@ -24,9 +24,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 ROOT = Path(__file__).resolve().parents[3]
-PROBE = ROOT / "CamoFormer" / "outputs" / "dsh-web-camoformer" / "probe"
+PROBE = ROOT / "migrations" / "CamoFormer" / "outputs" / "dsh-web-camoformer" / "probe"
 NEGCTL = PROBE / "negctl"
-TASK_METRICS = ROOT / "CamoFormer" / "outputs" / "task-metrics"
+TASK_METRICS = ROOT / "migrations" / "CamoFormer" / "outputs" / "task-metrics"
 OUT_DIR = Path(__file__).resolve().parent
 FIG_DIR = OUT_DIR / "figs"
 

@@ -5,7 +5,7 @@
 记录和最终报告都由各自文件负责。
 
 ```text
-RAFT/
+migrations/RAFT/
 ├── experiment.json
 ├── prompts/
 │   ├── codex.md

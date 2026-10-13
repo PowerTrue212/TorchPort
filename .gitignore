@@ -20,10 +20,7 @@ artifacts/trash/
 artifacts/dsh-runs/
 artifacts/clip-transfer/
 
-# 本地 DSH/Node 构建和远端工具链。
-integrations/dsh/node_modules/
-integrations/dsh/lib/
-integrations/dsh/*.tgz
+# 本地远端工具链。
 tools/
 
 # 实验脚本缓存。
@@ -48,40 +45,40 @@ experiments/prompts/ref_images/*
 .torchport/
 
 # CLIP 三方法对比：官方源码、权重、固定输入、迁移工作区和运行结果均由脚本生成。
-CLIP/source/
-CLIP/shared/
-CLIP/workspaces/
-CLIP/results/
-CLIP/outputs/
-CLIP/downloads/
-CLIP/env.sh
+migrations/CLIP/source/
+migrations/CLIP/shared/
+migrations/CLIP/workspaces/
+migrations/CLIP/results/
+migrations/CLIP/outputs/
+migrations/CLIP/downloads/
+migrations/CLIP/env.sh
 
 # RAFT 三方法对比：协议代码可提交；官方源码、checkpoint、fixture/reference、
 # 方法工作区、原始 evaluator 产物和生成图保留在 data-fs，由 experiments/ 接收脱敏导出。
-RAFT/source/
-RAFT/shared/
-RAFT/workspaces/
-RAFT/results/
-RAFT/outputs/
-RAFT/env.sh
+migrations/RAFT/source/
+migrations/RAFT/shared/
+migrations/RAFT/workspaces/
+migrations/RAFT/results/
+migrations/RAFT/outputs/
+migrations/RAFT/env.sh
 
 # APT 协议代码可提交；下载资源和运行态数据不进入 Git。
-apt/assets/
-apt/source/
-apt/shared/
-apt/workspaces/
-apt/results/
-apt/outputs/
-apt/env.sh
+migrations/apt/assets/
+migrations/apt/source/
+migrations/apt/shared/
+migrations/apt/workspaces/
+migrations/apt/results/
+migrations/apt/outputs/
+migrations/apt/env.sh
 
 # CamoFormer COD pilot: freeze revisions in the materializer; keep downloaded repos and runs local.
-CamoFormer/source/
-CamoFormer/reference/
-CamoFormer/shared/
-CamoFormer/workspaces/
-CamoFormer/results/
-CamoFormer/outputs/
-CamoFormer/env.sh
+migrations/CamoFormer/source/
+migrations/CamoFormer/reference/
+migrations/CamoFormer/shared/
+migrations/CamoFormer/workspaces/
+migrations/CamoFormer/results/
+migrations/CamoFormer/outputs/
+migrations/CamoFormer/env.sh
 
 # 运行期进程号文件。
 *.pid
@@ -95,8 +92,8 @@ experiments/p2/heldout-v1/results/vscode-v2-none-r1/
 experiments/p2/heldout-v1/results/vscode-v2-full-r0/*.jsonl
 
 # CamoFormer 下载数据和 checkpoint 体积较大，由实验说明记录来源与摘要。
-CamoFormer/data/
-CamoFormer/checkpoint/
+migrations/CamoFormer/data/
+migrations/CamoFormer/checkpoint/
 
 # 历史 RAFT V4 Flash 工作区包含源码副本、权重、trace 和运行产物，只保留在本机。
 RAFT_DSH_V4_FLASH/

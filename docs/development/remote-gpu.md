@@ -19,10 +19,10 @@ python scripts/remote/ssh_exec.py put LOCAL_PATH REMOTE_PATH
 python scripts/remote/ssh_exec.py get REMOTE_PATH LOCAL_PATH
 ```
 
-DSH Web 中的六个 TorchPort 工具默认通过 `scripts/remote/dsh_torchport.py` 使用这组
-连接信息。每次调用会把当前 candidate、公开 source、输入和 TorchPort 核心同步到远端
-专用目录，再执行同名命令。远端 evidence 会跨调用保留，Jittor 缓存仍由 TorchPort 放在
-对应 trial 的 cache 目录内。
+现有远端适配脚本可通过 `scripts/remote/dsh_torchport.py` 使用这组连接信息。脚本名保留
+是为了兼容已有远端实验记录，它不再对应仓库内的 DSH plugin。每次调用会把当前 candidate、
+公开 source、输入和 TorchPort 核心同步到远端专用目录，再执行同名命令。远端 evidence 会
+跨调用保留，Jittor 缓存仍由 TorchPort 放在对应 trial 的 cache 目录内。
 
 长期使用时优先在 `~/.ssh/config` 配置主机别名和专用密钥。实验产生的 checkpoint、
 编译缓存和输出留在远端数据盘，仓库只保存可复现的任务定义、脱敏报告和必要的小型

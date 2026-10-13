@@ -5,8 +5,8 @@
 
   <p>
     <strong>供 PyTorch → Jittor 迁移 Agent 调用的可复现执行与验证工具。</strong><br>
-    TorchPort 以 DeepSeek/DSH 作为源代码分析与操作平台，支持 Pytorch、TensorFlow、Caffe 等框架到 Jittor 的迁移，
-    并天然支持昇腾等国产算力硬件。
+    TorchPort 为代码 Agent 提供冻结任务下的双端执行、证据采集和唯一验收，当前重点支持
+    PyTorch 到 Jittor 的迁移。
   </p>
 
   <p>
@@ -14,7 +14,7 @@
     <img alt="DeepSeek" src="https://img.shields.io/badge/LLM-DeepSeek-4B6CFF">
     <img alt="Jittor" src="https://img.shields.io/badge/target-Jittor-2F6BFF">
     <img alt="Ascend" src="https://img.shields.io/badge/accelerator-Ascend-E6242E">
-    <img alt="DSH" src="https://img.shields.io/badge/agent-DSH-7A5AF8">
+    <img alt="Agent" src="https://img.shields.io/badge/interface-code%20agent-7A5AF8">
     <img alt="evidence" src="https://img.shields.io/badge/method-verification-F27CA5">
   </p>
 
@@ -27,7 +27,6 @@
     <a href="#系统架构">系统架构</a> ·
     <a href="#项目定位">项目定位</a> ·
     <a href="#快速开始">快速开始</a> ·
-    <a href="#dsh-集成">DSH 集成</a> ·
     <a href="#实验图表">实验图表</a> ·
     <a href="#当前状态">当前状态</a>
   </p>
@@ -41,7 +40,7 @@
 
 TorchPort 的核心假设很简单：模型迁移不能只看代码是否被替换，更要看迁移后的模型能否保持数值行为与性能对齐。
 
-系统由两层组成。DeepSeek/DSH 阅读未知 PyTorch 仓库、编写 Jittor candidate 并选择修复；TorchPort 按冻结任务执行双端模型、核验输入和参数、比较数值结果并返回可审计证据。下一阶段会把真实迁移中复验过的问题整理为有证据的问题库，供 Agent 在新任务中只读参考。
+系统由两层组成。外部代码 Agent 阅读未知 PyTorch 仓库、编写 Jittor candidate 并选择修复；TorchPort 按冻结任务执行双端模型、核验输入和参数、比较数值结果并返回可审计证据。下一阶段会把真实迁移中复验过的问题整理为有证据的问题库，供 Agent 在新任务中只读参考。
 
 ## 项目定位
 
@@ -61,7 +60,7 @@ TorchPort 关注的是一个可复验的问题：
 
 | 层次 | 当前选择 | 作用 |
 | --- | --- | --- |
-| 智能体入口 | DeepSeek/DSH | 读取未知仓库，决定迁移和修复动作 |
+| 智能体入口 | 通用代码 Agent | 读取未知仓库，决定迁移和修复动作 |
 | 目标框架 | Jittor | 承接 PyTorch 代码与权重迁移 |
 | 验证机制 | 双端执行 + 数值轨迹 | 判断迁移结果是否可信 |
 | 后端方向 | 昇腾等国产算力 | 作为目标部署环境纳入接口设计 |
@@ -140,46 +139,25 @@ PYTHONPATH=src python -m torchport localize .torchport/harness/trace/t0.json
 ## Workflow
 
 ```text
-DSH/Agent 阅读仓库并修改 candidate
+代码 Agent 阅读仓库并修改 candidate
       -> 编写显式 task
       -> PyTorch/Jittor 双端执行
       -> 权重与输入检查
       -> 最终输出与可选轨迹比较
       -> 首次数值分歧定位
-      -> DSH/Agent 修复
+      -> Agent 修复
       -> 重复独立验收
 ```
 
-TorchPort 不自动扫描并改写未知仓库。DSH 或其他 Agent 负责仓库特有决策，TorchPort
+TorchPort 不自动扫描并改写未知仓库。外部代码 Agent 负责仓库特有决策，TorchPort
 只接受显式任务并返回结构化证据。
-
-## DSH 集成
-
-DSH 插件位于 `integrations/dsh`，目前提供 6 个工具：
-
-```text
-torchport_inspect
-torchport_run
-torchport_evaluate
-torchport_trace
-torchport_localize
-torchport_verify
-```
-
-运行插件测试：
-
-```bash
-cd integrations/dsh
-npm install
-npm test
-```
 
 ## 当前状态
 
 - [x] 显式 TaskSpec、oracle 和 candidate 身份冻结
 - [x] PyTorch/Jittor 双端执行、张量证据与唯一验收结果
 - [x] 首次数值分歧定位与结构化失败分类
-- [x] DSH 验证插件和 Agent 修复循环
+- [x] CLI、受控 Harness 和 Agent 修复循环
 - [x] P2 受控 Gateway、DeepSeek adapter、成本聚合与 tiny GPU smoke 闭环
 - [x] 实验图表与模型可视化
 - [ ] 冻结 P2 正式 benchmark 并运行多 replicate 真实迁移实验
@@ -280,11 +258,10 @@ DSH + TorchPort：
 
 ```text
 src/torchport/          可信执行、证据采集、oracle、比较与验收核心
-integrations/dsh/       DSH 插件，只消费 TorchPort 命令和稳定结果
 benchmarks/             小型仓库、任务定义与入口发现基准
 compatibility/          历史兼容性规则与有证据的迁移问题
 experiments/            实验协议、数据、图表、提示词和报告
-CLIP/ RAFT/ apt/        独立的大模型迁移实验协议与本地工作区
+migrations/             真实仓库迁移协议、本地工作区和仓库专用证据
 scripts/                安装、复现和远程开发工具
 docs/                   架构、实施计划和开发说明
 tests/                  单元测试与集成测试

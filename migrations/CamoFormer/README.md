@@ -28,8 +28,8 @@ On the GPU worker, clone both revisions into `source/HVision-NKU-CamoFormer` and
 separate PyTorch/Jittor runtimes, then materialize the experiment:
 
 ```bash
-/path/to/torch-env/bin/python -m pip install -r CamoFormer/requirements-source.txt
-/path/to/jittor-env/bin/python -m pip install -r CamoFormer/requirements-target.txt
+/path/to/torch-env/bin/python -m pip install -r migrations/CamoFormer/requirements-source.txt
+/path/to/jittor-env/bin/python -m pip install -r migrations/CamoFormer/requirements-target.txt
 ```
 
 The official README also mentions Apex, but this inference-only TaskSpec does not import or require

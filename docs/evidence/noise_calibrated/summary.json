@@ -7,21 +7,21 @@
   },
   "data_sources": {
     "3080 Ti": {
-      "correct_random": "CamoFormer\\outputs\\dsh-web-camoformer\\probe\\trace-module-isolation-calibrated-r3.json",
-      "correct_encoder_ckpt": "CamoFormer\\outputs\\dsh-web-camoformer\\probe\\trace-encoder-ckpt-r1.json",
-      "source_repeat": "CamoFormer\\outputs\\dsh-web-camoformer\\probe\\trace-source-repeat-r1.json",
-      "convopt0": "CamoFormer\\outputs\\dsh-web-camoformer\\probe\\trace-convopt0-r1.json",
-      "mut_ln_eps": "CamoFormer\\outputs\\dsh-web-camoformer\\probe\\negctl\\trace-ln_eps.json",
-      "mut_mask_residual": "CamoFormer\\outputs\\dsh-web-camoformer\\probe\\negctl\\trace-mask_residual.json",
-      "mut_gelu_tanh": "CamoFormer\\outputs\\dsh-web-camoformer\\probe\\negctl\\trace-gelu_tanh.json",
-      "mut_l2_eps": "CamoFormer\\outputs\\dsh-web-camoformer\\probe\\negctl\\trace-l2_eps.json"
+      "correct_random": "migrations\\CamoFormer\\outputs\\dsh-web-camoformer\\probe\\trace-module-isolation-calibrated-r3.json",
+      "correct_encoder_ckpt": "migrations\\CamoFormer\\outputs\\dsh-web-camoformer\\probe\\trace-encoder-ckpt-r1.json",
+      "source_repeat": "migrations\\CamoFormer\\outputs\\dsh-web-camoformer\\probe\\trace-source-repeat-r1.json",
+      "convopt0": "migrations\\CamoFormer\\outputs\\dsh-web-camoformer\\probe\\trace-convopt0-r1.json",
+      "mut_ln_eps": "migrations\\CamoFormer\\outputs\\dsh-web-camoformer\\probe\\negctl\\trace-ln_eps.json",
+      "mut_mask_residual": "migrations\\CamoFormer\\outputs\\dsh-web-camoformer\\probe\\negctl\\trace-mask_residual.json",
+      "mut_gelu_tanh": "migrations\\CamoFormer\\outputs\\dsh-web-camoformer\\probe\\negctl\\trace-gelu_tanh.json",
+      "mut_l2_eps": "migrations\\CamoFormer\\outputs\\dsh-web-camoformer\\probe\\negctl\\trace-l2_eps.json"
     },
     "V100": {
-      "correct_random": "CamoFormer\\outputs\\dsh-web-camoformer\\probe\\trace-v100-baseline-r6.json",
-      "mut_ln_eps": "CamoFormer\\outputs\\dsh-web-camoformer\\probe\\negctl\\trace-v100-ln_eps.json",
-      "mut_mask_residual": "CamoFormer\\outputs\\dsh-web-camoformer\\probe\\negctl\\trace-v100-mask_residual.json",
-      "mut_gelu_tanh": "CamoFormer\\outputs\\dsh-web-camoformer\\probe\\negctl\\trace-v100-gelu_tanh.json",
-      "mut_l2_eps": "CamoFormer\\outputs\\dsh-web-camoformer\\probe\\negctl\\trace-v100-l2_eps.json"
+      "correct_random": "migrations\\CamoFormer\\outputs\\dsh-web-camoformer\\probe\\trace-v100-baseline-r6.json",
+      "mut_ln_eps": "migrations\\CamoFormer\\outputs\\dsh-web-camoformer\\probe\\negctl\\trace-v100-ln_eps.json",
+      "mut_mask_residual": "migrations\\CamoFormer\\outputs\\dsh-web-camoformer\\probe\\negctl\\trace-v100-mask_residual.json",
+      "mut_gelu_tanh": "migrations\\CamoFormer\\outputs\\dsh-web-camoformer\\probe\\negctl\\trace-v100-gelu_tanh.json",
+      "mut_l2_eps": "migrations\\CamoFormer\\outputs\\dsh-web-camoformer\\probe\\negctl\\trace-v100-l2_eps.json"
     }
   },
   "fig_a_ratio_distribution": {

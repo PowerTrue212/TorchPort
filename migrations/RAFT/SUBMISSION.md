@@ -4,7 +4,7 @@
 
 ```text
 .gitignore
-RAFT/                              # 协议、prompt、公共 evaluator、报告脚本和测试
+migrations/RAFT/                   # 协议、prompt、公共 evaluator、报告脚本和测试
 experiments/README.md              # 原始层 / 公开证据层的数据规则
 experiments/scripts/export_raft.py # 从 data-fs 生成脱敏公开 bundle
 experiments/scripts/extract_raft_features.py # 从真实双端 trace 提取紧凑 feature 证据
@@ -17,7 +17,7 @@ experiments/data/tensors/raft_features_meta.json
 推荐命令：
 
 ```powershell
-git add .gitignore RAFT `
+git add .gitignore migrations/RAFT `
   experiments/README.md `
   experiments/scripts/export_raft.py experiments/scripts/extract_raft_features.py `
   experiments/results/raft-v1-2026-08-25-v100 `
@@ -29,9 +29,9 @@ git add .gitignore RAFT `
 提交前验证：
 
 ```powershell
-python RAFT/scripts/build_report.py
-python RAFT/scripts/validate_protocol.py --stage results
-python -m pytest RAFT/tests/test_protocol.py -q
+python migrations/RAFT/scripts/build_report.py
+python migrations/RAFT/scripts/validate_protocol.py --stage results
+python -m pytest migrations/RAFT/tests/test_protocol.py -q
 python experiments/scripts/export_raft.py
 python experiments/scripts/extract_raft_features.py
 python experiments/figures/fig_raft/plot.py
@@ -41,17 +41,17 @@ git diff --cached --stat
 ## 不应提交
 
 ```text
-RAFT/source/
-RAFT/shared/                       # checkpoint、fixture、reference、weights
-RAFT/workspaces/                   # 三方法迁移工作区
-RAFT/results/                      # flow NPY、attempts、完整运行 trace
-RAFT/outputs/                      # data-fs 内的可再生成输出
+migrations/RAFT/source/
+migrations/RAFT/shared/            # checkpoint、fixture、reference、weights
+migrations/RAFT/workspaces/        # 三方法迁移工作区
+migrations/RAFT/results/           # flow NPY、attempts、完整运行 trace
+migrations/RAFT/outputs/           # data-fs 内的可再生成输出
 .tmp/、.torchport/、.trash/
 V100_CONNECTION.md、SSH key、主机地址和会话原文
 根目录临时 probe/debug/submission 文件
 ```
 
-特别说明：`RAFT/results/dsh_torchport/traces/source.npz` 和 `target.npz` 是约 31 MB
+特别说明：`migrations/RAFT/results/dsh_torchport/traces/source.npz` 和 `target.npz` 是约 31 MB
 的原始双端捕获，只保留在 data-fs/本地忽略目录；提交的是由其确定性导出的紧凑
 `raft_features.npz`、元数据、CSV 和图片。
 

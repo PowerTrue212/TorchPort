@@ -1,7 +1,7 @@
 # 项目目录说明
 
 TorchPort 是迁移 Agent 的执行与验收工具。核心代码只处理显式 TaskSpec、隔离执行、
-证据采集和唯一判定；仓库理解与代码修改由 DSH 或其他 Agent 完成。
+证据采集和唯一判定；仓库理解与代码修改由外部代码 Agent 完成。
 
 ## 核心代码
 
@@ -15,9 +15,6 @@ TorchPort 是迁移 Agent 的执行与验收工具。核心代码只处理显式
 | `src/torchport/diagnosis/` | 公开 task 检查、双端 trace 和首次分歧定位 |
 | `src/torchport/cli.py` | `inspect/run/evaluate/trace/localize/verify/compare` 的薄入口 |
 
-`task.py`、`execution.py`、`parity.py`、`oracle.py`、`verify.py` 和 `noise.py` 是历史
-导入的兼容层。核心实现和新调用必须使用上表中的 canonical package，避免重新形成平面依赖。
-
 不在核心中加入未知仓库扫描、入口猜测、自动代码改写、模型专用适配或 Agent 决策。
 
 ## 仓库目录
@@ -26,7 +23,6 @@ TorchPort 是迁移 Agent 的执行与验收工具。核心代码只处理显式
 | --- | --- |
 | `tests/` | 核心契约、进程生命周期、采集、比较和负例测试 |
 | `benchmarks/tasks/` | 公开、显式、可复现的 TaskSpec 与小型双端 fixture |
-| `integrations/dsh/` | DSH 工具注册、轨迹与报告适配，不包含迁移器 |
 | `compatibility/` | P3 的历史兼容性规则、迁移问题条目和已验证修复证据 |
 | `experiments/` | 汇总数据、绘图代码、报告和可复现实验记录 |
 | `experiments/harness/agents/` | 模型 API 与网络研究适配器 |
@@ -34,7 +30,7 @@ TorchPort 是迁移 Agent 的执行与验收工具。核心代码只处理显式
 | `experiments/harness/reporting/` | 只读结果聚合与性能测量 |
 | `experiments/harness/` | P2 Gateway、工具协议、文件边界、反馈策略、预算和事件记录 |
 | `scripts/remote/torchport_remote/` | 远端配置、bundle、传输、反馈和命令编排 |
-| `CLIP/`、`RAFT/`、`apt/` | 独立迁移实验协议及本地工作区 |
+| `migrations/` | 真实仓库迁移协议、本地工作区和仓库专用证据 |
 | `submissions/` | 需要长期保存的 Agent candidate 快照 |
 | `deliverables/` | 面向交付的报告与演示文稿 |
 | `scripts/` | 安装、复现和远程开发工具 |

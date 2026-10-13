@@ -5,8 +5,8 @@
 
   <p>
     <strong>A PyTorch → Jittor migration and verification system for a domestic-first AI software stack.</strong><br>
-    TorchPort uses DeepSeek/DSH for repository-level analysis and repair decisions, targets Jittor first,
-    and is designed around Ascend-class domestic accelerator backends.
+    TorchPort gives code agents reproducible dual execution, evidence capture, and one frozen
+    verification result for repository migrations, currently focused on PyTorch to Jittor.
   </p>
 
   <p>
@@ -14,7 +14,7 @@
     <img alt="DeepSeek" src="https://img.shields.io/badge/LLM-DeepSeek-4B6CFF">
     <img alt="Jittor" src="https://img.shields.io/badge/target-Jittor-2F6BFF">
     <img alt="Ascend" src="https://img.shields.io/badge/accelerator-Ascend-E6242E">
-    <img alt="DSH" src="https://img.shields.io/badge/agent-DSH-7A5AF8">
+    <img alt="Agent" src="https://img.shields.io/badge/interface-code%20agent-7A5AF8">
     <img alt="evidence" src="https://img.shields.io/badge/method-verification-F27CA5">
   </p>
 
@@ -27,7 +27,6 @@
     <a href="#architecture">Architecture</a> ·
     <a href="#positioning">Positioning</a> ·
     <a href="#quick-start">Quick Start</a> ·
-    <a href="#dsh-integration">DSH Integration</a> ·
     <a href="#figures">Figures</a> ·
     <a href="#status">Status</a>
   </p>
@@ -41,7 +40,7 @@
 
 TorchPort starts from a narrow requirement: migration should be judged by execution and numerical behavior, not by whether source text has been rewritten.
 
-The system has two layers. DeepSeek/DSH reads unknown PyTorch repositories, writes the Jittor candidate, and chooses repairs. TorchPort executes a frozen task, checks inputs and parameters, compares numerical results, and returns auditable evidence. The next phase will curate reproduced migration issues as read-only evidence for agents working on unseen tasks.
+The system has two layers. An external code agent reads an unknown PyTorch repository, writes the Jittor candidate, and chooses repairs. TorchPort executes a frozen task, checks inputs and parameters, compares numerical results, and returns auditable evidence. The next phase will curate reproduced migration issues as read-only evidence for agents working on unseen tasks.
 
 ## Positioning
 
@@ -58,7 +57,7 @@ and record the repair process?
 
 This gives each component a clear role:
 
-- DeepSeek/DSH handles repository-specific understanding, including entry points, configs, weights, and inference paths.
+- A general code agent handles repository-specific understanding, including entry points, configs, weights, and inference paths.
 - TorchPort produces auditable engineering evidence, including execution logs, tensor traces, and numerical certificates.
 - Jittor is the current domestic target framework with the most complete verification path.
 - Ascend-class accelerators are a backend target for later integration under the same evidence chain.
@@ -69,7 +68,7 @@ TorchPort treats the domestic conversion platform as a sequence of verifiable la
 
 | Layer | Current choice | Role |
 | --- | --- | --- |
-| Agent interface | DeepSeek/DSH | Read unknown repositories and choose migration or repair actions |
+| Agent interface | general code agent | Read unknown repositories and choose migration or repair actions |
 | Target framework | Jittor | Receive migrated PyTorch code and weights |
 | Verification | dual execution + tensor traces | Decide whether the migration result is trustworthy |
 | Backend direction | Ascend-class domestic accelerators | Shape the deployment interface and future backend work |
@@ -148,46 +147,25 @@ The verification result is written to:
 ## Workflow
 
 ```text
-DSH/Agent reads the repository and edits the candidate
+Code agent reads the repository and edits the candidate
       -> explicit task
       -> PyTorch/Jittor dual execution
       -> weight and input checks
       -> final-output and optional-trace comparison
       -> first-divergence localization
-      -> DSH/Agent repair
+      -> Agent repair
       -> repeated independent verification
       -> numerical certificate
 ```
 
-TorchPort does not scan and rewrite unknown repositories. DSH or another agent owns repository-specific decisions; TorchPort accepts an explicit task and returns structured evidence.
-
-## DSH Integration
-
-The DSH plugin lives in `integrations/dsh` and exposes six tools:
-
-```text
-torchport_inspect
-torchport_run
-torchport_evaluate
-torchport_trace
-torchport_localize
-torchport_verify
-```
-
-Run plugin tests:
-
-```bash
-cd integrations/dsh
-npm install
-npm test
-```
+TorchPort does not scan and rewrite unknown repositories. An external code agent owns repository-specific decisions; TorchPort accepts an explicit task and returns structured evidence.
 
 ## Status
 
 - [x] Explicit TaskSpec plus frozen oracle and candidate identities
 - [x] PyTorch/Jittor dual execution, tensor evidence, and one verification result
 - [x] First-divergence localization and structured failure codes
-- [x] DSH verification plugin with an agent repair loop
+- [x] CLI, controlled Harness, and an agent repair loop
 - [x] P2 controlled gateway, DeepSeek adapter, cost aggregation, and tiny GPU smoke loop
 - [x] Experiment figures and model visualizations
 - [ ] P3 evidence-backed migration issue library with evaluation on held-out cases
@@ -266,11 +244,10 @@ This sample shows two things. First, the migrated Jittor project runs and its fi
 
 ```text
 src/torchport/          trusted execution, evidence, oracle, comparison, and verification core
-integrations/dsh/       DSH plugin consuming TorchPort commands and stable results
 benchmarks/             small repository fixtures, task specs, and entry-pattern benchmarks
 compatibility/          historical compatibility rules and evidence-backed migration issues
 experiments/            experiment data, figures, prompts, and reports
-CLIP/ RAFT/ apt/        standalone migration protocols and local experiment workspaces
+migrations/             real-repository migration protocols, local workspaces, and repository evidence
 scripts/                installation, reproduction, and remote development tools
 docs/                   architecture, roadmap, and development notes
 tests/                  unit and integration tests

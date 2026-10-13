@@ -14,7 +14,7 @@ import numpy as np
 from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[2]
-CLIP_ROOT = ROOT / "CLIP"
+CLIP_ROOT = ROOT / "migrations" / "CLIP"
 
 
 def _sha(path: Path) -> str:
@@ -44,9 +44,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         raise RuntimeError("CLIP source or checkpoint identity mismatch")
 
     sys.path.insert(0, str(source))
-    import torch
-
     import clip
+    import torch
 
     if args.device == "cuda" and not torch.cuda.is_available():
         raise RuntimeError("CUDA is unavailable")

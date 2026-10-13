@@ -23,8 +23,8 @@ from torchport.capture import (
     make_data,
     save_state,
 )
-from torchport.task import file_hash, normalize
-from torchport.verify import judge
+from torchport.contracts import file_hash, normalize
+from torchport.verification import judge
 
 
 def _identity_patches(module, names):

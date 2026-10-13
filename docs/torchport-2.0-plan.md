@@ -26,28 +26,27 @@ Agent 负责阅读仓库、理解代码、提出假设并修改 candidate。Torc
 ## 最小架构
 
 ```text
-Agent / DSH / CLI
-       │ 修改 candidate，提交显式 task
-       ▼
-task + execution ──► capture ──► oracle / candidate artifacts
-                                             │
-                                             ▼
-                                parity + verification
-                                             │
-                              result + optional trace
-                                             │
-                                  verified issue entries
+代码 Agent / CLI / Harness
+          │ 修改 candidate，提交显式 task
+          ▼
+contracts + runtime ──► capture ──► oracle / candidate artifacts
+                                                │
+                                                ▼
+                                  comparison + verification
+                                                │
+                                  result + optional trace
+                                                │
+                                     verified issue entries
 ```
 
 | 模块 | 唯一职责 |
 | --- | --- |
-| `task.py` | 加载、校验和冻结任务、协议及双端内容身份 |
-| `execution.py` | 子进程、环境、超时、日志和 trial 缓存隔离 |
-| `capture.py` | 双框架加载、状态核验、最终输出与显式 trace 采集 |
-| `oracle.py` | reference oracle 生命周期、candidate 执行和 verify 编排 |
-| `parity.py` | 与执行器无关的数组比较 |
-| `verify.py` | runnable → structural → numerical 的唯一验收判定 |
-| `diagnosis.py` | 公开 task 检查、双端 trace 和首次分歧提取 |
+| `contracts/` | 加载、校验和冻结任务、协议及双端内容身份 |
+| `runtime/` | 子进程、环境、超时、日志和 trial 缓存隔离 |
+| `capture/` | 双框架加载、状态核验、最终输出与显式 trace 采集 |
+| `comparison/` | 与执行器无关的数组、包络和模块比较 |
+| `verification/` | oracle 生命周期、candidate 执行和唯一验收判定 |
+| `diagnosis/` | 公开 task 检查、双端 trace 和首次分歧提取 |
 
 问题库先使用普通 JSON、fixture 和已有运行产物。只有出现第二个真实调用方时才增加
 运行时检索模块；不先建数据库、向量索引、插件框架或新的执行器。
@@ -97,7 +96,7 @@ CLI；核心不新增 SDK、MCP 服务或第二套 passed 判定。
 - 显式 task → 稳定 oracle → candidate 运行 → 唯一 result 已闭环。
 - 双端可以使用独立 Python 环境；执行器统一 cwd、device、timeout、日志和缓存隔离。
 - 正式 candidate 按预先指定次数重复执行，全部通过才成功，不取最好一次。
-- DSH 插件消费 TorchPort 结果，不重新推导另一套成功条件。
+- Agent 通过 TorchPort CLI 或受控 Harness 消费结果，不重新推导另一套成功条件。
 
 ## P2：受控 Agent 评测与成本（最小闭环完成）
 

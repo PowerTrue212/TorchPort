@@ -124,7 +124,7 @@ target 的 run-to-run 噪声。需要补充的实验：
 
 执行步骤：
 
-1. 复用 `CamoFormer/outputs/dsh-web-camoformer/probe/probe_jt_determinism.py` 作为单算子
+1. 复用 `migrations/CamoFormer/outputs/dsh-web-camoformer/probe/probe_jt_determinism.py` 作为单算子
    探针的基础，扩展其 `for use_tc in (0, 1)` 循环，加入 `conv_opt` 维度（需要在子进程
    启动前设置环境变量，而不是进程内切换，因为 `conv_opt` 影响 Jittor 初始化时的 cuDNN
    加载，参考 `compatibility/p3/jittor-reduce-nondeterminism.md` 第 74-88 行的源码证据）。

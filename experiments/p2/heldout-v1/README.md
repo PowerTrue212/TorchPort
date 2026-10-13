@@ -48,17 +48,17 @@ E:\Anaconda\python.exe scripts\remote\stage_agent_dir.py plantcamo-full-r0 exper
    `python experiments\p2\heldout-v1\workspaces\materialize.py --out D:\tp-runs --repos plantcamo --conds full --k 0`
    默认不限 token / 200 轮 / 180 分钟。每个工作区内有 `PROMPT.md`（占位符已替换），任务副本仍写入
    `workspaces/_tasks/`。
-3. 用户自己运行 `dsh web`，把生成的 `<repo>-<cond>-r0` 目录选为工作区，把该目录的 `PROMPT.md` 内容作为首条消息。
-4. 两组都安装 `integrations/dsh` 插件，其 `task` 参数指向 `workspaces/_tasks/` 下对应任务文件。
-   启动 DSH 前冻结 `TP_FEEDBACK`：`none` 用 `diagnostic`，`full` 用 `localized`。diagnostic 下插件
-   不注册 `trace/localize`，远端 runner 也拒绝定位调用并裁剪 `verify/evaluate` 输出。
+3. 把生成的 `<repo>-<cond>-r0` 目录作为 Agent 工作区，把其中的 `PROMPT.md` 作为首条消息。
+4. 使用与当前 Agent 产品匹配的外部适配层调用 TorchPort CLI。适配层必须把 `task` 指向
+   `workspaces/_tasks/` 下对应任务，并冻结反馈层级：`none` 用 `diagnostic`，`full` 用
+   `localized`。diagnostic 条件不得暴露 `trace/localize`，也必须裁剪 `verify/evaluate` 输出。
 5. 每次运行结束后保存 DSH 事件日志与 Token 用量，再按 `evaluator/README.md` 统一评测。
 
 ## 启动前必须核对
 
 - [ ] `tasks/*.json` 中 `_unverified` 字段已逐项处理（尤其 target 端 repo 路径、远端路径、权重路径）。
 - [ ] `full` 条件的 task 路径、`root`、`trial` 与工作区对应；远端 GPU 可通过 `~/.tp_ssh.env` 连接。
-- [ ] `none` 条件的 DSH 以 `TP_FEEDBACK=diagnostic` 启动，工具列表只有四项，且 agent 无法读到仓库根目录其他位置。
+- [ ] `none` 条件的 Agent 以 `diagnostic` 反馈启动，工具列表不含定位能力，且 Agent 无法读到仓库根目录其他位置。
 - [ ] 工作区内没有 Jittor 参考实现、oracle、隐藏输入、evaluator（materialize 之后再 grep 一遍 `jittor` 以外的泄露）。
 - [ ] 权重只以路径引用形式给出（`WEIGHTS.md`），agent 工作区不含 .pth。
 - [ ] PlantCamo：`oracle-src/torchport_adapter.py` 只在构造时跳过硬编码的 backbone 权重读取；需确认完整 checkpoint 严格加载且无缺失键。

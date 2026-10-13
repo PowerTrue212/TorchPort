@@ -59,7 +59,7 @@
 | Jittor 相对 PyTorch 推理耗时 | 约 4.2 倍（V100） | 约 10 倍 | 约 1.3 倍 | 约 10 倍 |
 
 证据：`results/<repo>-<run>/`，校准报告在 `results/v3-calibration/`。CamoFormer 证据在
-`CamoFormer/outputs/`。
+`migrations/CamoFormer/outputs/`。
 
 ### 3.3 各次运行的偏差
 

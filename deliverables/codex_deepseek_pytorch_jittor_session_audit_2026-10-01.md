@@ -39,14 +39,14 @@ DeepSeek / DSH：
 
 ### 2.2 结果证据
 
-- CLIP 统一结果：[`CLIP/outputs/summary.json`](../CLIP/outputs/summary.json)
-- RAFT 统一结果：[`RAFT/outputs/summary.json`](../RAFT/outputs/summary.json)
-- RAFT pure DSH 终止记录：[`RAFT/results/dsh/termination.json`](../RAFT/results/dsh/termination.json)
-- RAFT Codex 轮次：[`RAFT/results/codex/rounds.jsonl`](../RAFT/results/codex/rounds.jsonl)
-- RAFT DSH + TorchPort 主轮次：[`RAFT/results/dsh_torchport/rounds.jsonl`](../RAFT/results/dsh_torchport/rounds.jsonl)
-- RAFT DSH + TorchPort strict 轮次：[`RAFT/results/dsh_torchport/traces/strict_rounds.jsonl`](../RAFT/results/dsh_torchport/traces/strict_rounds.jsonl)
+- CLIP 统一结果：[`CLIP/outputs/summary.json`](../migrations/CLIP/outputs/summary.json)
+- RAFT 统一结果：[`RAFT/outputs/summary.json`](../migrations/RAFT/outputs/summary.json)
+- RAFT pure DSH 终止记录：[`RAFT/results/dsh/termination.json`](../migrations/RAFT/results/dsh/termination.json)
+- RAFT Codex 轮次：[`RAFT/results/codex/rounds.jsonl`](../migrations/RAFT/results/codex/rounds.jsonl)
+- RAFT DSH + TorchPort 主轮次：[`RAFT/results/dsh_torchport/rounds.jsonl`](../migrations/RAFT/results/dsh_torchport/rounds.jsonl)
+- RAFT DSH + TorchPort strict 轮次：[`RAFT/results/dsh_torchport/traces/strict_rounds.jsonl`](../migrations/RAFT/results/dsh_torchport/traces/strict_rounds.jsonl)
 - V4 Flash 结果：[`RAFT_DSH_V4_FLASH/results/dsh_torchport/result.json`](../RAFT_DSH_V4_FLASH/results/dsh_torchport/result.json)
-- APT 既有证据审计：[`apt/reports/agent_vs_human_migration_report.md`](../apt/reports/agent_vs_human_migration_report.md)
+- APT 既有证据审计：[`apt/reports/agent_vs_human_migration_report.md`](../migrations/apt/reports/agent_vs_human_migration_report.md)
 
 ## 3. APT：训练轨迹一致性比 API 转换更难
 
