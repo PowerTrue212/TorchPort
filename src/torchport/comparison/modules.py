@@ -86,7 +86,10 @@ def compare_metric_envelope(
     variants: list[dict[str, float]],
     candidates: list[dict[str, float]],
 ) -> dict[str, Any]:
-    """E2：任务指标与 reference 的差不超过 source 变体两两最大差 + target 重复两两最大差。"""
+    """E2 metric-envelope-v2：任务指标差不超过 source 变体两两最大差。
+
+    target 重复运行的波动只报告，不放宽验收上限。否则候选实现越不稳定，反而越容易通过。
+    """
     if not variants or not candidates:
         raise ValueError("E2 需要至少一个 source 变体和一次 target 运行")
     items = []
@@ -96,7 +99,7 @@ def compare_metric_envelope(
         source_noise = max(abs(a - b) for a in group for b in group)
         target_noise = max(abs(a - b) for a in runs for b in runs)
         error = max(abs(r - float(value)) for r in runs)
-        limit = source_noise + target_noise
+        limit = source_noise
         items.append({
             "metric": key,
             "reference": float(value),
@@ -110,7 +113,7 @@ def compare_metric_envelope(
         })
     return {
         "schema_version": 1,
-        "profile": "metric-envelope",
+        "profile": "metric-envelope-v2",
         "passed": all(item["passed"] for item in items) and bool(items),
         "metrics": items,
     }
@@ -217,4 +220,3 @@ def compare_isolated_v3(
         },
         "tensors": tensors,
     }
-

@@ -36,3 +36,6 @@ candidate 重复 3 次、`pass_k=2`、`floor_k=4`、`noise_floor=auto`。`verify
 5. BiRefNet 额外：source fp16 autocast（官方协议）与 fp32 各一次。
 
 据此得到各指标的 source 变动范围，候选落在范围（含倍数 k）内才算 E2 通过。k 在跑 agent 之前冻结。
+target 重复运行的指标波动只作为稳定性证据报告，不加入 limit；否则候选越不稳定，
+验收上限反而越宽。当前 `metric-envelope-v2` 使用 `k=1`，即
+`limit = source_noise`。旧 `metric-envelope` 结果保留原公式，不与 v2 混为同一批次。

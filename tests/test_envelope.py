@@ -224,6 +224,19 @@ class MetricEnvelopeTests(unittest.TestCase):
         bad = compare_metric_envelope(reference, variants, [{"S": 0.8600, "MAE": 0.0230}])
         self.assertFalse(bad["passed"])
 
+    def test_target_noise_is_reported_not_added_to_limit(self) -> None:
+        reference = {"S": 1.0}
+        variants = [{"S": 1.01}]
+        candidates = [{"S": 0.98}, {"S": 1.02}]
+        report = compare_metric_envelope(reference, variants, candidates)
+        metric = report["metrics"][0]
+
+        self.assertAlmostEqual(metric["source_noise"], 0.01)
+        self.assertAlmostEqual(metric["target_noise"], 0.04)
+        self.assertAlmostEqual(metric["limit"], metric["source_noise"])
+        self.assertEqual(report["profile"], "metric-envelope-v2")
+        self.assertFalse(report["passed"])
+
 
 class ModuleConfigTests(unittest.TestCase):
     def test_reports_eps_swap_and_ignores_class_and_int_tuple_forms(self) -> None:
