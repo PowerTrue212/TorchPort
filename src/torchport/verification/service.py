@@ -11,6 +11,7 @@ from ..comparison import (
     compare_envelope,
     compare_envelope_v3,
     compare_module_config,
+    compare_noise_calibrated,
     compare_tensor_archives,
 )
 from ..runtime import (
@@ -23,7 +24,7 @@ from ..runtime import (
 from .judge import judge, judge_repeats
 from .noise import calibrate as calibrate_noise
 from .oracle import build_oracle
-from .runner import run_side
+from .runner import TRAIN_STEP, run_side
 
 
 def evaluate(
@@ -58,9 +59,62 @@ def evaluate(
         return result
     reference = Path(oracle["dir"]) / "outputs.npz"
     candidate_path = Path(run["artifacts"]["outputs"])
+    if protocol["profile"] == TRAIN_STEP:
+        return _evaluate_train(oracle, run, protocol, reference, candidate_path)
     fp32 = compare_tensor_archives(reference, candidate_path, profile=protocol["profile"])
     strict = compare_tensor_archives(reference, candidate_path, profile="operator-strict")
     result = judge(oracle["capture"], run["capture"], fp32, strict, protocol)
+    result["run_id"] = run["run_id"]
+    result["candidate_identity"] = run["side_identity"]
+    result["artifacts"] = {"reference": str(reference), "candidate": str(candidate_path)}
+    return result
+
+
+def _exact_train_checks(source: dict[str, Any], target: dict[str, Any]) -> list[dict[str, Any]]:
+    """train-step 中必须逐项相同的离散事实：可训练参数集合、步数和每步学习率。"""
+    failures = []
+    for key, reason in (
+        ("trainable", "可训练参数集合不同"),
+        ("steps", "训练步数不同"),
+        ("lr", "学习率调度不同"),
+    ):
+        if source.get(key) != target.get(key):
+            failures.append({"name": f"train.{key}", "reason": reason})
+    return failures
+
+
+def _evaluate_train(
+    oracle: dict[str, Any],
+    run: dict[str, Any],
+    protocol: dict[str, Any],
+    reference: Path,
+    candidate_path: Path,
+) -> dict[str, Any]:
+    """train-step：结构用固定容差报告检查，数值用 source 训练噪声标定，离散事实逐项精确。"""
+    root = Path(oracle["dir"])
+    structure = compare_tensor_archives(reference, candidate_path, profile="fp32-inference")
+    numerical = compare_noise_calibrated(
+        reference,
+        candidate_path,
+        root / "train_fp64.npz",
+        root / "train_alt.npz",
+        k=float(protocol.get("pass_k", 8.0)),
+        require_calibrated=True,
+    )
+    exact = _exact_train_checks(
+        (oracle["capture"] or {}).get("train") or {}, (run["capture"] or {}).get("train") or {}
+    )
+    if exact:
+        # 离散事实不一致优先于数值：它们没有噪声，任何差异都是实现差异
+        numerical = {
+            **numerical,
+            "passed": False,
+            "first_divergence": exact[0],
+            "exact_failures": exact,
+        }
+    numerical["exact"] = {"passed": not exact, "failures": exact}
+    result = judge(oracle["capture"], run["capture"], structure, None, protocol, numerical=numerical)
+    result["mismatch"] = {"fp32": structure.get("metrics")}
     result["run_id"] = run["run_id"]
     result["candidate_identity"] = run["side_identity"]
     result["artifacts"] = {"reference": str(reference), "candidate": str(candidate_path)}

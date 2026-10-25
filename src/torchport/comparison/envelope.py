@@ -21,11 +21,13 @@ def compare_noise_calibrated(
     leaves: set[str] | None = None,
     k: float = 8.0,
     atol_floor: float = 1e-7,
+    require_calibrated: bool = False,
 ) -> dict[str, Any]:
     """以 source 自身 FP32 噪声为基准判定：err(candidate, fp64) <= k*noise + atol_floor。
 
     noise = max(err(reference, fp64), err(reference, alt))，按 max_abs 与 p99 分别判定。
     leaves 只标记叶子模块，便于分别统计；任何已标定模块超出噪声范围都会让报告失败。
+    require_calibrated 用于正式判定：缺少 fp64/alt 的 output.* 张量记为失败，不默认放过。
     """
     if k <= 0 or atol_floor < 0:
         raise ValueError("k 必须为正数，atol_floor 必须非负。")
@@ -53,6 +55,15 @@ def compare_noise_calibrated(
                 continue
             if name not in fp64 or name not in alt:
                 uncalibrated.append(name)
+                if not (require_calibrated and _is_output(name)):
+                    continue
+                item = {"name": name, "position": position, "passed": False, "reason": "缺少噪声标定"}
+                item["gating"] = True
+                tensors.append(item)
+                first_divergence = first_divergence or {
+                    "name": name, "position": position, "reason": item["reason"]
+                }
+                first_gating_divergence = first_gating_divergence or dict(first_divergence)
                 continue
             ref, cand, truth, other = reference[name], candidate[name], fp64[name], alt[name]
             if not (ref.shape == cand.shape == truth.shape == other.shape):

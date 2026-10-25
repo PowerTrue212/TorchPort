@@ -69,7 +69,7 @@ def build_parser() -> argparse.ArgumentParser:
 
 def _harness(args: Any) -> tuple[dict[str, Any], int]:
     from .contracts import load_task
-    from .runtime import read_json
+    from .runtime import add_physical_cost, read_json, run_physical_cost
     from .verification import build_oracle, evaluate, load_oracle, run_side, verify
 
     task = load_task(args.task)
@@ -93,6 +93,10 @@ def _harness(args: Any) -> tuple[dict[str, Any], int]:
             return meta, 3
         oracle = Path(meta["dir"])
     manifest = run_side(task, args.side, root, trial=args.trial, mode=args.mode, oracle=oracle)
+    if args.side == "target":
+        manifest["physical_cost"] = add_physical_cost(
+            meta.get("physical_cost"), run_physical_cost(manifest, task["target"]["device"])
+        )
     return manifest, 0 if manifest["ok"] else 3
 
 

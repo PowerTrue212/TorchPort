@@ -298,21 +298,48 @@ def load_checkpoint(model: Any, path: Path) -> dict[str, Any]:
     }
 
 
+def _storage_key(item: Any) -> tuple | None:
+    """共享存储的身份：PyTorch state_dict 对绑定权重给出同一存储的多个视图，Jittor 给出同一 Var。"""
+    if hasattr(item, "data_ptr"):
+        if item.numel() == 0:
+            return None
+        return (item.data_ptr(), tuple(item.shape), tuple(item.stride()), str(item.dtype))
+    return ("var", id(item))
+
+
+def unique_state(model: Any) -> tuple[dict[str, Any], dict[str, str]]:
+    """可移植状态按存储去重：同一张量只保留首次出现的名字，其余名字记为别名。
+
+    绑定权重（如 GPT-2 的 lm_head 与 wte）在 PyTorch 中列两次、在 Jittor 中列一次；
+    按名字计数会把同一参数误判为缺少或多出。拆成两个独立参数的实现仍会多出参数。
+    """
+    unique: dict[str, Any] = {}
+    aliases: dict[str, str] = {}
+    owners: dict[tuple, str] = {}
+    for name, item in model.state_dict().items():
+        if not _portable(name):
+            continue
+        key = _storage_key(item)
+        if key is not None and key in owners:
+            aliases[name] = owners[key]
+            continue
+        if key is not None:
+            owners[key] = name
+        unique[name] = item
+    return unique, aliases
+
+
 def save_state(model: Any, path: Path) -> int:
-    weights = {
-        name: item.detach().cpu().numpy()
-        for name, item in model.state_dict().items()
-        if _portable(name)
-    }
-    np.savez(path, **weights)
-    return len(weights)
+    state, _ = unique_state(model)
+    np.savez(path, **{name: item.detach().cpu().numpy() for name, item in state.items()})
+    return len(state)
 
 
 def load_state(model: Any, path: Path, kind: str = "target") -> dict[str, Any]:
     """加载 oracle 状态并逐参数回读核验形状、dtype 与数值。"""
     with np.load(path, allow_pickle=False) as archive:
         weights = {n: np.asarray(archive[n]) for n in archive.files if _portable(n)}
-    target = model.state_dict()
+    target, aliases = unique_state(model)
     matched = _matched(weights, target)
     if kind == "source":
         import torch
@@ -338,6 +365,8 @@ def load_state(model: Any, path: Path, kind: str = "target") -> dict[str, Any]:
         "missing": sorted(set(weights) - set(matched)),
         "extra": extra,
         "value_mismatch": mismatched,
+        # 绑定权重的其余名字：只作证据，不计入参数完整性
+        "aliases": aliases,
     }
 
 

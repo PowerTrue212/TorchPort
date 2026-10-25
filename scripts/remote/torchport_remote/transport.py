@@ -3,14 +3,20 @@
 from __future__ import annotations
 
 import shlex
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path, PurePosixPath
 from typing import Any
 
 
 def run(client: Any, command: str, timeout: float = 1900) -> tuple[int, str, str]:
     _, stdout, stderr = client.exec_command(command, timeout=timeout)
-    out = stdout.read().decode("utf-8", "replace")
-    err = stderr.read().decode("utf-8", "replace")
+    # GPU compilation may fill stderr before the CLI writes JSON to stdout.
+    # Drain both SSH channels concurrently to avoid a channel-window deadlock.
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        out_future = pool.submit(stdout.read)
+        err_future = pool.submit(stderr.read)
+        out = out_future.result().decode("utf-8", "replace")
+        err = err_future.result().decode("utf-8", "replace")
     return stdout.channel.recv_exit_status(), out, err
 
 

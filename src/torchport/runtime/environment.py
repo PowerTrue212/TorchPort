@@ -19,7 +19,8 @@ SENSITIVE_ENV_MARKERS = (
     "JWT",
 )
 SENSITIVE_ENV_NAMES = {"GIT_ASKPASS", "SSH_ASKPASS", "SSH_AUTH_SOCK", "SSH_AGENT_PID"}
-PACKAGE_ROOT = Path(__file__).resolve().parents[1]
+# 本文件位于 src/torchport/runtime/；PYTHONPATH 需要指向 src，子进程才能 `-m torchport`。
+PACKAGE_ROOT = Path(__file__).resolve().parents[2]
 
 
 def build_env(side: dict[str, Any], cache: Path) -> dict[str, str]:

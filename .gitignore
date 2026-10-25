@@ -52,6 +52,22 @@ migrations/CamoFormer/results/
 migrations/CamoFormer/outputs/
 migrations/CamoFormer/env.sh
 
+# Microsoft LoRA paired case: keep third-party checkouts, weights, and runs local.
+migrations/LoRA/source/
+migrations/LoRA/reference/
+migrations/LoRA/checkpoint/
+migrations/LoRA/workspaces/
+migrations/LoRA/train/
+migrations/LoRA/outputs/
+migrations/LoRA/.downloads/
+
+# CLIP paired case: keep third-party source, weights, data, and candidates local.
+migrations/CLIP/source/
+migrations/CLIP/checkpoint/
+migrations/CLIP/data/
+migrations/CLIP/workspaces/
+migrations/CLIP/outputs/
+
 # 运行期进程号文件。
 *.pid
 
@@ -69,3 +85,9 @@ migrations/CamoFormer/checkpoint/
 
 # 仓库根不是 Node 项目；该空 lockfile 可能由误在根目录执行 npm 产生。
 /package-lock.json
+
+# LoRA pilot 原始 NPZ 证据体积较大（约 45 MB），保留在本地；JSON/MD 摘要进 Git。
+experiments/p2/lora-gpt2-small-v1/**/*.npz
+
+# 根目录调试输出。
+/.tmp[-_]*

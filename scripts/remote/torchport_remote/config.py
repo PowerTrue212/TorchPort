@@ -15,7 +15,7 @@ REMOTE_ENV_NAMES = {
 
 def load_env_file(path: str | Path | None = None) -> None:
     """只加载远端路径设置，不读取或暴露其他变量。"""
-    path = Path(path or Path.home() / ".tp_ssh.env")
+    path = Path(path or os.environ.get("TP_SSH_ENV_FILE") or Path.home() / ".tp_ssh.env")
     if not path.is_file():
         return
     for raw in path.read_text("utf-8-sig").splitlines():

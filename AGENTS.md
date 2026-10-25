@@ -180,6 +180,9 @@ CamoFormer 候选已经可以完整运行，参数与结构检查通过，但冻
 
 ## 当前优先级
 
+0. 多领域 benchmark（11 个仓库、DSH-none / DSH-full / Codex-none / JTorch / 转换器，DSH 用
+   DeepSeek V4.1 Flash、Codex 用 GPT 6 Sol，每格一次）按 [Benchmark v1 协议](docs/benchmark-v1-protocol.md)
+   推进；所有 Agent 组都接 Harness，且看不到验证实现代码。训练检验和原始数据补齐完成前不跑正式 trial。
 1. 完成 CamoFormer 多输入、真实 checkpoint 和重复性校准报告。
 2. 完成完整仓库 candidate 的冻结交付、隐藏验收和首轮 held-out 工作区，清除旧 API Harness
    与单文件交付假设。

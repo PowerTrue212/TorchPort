@@ -8,6 +8,7 @@ Usage:
 """
 import os
 import sys
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 import paramiko
@@ -15,7 +16,7 @@ import paramiko
 
 def load_env_file(path=None):
     """Load the four SSH values without printing or copying them into the repository."""
-    path = Path(path or Path.home() / ".tp_ssh.env")
+    path = Path(path or os.environ.get("TP_SSH_ENV_FILE") or Path.home() / ".tp_ssh.env")
     if not path.is_file():
         return
     for raw in path.read_text("utf-8-sig").splitlines():
@@ -35,17 +36,15 @@ def load_env_file(path=None):
 
 
 # 连接信息只从进程环境或用户目录的 .tp_ssh.env 读取，密码不进代码
-load_env_file()
-HOST = os.environ["TP_SSH_HOST"]
-PORT = int(os.environ.get("TP_SSH_PORT", "22"))
-USER = os.environ.get("TP_SSH_USER", "root")
-PASSWORD = os.environ["TP_SSH_PASSWORD"]
-
-
 def connect():
+    load_env_file()
+    host = os.environ["TP_SSH_HOST"]
+    port = int(os.environ.get("TP_SSH_PORT", "22"))
+    user = os.environ.get("TP_SSH_USER", "root")
+    password = os.environ["TP_SSH_PASSWORD"]
     client = paramiko.SSHClient()
     client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-    client.connect(HOST, port=PORT, username=USER, password=PASSWORD,
+    client.connect(host, port=port, username=user, password=password,
                    timeout=30, banner_timeout=60, auth_timeout=60)
     return client
 
@@ -71,8 +70,11 @@ def main():
             if workdir:
                 cmd = "cd %s && %s" % (workdir, cmd)
             stdin, stdout, stderr = client.exec_command(cmd, timeout=timeout)
-            out = stdout.read().decode("utf-8", "replace")
-            err = stderr.read().decode("utf-8", "replace")
+            with ThreadPoolExecutor(max_workers=2) as pool:
+                out_future = pool.submit(stdout.read)
+                err_future = pool.submit(stderr.read)
+                out = out_future.result().decode("utf-8", "replace")
+                err = err_future.result().decode("utf-8", "replace")
             code = stdout.channel.recv_exit_status()
             sys.stdout.write(out)
             sys.stderr.write(err)

@@ -67,7 +67,7 @@ def _fixture(root: Path, *, formal: bool = False) -> Path:
         "conditions": ["verdict"],
         "isolation": {
             "formal_claims_allowed": formal,
-            "network_isolation": formal,
+            "public_research_enabled": formal,
             "host_filesystem_isolation": formal,
         },
         "frozen_artifacts": {"private.bin": file_hash(private)},
@@ -120,27 +120,51 @@ class ExperimentRunnerTests(unittest.TestCase):
             root = Path(temporary)
             manifest = _fixture(root, formal=True)
             attestation = root / "worker.json"
-            write_json(attestation, {"network_isolation": True})
+            write_json(attestation, {"public_web_search_available": True})
 
             with self.assertRaisesRegex(ValueError, "worker-attestation"):
                 prepare_run_plan(manifest)
             with self.assertRaisesRegex(ValueError, "隔离字段"):
                 prepare_run_plan(manifest, worker_attestation=attestation)
 
-            write_json(
-                attestation,
-                {
-                    "schema_version": 1,
-                    "kind": "torchport.p2-worker-attestation",
-                    "runtime": "docker",
-                    "image_digest": "sha256:test",
-                    "network_isolation": True,
-                    "host_filesystem_isolation": True,
-                    "candidate_workspace_is_only_writable_mount": True,
-                    "source_and_frozen_inputs_read_only": True,
-                    "hidden_artifacts_not_mounted_for_agent": True,
-                },
-            )
+            complete_attestation = {
+                "schema_version": 1,
+                "kind": "torchport.p2-worker-attestation",
+                "runtime": "docker",
+                "image_digest": "sha256:test",
+                "agent_tool_inventory_sha256": "sha256:fixture-tools",
+                "host_filesystem_isolation": True,
+                "candidate_workspace_is_only_writable_mount": True,
+                "source_and_frozen_inputs_read_only": True,
+                "hidden_artifacts_not_mounted_for_agent": True,
+                "controller_code_not_mounted_for_agent": True,
+                "calibration_references_not_mounted_for_agent": True,
+                "other_candidate_workspaces_not_mounted_for_agent": True,
+                "agent_context_is_fresh": True,
+                "agent_memory_and_history_not_mounted": True,
+                "other_trial_sessions_not_accessible": True,
+                "public_network_access_available": True,
+                "public_web_search_available": True,
+                "public_code_search_available": True,
+                "public_research_event_logging_available": True,
+            }
+            for field in (
+                "controller_code_not_mounted_for_agent",
+                "calibration_references_not_mounted_for_agent",
+                "other_candidate_workspaces_not_mounted_for_agent",
+                "agent_context_is_fresh",
+                "agent_memory_and_history_not_mounted",
+                "other_trial_sessions_not_accessible",
+                "public_network_access_available",
+                "public_web_search_available",
+                "public_code_search_available",
+                "public_research_event_logging_available",
+            ):
+                with self.subTest(field=field):
+                    write_json(attestation, {**complete_attestation, field: False})
+                    with self.assertRaisesRegex(ValueError, field):
+                        prepare_run_plan(manifest, worker_attestation=attestation)
+            write_json(attestation, complete_attestation)
             plan = prepare_run_plan(manifest, worker_attestation=attestation)
             frozen = json.loads(plan.read_text("utf-8"))
             self.assertEqual(frozen["worker_attestation_sha256"], file_hash(attestation))
@@ -149,6 +173,31 @@ class ExperimentRunnerTests(unittest.TestCase):
             runtime.write_text("{}\n", "utf-8")
             with self.assertRaisesRegex(ValueError, "runtime snapshot"):
                 prepare_run_plan(manifest, allow_trusted_pilot=True)
+
+    def test_benchmark_v1_requires_read_and_url_isolation_evidence(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            manifest = _fixture(root, formal=True)
+            data = json.loads(manifest.read_text("utf-8"))
+            data["benchmark_protocol"] = "benchmark-v1"
+            write_json(manifest, data)
+            attestation = root / "worker.json"
+            write_json(attestation, {
+                "runtime": "container", "image_digest": "sha256:test",
+                "agent_tool_inventory_sha256": "sha256:tools",
+                **{name: True for name in (
+                    "host_filesystem_isolation", "candidate_workspace_is_only_writable_mount",
+                    "source_and_frozen_inputs_read_only", "hidden_artifacts_not_mounted_for_agent",
+                    "controller_code_not_mounted_for_agent", "calibration_references_not_mounted_for_agent",
+                    "other_candidate_workspaces_not_mounted_for_agent", "agent_context_is_fresh",
+                    "agent_memory_and_history_not_mounted", "other_trial_sessions_not_accessible",
+                    "public_network_access_available", "public_web_search_available",
+                    "public_code_search_available", "public_research_event_logging_available",
+                )},
+            })
+
+            with self.assertRaisesRegex(ValueError, "torchport_import_blocked"):
+                prepare_run_plan(manifest, worker_attestation=attestation)
 
     def test_infrastructure_retry_uses_fresh_seed_and_resume_skips_completed(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
@@ -200,6 +249,37 @@ class ExperimentRunnerTests(unittest.TestCase):
         self.assertTrue(report["complete"])
         self.assertEqual(report["successes"], 1)
         self.assertEqual(len(report["trials"][0]["attempts"]), 2)
+
+    def test_scope_violation_is_invalid_and_not_retried(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            plan = prepare_run_plan(_fixture(root), allow_trusted_pilot=True)
+            calls = []
+
+            def run_attempt(item, attempt_id, public, hidden, trial_dir, runtime_sha):
+                del item, public, hidden, runtime_sha
+                calls.append(attempt_id)
+                result = {
+                    "valid": True,
+                    "success": True,
+                    "passed": True,
+                    "stop_reason": "scope_violation",
+                }
+                write_json(trial_dir / "result.json", result)
+                return result
+
+            state = execute_run_plan(plan, run_attempt, max_infrastructure_retries=2)
+            resumed = execute_run_plan(plan, run_attempt, max_infrastructure_retries=2)
+            report = aggregate(plan)
+
+        trial = state["trials"]["fixture-verdict-r0"]
+        self.assertEqual(len(calls), 1)
+        self.assertEqual(resumed, state)
+        self.assertFalse(trial["attempts"][0]["valid"])
+        self.assertFalse(trial["attempts"][0]["success"])
+        self.assertIsNone(trial["selected"])
+        self.assertEqual(report["stop_reasons"]["scope_violation"], 1)
+        self.assertEqual(report["valid_trials"], 0)
 
 
 if __name__ == "__main__":

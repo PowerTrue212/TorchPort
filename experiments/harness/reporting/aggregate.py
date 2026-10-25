@@ -187,12 +187,15 @@ def aggregate(manifest_path: str | Path) -> dict[str, Any]:
             "condition": str(item["condition"]),
             "replicate": int(item.get("replicate", 0)),
             "path": relative.as_posix() if not relative.is_absolute() else str(relative),
-            "completed": completed_attempt or exhausted,
+            "completed": completed_attempt or exhausted or bool(attempt_state.get("terminal_invalid")),
             "attempts": attempts,
             "selected_attempt": selected,
         }
+        terminal_reason = (
+            attempts[-1].get("stop_reason") if attempts and attempt_state.get("terminal_invalid") else None
+        )
         if not result_path.is_file():
-            reason = "infrastructure_error" if exhausted else "not_run"
+            reason = terminal_reason or ("infrastructure_error" if exhausted else "not_run")
             row.update(valid=False, success=False, passed=None, stop_reason=reason)
             stop_reasons[reason] += 1
             rows.append(row)
@@ -205,10 +208,10 @@ def aggregate(manifest_path: str | Path) -> dict[str, Any]:
         milestones = dict(tool_metrics["milestones_seconds"])
         milestones["official_verify_complete"] = result.get("total_wall_seconds")
         row.update(
-            valid=bool(result.get("valid")),
-            success=bool(result.get("success")),
+            valid=bool(result.get("valid")) and terminal_reason is None,
+            success=bool(result.get("success")) and terminal_reason is None,
             passed=bool(result.get("passed")),
-            stop_reason=result.get("stop_reason"),
+            stop_reason=terminal_reason or result.get("stop_reason"),
             logical_query_cost=result.get("logical_query_cost"),
             physical_evaluation_cost=result.get("physical_evaluation_cost"),
             agent_wall_seconds=result.get("agent_wall_seconds"),
@@ -327,5 +330,3 @@ def main(argv: Sequence[str] | None = None) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-
-

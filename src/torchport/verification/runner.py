@@ -9,6 +9,7 @@ from ..comparison import ENVELOPE_V3
 from ..runtime import execute, new_run_dir, read_json, write_json
 
 MANIFEST = "manifest.json"
+TRAIN_STEP = "train-step"
 
 
 def _cache(root: Path, trial: str, side: str, python: str | None) -> Path:
@@ -29,14 +30,19 @@ def run_side(
     variant: dict[str, Any] | None = None,
     focus: list[str] | None = None,
     module_oracle: Path | None = None,
+    calibrate: bool = False,
 ) -> dict[str, Any]:
     """执行一端，返回 RunManifest；manifest 在全部产物写完后原子提交。
 
     focus 只用于 trace：只记录这些模块的输出与局部输入。
+    calibrate 只用于 train-step 的 source 冻结运行：额外生成 fp64/alt 噪声标定。
     """
     side = task[kind]
     run_dir = new_run_dir(root / "runs", trial, kind)
+    train = task["protocol"].get("train") if task["protocol"]["profile"] == TRAIN_STEP else None
     job = {
+        "train": train,
+        "calibrate": bool(train) and calibrate and kind == "source",
         "focus": focus,
         # v3：layers 证据中的 output.* 不压缩，供逐元素比较
         "exact_outputs": task["protocol"]["profile"] == ENVELOPE_V3,
@@ -71,7 +77,7 @@ def run_side(
         artifacts["layers"] = str(run_dir / "layers.npz")
     if ok and (run_dir / "module_outputs.npz").is_file():
         artifacts["module_outputs"] = str(run_dir / "module_outputs.npz")
-    for name in ("module_fp64", "module_alt", "module_repeat"):
+    for name in ("module_fp64", "module_alt", "module_repeat", "train_fp64", "train_alt"):
         if ok and (run_dir / f"{name}.npz").is_file():
             artifacts[name] = str(run_dir / f"{name}.npz")
     if ok and (run_dir / "module_inputs.npz").is_file():

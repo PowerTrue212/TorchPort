@@ -31,10 +31,11 @@ def public_run(run: dict[str, Any]) -> dict[str, Any]:
         "mode": run.get("mode"),
         "execution": {
             key: execution.get(key)
-            for key in ("ok", "exit_code", "timeout", "seconds", "stderr_tail")
+            for key in ("ok", "exit_code", "timeout", "seconds")
             if key in execution
         },
-        "capture": run.get("capture"),
+        "capture": {key: value for key, value in (run.get("capture") or {}).items()
+                    if key in {"ok", "status", "failure_code"}},
     }
 
 

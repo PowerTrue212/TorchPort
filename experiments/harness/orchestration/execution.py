@@ -10,10 +10,12 @@ from torchport.contracts import file_hash, load_task
 from torchport.runtime import write_json
 
 from ..candidate import initialize_git_workspace
+from ..protocol import INVALID_TRIAL_STOP_REASONS
 from .common import inside as _inside
 from .common import read_json as _json
 
 AttemptRunner = Callable[[dict[str, Any], str, Path, Path, Path, str], dict[str, Any]]
+TERMINAL_INVALID_REASONS = INVALID_TRIAL_STOP_REASONS - {"infrastructure_error"}
 
 
 def _prepare_attempt(
@@ -88,6 +90,9 @@ def execute_run_plan(
         if valid:
             record["selected"] = valid["path"]
             continue
+        if any(a.get("stop_reason") in TERMINAL_INVALID_REASONS for a in record["attempts"]):
+            record["terminal_invalid"] = True
+            continue
         while len(record["attempts"]) <= max_infrastructure_retries:
             number = len(record["attempts"])
             attempt_id = trial_id if number == 0 else f"{trial_id}-infra-r{number}"
@@ -113,8 +118,10 @@ def execute_run_plan(
                 )
                 attempt.update(
                     status="complete",
-                    valid=bool(result.get("valid")),
-                    success=bool(result.get("success")),
+                    valid=bool(result.get("valid"))
+                    and result.get("stop_reason") not in INVALID_TRIAL_STOP_REASONS,
+                    success=bool(result.get("success"))
+                    and result.get("stop_reason") not in INVALID_TRIAL_STOP_REASONS,
                     stop_reason=result.get("stop_reason"),
                 )
             except Exception as exc:
@@ -130,9 +137,10 @@ def execute_run_plan(
                 record["selected"] = attempt["path"]
                 write_json(state_path, state)
                 break
-        if record["selected"] is None:
+            if attempt.get("stop_reason") in TERMINAL_INVALID_REASONS:
+                record["terminal_invalid"] = True
+                break
+        if record["selected"] is None and not record.get("terminal_invalid"):
             record["exhausted"] = True
-            write_json(state_path, state)
+        write_json(state_path, state)
     return state
-
-

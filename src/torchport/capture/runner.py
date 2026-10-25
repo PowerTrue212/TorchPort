@@ -8,6 +8,7 @@ from __future__ import annotations
 import json
 import sys
 import time
+from copy import deepcopy
 from pathlib import Path
 from typing import Any
 
@@ -37,6 +38,7 @@ from .tracing import (
     func_scopes,
     run_isolated_modules,
 )
+from .training import calibrate_steps, enable_determinism, run_steps
 from .variants import _unbatch, _variant_inputs, apply_variant
 
 MODES = ("normal", "trace", "layers")
@@ -101,6 +103,61 @@ def _call_model(model: Any, args: list[Any], kwargs: dict[str, Any], kind: str) 
     return model(*args, **kwargs)
 
 
+def _train_steps(inputs: list[dict[str, Any]]) -> int:
+    steps = {int((spec.get("shape") or [0])[0]) for spec in inputs}
+    if len(steps) != 1 or min(steps) < 1:
+        raise ValueError("train-step 的每个输入第 0 维必须是相同的正步数")
+    return steps.pop()
+
+
+def _capture_train(
+    job: dict[str, Any],
+    model: Any,
+    scope: dict[str, Any],
+    arrays: dict[str, np.ndarray],
+    state: dict[str, Any],
+    state_path: Path,
+    checkpoint: Any,
+    framework: dict[str, Any],
+    device: str,
+    fresh_source: bool,
+) -> dict[str, Any]:
+    """训练步采集：只在冻结 source 首次运行时额外生成 fp64/alt 噪声标定。"""
+    kind, out, train = job["kind"], Path(job["out_dir"]), job["train"]
+    steps = _train_steps(job["inputs"])
+    calibrate = kind == "source" and fresh_source and bool(job.get("calibrate"))
+    initial = deepcopy(model) if calibrate else None
+    outputs, info = run_steps(model, kind, device, scope, train, arrays, job["inputs"], steps)
+    if kind == "source" and fresh_source:
+        np.savez(out / "inputs.npz", **arrays)
+    np.savez(out / "outputs.npz", **arrays, **outputs)
+    if calibrate:
+        fp64, alt = calibrate_steps(
+            initial, device, scope, train, arrays, job["inputs"], steps, job["seed"]
+        )
+        np.savez(out / "train_fp64.npz", **fp64)
+        np.savez(out / "train_alt.npz", **alt)
+    report = {
+        "kind": kind,
+        "mode": "normal",
+        "framework": framework,
+        "numpy": np.__version__,
+        "weights": state["total"],
+        "loaded": state["loaded"],
+        "state": state,
+        "checkpoint": checkpoint,
+        "outputs": sorted(outputs),
+        "hashes": {
+            "input": _digest(arrays),
+            "output": _digest(outputs),
+            "state": file_hash(state_path) if kind == "source" else None,
+        },
+        "train": {**info, "calibrated": calibrate},
+    }
+    write_json(out / "capture.json", report)
+    return report
+
+
 def capture(job: dict[str, Any]) -> dict[str, Any]:
     """job: kind/side/inputs/seed/mode/out_dir，以及 oracle 或 source weights。
 
@@ -114,6 +171,11 @@ def capture(job: dict[str, Any]) -> dict[str, Any]:
     out = Path(job["out_dir"])
     root = Path(side["repo"])
     device = side.get("device", "cpu")
+    if job.get("train"):
+        if mode != "normal" or job.get("performance") or job.get("variant"):
+            raise ValueError("train-step 只支持 mode=normal，不支持性能测量和变体")
+        # 必须在任何 CUDA 工作之前开启
+        enable_determinism(kind)
     framework = _framework(kind, job["seed"], device)
     _check_bridge(kind)
     original = list(sys.path)
@@ -123,7 +185,10 @@ def capture(job: dict[str, Any]) -> dict[str, Any]:
         model = load_model(scope, side["model"], kind, side["args"], side["kwargs"])
     finally:
         sys.path[:] = original
-    model.eval()
+    # train-step 不进 eval：Jittor 的 eval() 会对全部参数 stop_grad，train() 不能可靠恢复，
+    # 冻结状态必须保持模型构造时的样子，否则可训练参数集合被采集流程本身改写。
+    if not job.get("train"):
+        model.eval()
     if kind == "source" and device == "cuda":
         model.cuda()
 
@@ -154,6 +219,20 @@ def capture(job: dict[str, Any]) -> dict[str, Any]:
             arrays = {name: np.asarray(archive[name]) for name in archive.files}
         state = load_state(model, oracle / "state.npz")
         checkpoint = None
+
+    if job.get("train"):
+        return _capture_train(
+            job,
+            model,
+            scope,
+            arrays,
+            state,
+            state_path,
+            checkpoint,
+            framework,
+            device,
+            fresh_source=kind == "source" and oracle is None,
+        )
 
     if job.get("variant") and kind != "source":
         raise ValueError("合法变体只施加在 source 端")

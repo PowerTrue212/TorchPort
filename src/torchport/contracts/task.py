@@ -59,6 +59,24 @@ def _input(raw: Any, base: Path) -> dict[str, Any]:
     return value
 
 
+def _train_protocol(protocol: dict[str, Any], inputs: list[Any]) -> None:
+    """train-step 需要两端同名的 optimizer 工厂与单步函数；输入第 0 维是步号。"""
+    train = protocol.get("train")
+    if not isinstance(train, dict):
+        raise ValueError("profile=train-step 需要 protocol.train 对象")
+    for key in ("optimizer", "step"):
+        if not isinstance(train.get(key), str) or not train[key]:
+            raise ValueError(f"protocol.train.{key} 必须是入口中的函数名")
+    steps = {
+        int(item["shape"][0])
+        for item in inputs
+        if isinstance(item, dict) and item.get("shape")
+    }
+    if len(steps) != 1 or min(steps) < 1:
+        raise ValueError("train-step 的每个输入第 0 维必须是相同的正步数")
+    protocol["train"] = {"optimizer": train["optimizer"], "step": train["step"]}
+
+
 def load_task(path: str | Path) -> dict[str, Any]:
     path = Path(path).expanduser().resolve()
     text = path.read_text(encoding="utf-8")
@@ -79,6 +97,10 @@ def normalize(raw: dict[str, Any], base: Path) -> dict[str, Any]:
     protocol = {**DEFAULT_PROTOCOL, **(raw.get("protocol") or {})}
     if int(protocol["repeats"]) < 1 or int(protocol["timeout"]) <= 0:
         raise ValueError("protocol.repeats 和 protocol.timeout 必须为正数")
+    if protocol["profile"] == "train-step":
+        _train_protocol(protocol, inputs)
+    elif protocol.get("train") is not None:
+        raise ValueError("protocol.train 只用于 profile=train-step")
     weights = raw.get("weights")
     if weights:
         weights = Path(weights).expanduser()

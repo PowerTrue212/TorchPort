@@ -30,8 +30,9 @@ def build_oracle(task: dict[str, Any], root: Path, *, rebuild: bool = False) -> 
                 "oracle_reused": True,
                 "physical_cost": empty_physical_cost(),
             }
+    # train-step 的 fp64/alt 噪声标定只在首次运行生成；后续运行只用于逐位稳定性检查。
     runs = [
-        run_side(task, "source", root, trial=f"oracle-{i}")
+        run_side(task, "source", root, trial=f"oracle-{i}", calibrate=i == 0)
         for i in range(int(task["protocol"]["repeats"]))
     ]
     failed = next((run for run in runs if not run["ok"]), None)
@@ -56,8 +57,21 @@ def build_oracle(task: dict[str, Any], root: Path, *, rebuild: bool = False) -> 
             "physical_cost": physical,
         }
     first = Path(runs[0]["dir"])
+    names = ["inputs.npz", "outputs.npz", "state.npz"]
+    if (runs[0]["capture"] or {}).get("train"):
+        calibration = ["train_fp64.npz", "train_alt.npz"]
+        if not all((first / name).is_file() for name in calibration):
+            # 缺少噪声标定时不能冻结 oracle，否则 verify 会失去判定依据
+            return {
+                "kind": ORACLE_KIND,
+                "ok": False,
+                "reason": "SOURCE_CALIBRATION_MISSING",
+                "runs": runs,
+                "physical_cost": physical,
+            }
+        names.extend(calibration)
     path.mkdir(parents=True, exist_ok=True)
-    for name in ("inputs.npz", "outputs.npz", "state.npz"):
+    for name in names:
         (path / name).write_bytes((first / name).read_bytes())
     meta = {
         "kind": ORACLE_KIND,
@@ -66,7 +80,7 @@ def build_oracle(task: dict[str, Any], root: Path, *, rebuild: bool = False) -> 
         "task_digest": task["digest"],
         "dir": str(path),
         "capture": runs[0]["capture"],
-        "files": {name: file_hash(path / name) for name in ("inputs.npz", "outputs.npz", "state.npz")},
+        "files": {name: file_hash(path / name) for name in names},
         "source_runs": [run["run_id"] for run in runs],
         "build_physical_cost": physical,
     }

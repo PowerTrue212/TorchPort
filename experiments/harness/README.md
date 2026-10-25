@@ -38,7 +38,30 @@ hidden verify on the frozen snapshot
 
 The Agent decides how much preliminary checking to do. The Harness does not infer dependencies,
 install packages, decide whether memory is sufficient, or download datasets. An external worker
-still enforces filesystem, credential, and network isolation for formal experiments.
+still enforces filesystem and credential isolation for formal experiments. Public network access,
+web search, and remote code search remain available with the same ordinary tool profile in every
+feedback condition.
+
+For every formal trial, the worker also keeps the Harness controller code, calibration
+implementations, and every other candidate workspace outside the Agent's filesystem view. Each
+condition starts a fresh Agent session with no previous trial history or persistent memory mounted,
+and no access to another trial through session tools.
+The worker records the ordinary Agent tool inventory and confirms that public network, web search,
+and remote code search remain available. Public references used by the Agent are part of the trial,
+and their URLs and revisions should be reported. The external integration retains web and code
+search events separately from TorchPort oracle queries; finding an existing public port does not
+invalidate the trial.
+The controller requires these facts in the worker attestation before it freezes a formal run plan.
+The JSON attestation is an audit record of worker-enforced isolation, not a sandbox by itself.
+For `benchmark_protocol=benchmark-v1`, the run-plan validator additionally requires proof that
+`import torchport` and forbidden-path read probes fail, that the Agent's remote shell cannot reach
+the evaluator account or oracle, and that targeted answer/project URL filtering plus file/URL
+access auditing are active. A DSH `workspace-write` setting alone limits writes, not all reads;
+it does not satisfy this requirement.
+If an Agent accesses a forbidden area or receives feedback from another condition, the worker
+records `scope_violation`, `feedback_leak`, or `isolation_violation` as the stop reason. The Harness
+keeps the final snapshot and raw evidence but excludes that attempt from valid and successful
+trials. These stop reasons are not retried as infrastructure errors.
 
 ## Agent-facing tools
 

@@ -6,6 +6,9 @@ from dataclasses import asdict, dataclass
 from enum import Enum
 
 FEEDBACK_SCHEMA_VERSION = 1
+INVALID_TRIAL_STOP_REASONS = frozenset(
+    {"infrastructure_error", "scope_violation", "feedback_leak", "isolation_violation"}
+)
 DIAGNOSTIC_FIELDS = (
     "passed",
     "aligned",

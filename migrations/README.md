@@ -6,6 +6,7 @@
 | 目录 | 内容 |
 | --- | --- |
 | `CamoFormer/` | CamoFormer 受控迁移、校准和任务级指标材料 |
+| `LoRA/` | Microsoft LoRA 的 GPT-2 Small PyTorch/Jittor 配对材料 |
 
 每个目录只提交小型协议代码和可审计材料。下载的源码、数据集、checkpoint、candidate
 工作区、运行缓存和大型原始输出由根目录 `.gitignore` 排除。跨仓库的评测控制器、结果汇总

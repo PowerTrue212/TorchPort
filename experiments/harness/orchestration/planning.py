@@ -176,21 +176,43 @@ def _validate_isolation(
                 "manifest 不允许正式结论；仅做可信 pilot 时显式传 --allow-trusted-pilot"
             )
         return None
+    if isolation.get("public_research_enabled") is not True:
+        raise ValueError("正式 experiment 必须保留公开网页与远程代码检索能力")
     if attestation_path is None:
         raise ValueError("正式 experiment 必须提供 --worker-attestation")
     attestation = _json(attestation_path.resolve())
     required_true = (
-        "network_isolation",
         "host_filesystem_isolation",
         "candidate_workspace_is_only_writable_mount",
         "source_and_frozen_inputs_read_only",
         "hidden_artifacts_not_mounted_for_agent",
+        "controller_code_not_mounted_for_agent",
+        "calibration_references_not_mounted_for_agent",
+        "other_candidate_workspaces_not_mounted_for_agent",
+        "agent_context_is_fresh",
+        "agent_memory_and_history_not_mounted",
+        "other_trial_sessions_not_accessible",
+        "public_network_access_available",
+        "public_web_search_available",
+        "public_code_search_available",
+        "public_research_event_logging_available",
     )
+    if manifest.get("benchmark_protocol") == "benchmark-v1":
+        required_true += (
+            "torchport_import_blocked",
+            "forbidden_read_probes_passed",
+            "remote_agent_evaluator_isolation",
+            "answer_url_filter_active",
+            "project_url_filter_active",
+            "url_and_file_access_audit_available",
+        )
     missing = [name for name in required_true if attestation.get(name) is not True]
     if missing:
         raise ValueError(f"worker attestation 未满足隔离字段：{', '.join(missing)}")
     if not attestation.get("runtime") or not attestation.get("image_digest"):
         raise ValueError("worker attestation 必须记录 runtime 和 image_digest")
+    if not attestation.get("agent_tool_inventory_sha256"):
+        raise ValueError("worker attestation 必须记录 Agent 普通工具清单摘要")
     return {**attestation, "sha256": file_hash(attestation_path)}
 
 
@@ -220,6 +242,8 @@ def _validate_frozen_plan(
                 "manifest 不允许正式结论；仅做可信 pilot 时显式传 --allow-trusted-pilot"
             )
         return
+    if isolation.get("public_research_enabled") is not True:
+        raise ValueError("正式 experiment 必须保留公开网页与远程代码检索能力")
     attestation = runtime.get("worker_attestation") or {}
     if not attestation or plan.get("worker_attestation_sha256") != attestation.get("sha256"):
         raise ValueError("run-plan 缺少有效的冻结 worker attestation")
@@ -307,5 +331,3 @@ def prepare_run_plan(
     }
     write_json(plan_path, plan)
     return plan_path
-
-
