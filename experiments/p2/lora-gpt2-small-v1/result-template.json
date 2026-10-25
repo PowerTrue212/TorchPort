@@ -1,0 +1,44 @@
+{
+  "condition": null,
+  "trial_id": null,
+  "agent_session_id": null,
+  "model_id": null,
+  "started_at": null,
+  "ended_at": null,
+  "wall_seconds": null,
+  "turns": null,
+  "usage": {
+    "input_tokens": null,
+    "cached_input_tokens": null,
+    "output_tokens": null,
+    "reasoning_tokens": null,
+    "provider_total_tokens": null,
+    "cost": null,
+    "currency": null
+  },
+  "stop_reason": null,
+  "tool_calls_by_name": {},
+  "public_research": {
+    "event_log_path": null,
+    "event_log_sha256": null,
+    "references_used": []
+  },
+  "logical_query_cost": {
+    "evaluate": null,
+    "verify": null,
+    "trace": null,
+    "unique_candidates": null
+  },
+  "physical_evaluation_cost": {
+    "executions": null,
+    "wall_seconds": null,
+    "cuda_process_wall_seconds": null
+  },
+  "official_verify": {
+    "path": null,
+    "sha256": null,
+    "passed": null,
+    "failure_code": null
+  },
+  "notes": []
+}

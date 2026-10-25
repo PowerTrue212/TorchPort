@@ -1,0 +1,8 @@
+{
+  "provenance": "synthetic_smoke",
+  "description": "Formula test only. These constants are not Benchmark v1 baselines.",
+  "T0": 100,
+  "N0": 1000,
+  "K0": 10,
+  "F0": 2
+}

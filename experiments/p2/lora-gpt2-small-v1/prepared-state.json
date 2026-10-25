@@ -1,0 +1,79 @@
+{
+  "schema_version": 1,
+  "kind": "torchport.p2-prepared-state",
+  "experiment_id": "lora-gpt2-small-diagnostic-vs-localized-r0",
+  "prepared_at": "2026-10-22",
+  "status": "pilot_prepared_not_formal",
+  "isolation": {
+    "formal_claims_allowed": false,
+    "local_workspaces_are_host_visible": true,
+    "formal_worker_attestation_required": true,
+    "public_research_enabled": true
+  },
+  "source_revision": "c4593f060e6a368d7bb5af5273b8e42810cdef90",
+  "base_checkpoint_sha256": "7c5d3f4b8b76583b422fcb9189ad6c89d5d97a094541ce8932dce3ecabde1421",
+  "initial_candidate_sha256": "e0aa7e3368c370cc5a5c48b206e7887ae707b88d8b71aa01b7f379e006bca2fe",
+  "common": {
+    "model_card": "gpt2.sm",
+    "n_layer": 12,
+    "n_embd": 768,
+    "n_head": 12,
+    "vocab_size": 50257,
+    "lora_dim": 4,
+    "lora_alpha": 32,
+    "lora_dropout": 0.0,
+    "seed": 20261017,
+    "wall_minutes": 180,
+    "max_turns": 200,
+    "token_budget": "pilot"
+  },
+  "conditions": [
+    {
+      "condition": "none",
+      "feedback": "diagnostic",
+      "workspace": "D:\\科研\\LoRA-Benchmark-v1\\candidates\\lora-gpt2-small-none-r0",
+      "git_commit": "d38fb1a0bdf9891d0ba39d6557edc7967b3c09d3",
+      "initial_candidate_sha256": "e0aa7e3368c370cc5a5c48b206e7887ae707b88d8b71aa01b7f379e006bca2fe",
+      "prompt_sha256": "1f251f934413f25cc590f79973aec4cf8454b7c9036cbecc5bdf79f43fc2b83d"
+    },
+    {
+      "condition": "full",
+      "feedback": "localized",
+      "workspace": "D:\\科研\\LoRA-Benchmark-v1\\candidates\\lora-gpt2-small-full-r0",
+      "git_commit": "c0409367c2d755263ead2ae9917b3abf6f2f6831",
+      "initial_candidate_sha256": "e0aa7e3368c370cc5a5c48b206e7887ae707b88d8b71aa01b7f379e006bca2fe",
+      "prompt_sha256": "1f251f934413f25cc590f79973aec4cf8454b7c9036cbecc5bdf79f43fc2b83d"
+    }
+  ],
+  "data": {
+    "core_equivalence_requires_e2e_dataset": false,
+    "raw_e2e_present_in_source": true,
+    "frozen_token_batch": {
+      "path": "input_ids.npy",
+      "dtype": "int64",
+      "shape": [
+        2,
+        16
+      ],
+      "sha256": "0216901e6e027fbf85997ecee58914a8dfd6c227ac71c5c52fd592c033fca75d"
+    },
+    "deterministic_lora_state": {
+      "path": "lora_state.npz",
+      "format": "npz",
+      "dtype": "float32",
+      "tensor_count": 24,
+      "total_elements": 147456,
+      "sha256": "f7398f36a2cfa2a088499c7b8e4712360f220d56d10e18e17bd92fc22f462e1b",
+      "key_rule": "12 fused-QKV layers; lora_A (8,768), lora_B (1536,4)"
+    },
+    "formatted_jsonl_prepared": false,
+    "task_metrics_require_e2e_dataset": true
+  },
+  "missing_before_formal_run": [
+    "RTX 4090 training GATE has two passes and two failures on the same frozen oracle; resolve repeatability and rerun negative controls",
+    "separate hidden TaskSpecs and frozen task-performance thresholds",
+    "worker-enforced host and remote-GPU filesystem isolation with fresh context",
+    "answer-URL filtering that preserves ordinary web and code search",
+    "worker attestation and raw event collection for a formal trial"
+  ]
+}

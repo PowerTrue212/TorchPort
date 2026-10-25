@@ -1,0 +1,56 @@
+{
+  "schema_version": 1,
+  "task_id": "lora-gpt2-small-train-step-v1",
+  "source": {
+    "repo": "D:\\科研\\TorchPort\\migrations\\LoRA\\train\\source",
+    "entry": "torchport_train.py",
+    "model": "build_model",
+    "device": "cuda"
+  },
+  "target": {
+    "repo": "D:\\科研\\TorchPort\\migrations\\LoRA\\train\\reference-target",
+    "entry": "torchport_train.py",
+    "model": "build_model",
+    "device": "cuda"
+  },
+  "inputs": [
+    {
+      "shape": [
+        4,
+        2,
+        16
+      ],
+      "dtype": "int64",
+      "path": "D:\\科研\\TorchPort\\experiments\\p2\\lora-gpt2-small-v1\\train\\fixtures\\input_ids.npy"
+    },
+    {
+      "shape": [
+        4,
+        2,
+        16
+      ],
+      "dtype": "int64",
+      "path": "D:\\科研\\TorchPort\\experiments\\p2\\lora-gpt2-small-v1\\train\\fixtures\\labels.npy"
+    },
+    {
+      "shape": [
+        4,
+        2,
+        16
+      ],
+      "dtype": "float32",
+      "path": "D:\\科研\\TorchPort\\experiments\\p2\\lora-gpt2-small-v1\\train\\fixtures\\mask.npy"
+    }
+  ],
+  "weights": "D:\\科研\\TorchPort\\migrations\\LoRA\\checkpoint\\gpt2-sm-lora-train.npz",
+  "seed": 20261020,
+  "protocol": {
+    "profile": "train-step",
+    "repeats": 2,
+    "timeout": 1800,
+    "train": {
+      "optimizer": "build_optimizer",
+      "step": "train_step"
+    }
+  }
+}

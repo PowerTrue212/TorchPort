@@ -1,0 +1,118 @@
+{
+  "exit_code": 3,
+  "stderr": "",
+  "stdout": {
+    "aligned": false,
+    "artifacts": {
+      "report": "/hy-tmp/TorchPort/harness-trials/c50d666352aa/evidence/verify/calib-train-4090-r3.json"
+    },
+    "failure_code": "PARITY_FAILED",
+    "kind": "torchport.verify",
+    "mismatch": {
+      "fp32": {
+        "compared_elements": 590212,
+        "compared_tensors": 103,
+        "extra_tensors": 0,
+        "max_absolute_error": 5.7220458984375e-06,
+        "mismatch_ratio": 0.0,
+        "mismatched_elements": 0,
+        "mismatched_tensors": 0,
+        "missing_tensors": 0,
+        "skipped_sketched_tensors": 0
+      }
+    },
+    "next": "运行 torchport trace 定位首次分歧",
+    "oracle": "/hy-tmp/TorchPort/harness-trials/c50d666352aa/evidence/oracle/8306ab435aed3624",
+    "passed": false,
+    "physical_cost": {
+      "cuda_execution_seconds": 333.8271486759186,
+      "execution_wall_seconds": 333.8271486759186,
+      "executions": 1
+    },
+    "repeats": {
+      "failure_code": "PARITY_FAILED",
+      "passed": false,
+      "passed_runs": 0,
+      "required": 2,
+      "runs": 1
+    },
+    "results": [
+      {
+        "aligned": false,
+        "artifacts": {
+          "candidate": "/hy-tmp/TorchPort/harness-trials/c50d666352aa/evidence/runs/calib-train-4090-r3/target-20261022-215231-e08d1530/outputs.npz",
+          "reference": "/hy-tmp/TorchPort/harness-trials/c50d666352aa/evidence/oracle/8306ab435aed3624/outputs.npz"
+        },
+        "candidate_identity": "3684c787aaca5f56ae720c52588ef276912504b7196817779c1dd97ee3b5a8d8",
+        "envelope_metrics": {
+          "compared_tensors": 100,
+          "failed_gating_tensors": 1,
+          "failed_reported_tensors": 0,
+          "failed_tensors": 1,
+          "gating_tensors": 100,
+          "max_gating_ratio": 12.950609455115952,
+          "max_ratio": 12.950609455115952
+        },
+        "evidence": {
+          "checkpoint": {
+            "complete": true,
+            "loaded": 185,
+            "missing": [],
+            "path": "/hy-tmp/TorchPort/harness-trials/weights-cache/130b2a5237e4084d27a6d71a2cb10305ac982a0e368b7e8c8601f8914206f8c9/gpt2-sm-lora-train.npz",
+            "requested": true,
+            "sha256": "130b2a5237e4084d27a6d71a2cb10305ac982a0e368b7e8c8601f8914206f8c9",
+            "total": 185,
+            "unexpected": []
+          },
+          "input_identical": true,
+          "mode": "normal",
+          "weights": {
+            "complete": true,
+            "extra": [],
+            "loaded": 184,
+            "missing": [],
+            "source": 184,
+            "target_total": 184,
+            "value_mismatch": []
+          }
+        },
+        "failure_code": "PARITY_FAILED",
+        "kind": "torchport.evaluation",
+        "mismatch": {
+          "fp32": {
+            "compared_elements": 590212,
+            "compared_tensors": 103,
+            "extra_tensors": 0,
+            "max_absolute_error": 5.7220458984375e-06,
+            "mismatch_ratio": 0.0,
+            "mismatched_elements": 0,
+            "mismatched_tensors": 0,
+            "missing_tensors": 0,
+            "skipped_sketched_tensors": 0
+          }
+        },
+        "next": "运行 torchport trace 定位首次分歧",
+        "numerical": "fail",
+        "passed": false,
+        "problems": [
+          "首个超出噪声包络 output.loss.0：超出 source 噪声底"
+        ],
+        "run_id": "target-20261022-215231-e08d1530",
+        "runnable": "pass",
+        "schema_version": 2,
+        "status": "failed",
+        "strict_aligned": null,
+        "structural": "pass",
+        "summary": "PARITY_FAILED: 首个超出噪声包络 output.loss.0：超出 source 噪声底"
+      }
+    ],
+    "status": "failed",
+    "strict_aligned": false,
+    "summary": "PARITY_FAILED: 首个超出噪声包络 output.loss.0：超出 source 噪声底",
+    "task_digest": "8306ab435aed3624d60c7076d4230a63f4aee5d39121f3f986bbb02335cbc3d8",
+    "task_id": "lora-gpt2-small-train-step-v1",
+    "trial_id": "calib-train-4090-r3"
+  },
+  "task": "D:\\科研\\TorchPort\\experiments\\p2\\lora-gpt2-small-v1\\train\\task.json",
+  "trial": "calib-train-4090-r3"
+}

@@ -1,0 +1,118 @@
+{
+  "exit_code": 3,
+  "stderr": "",
+  "stdout": {
+    "aligned": false,
+    "artifacts": {
+      "report": "/root/data-fs/TorchPort/a1f68d3df81b/evidence/verify/negctl-loss-sum-v100-20261024.json"
+    },
+    "failure_code": "PARITY_FAILED",
+    "kind": "torchport.verify",
+    "mismatch": {
+      "fp32": {
+        "compared_elements": 590212,
+        "compared_tensors": 103,
+        "extra_tensors": 0,
+        "max_absolute_error": 405.6762647628784,
+        "mismatch_ratio": 6.777225810386776e-06,
+        "mismatched_elements": 4,
+        "mismatched_tensors": 4,
+        "missing_tensors": 0,
+        "skipped_sketched_tensors": 0
+      }
+    },
+    "next": "运行 torchport trace 定位首次分歧",
+    "oracle": "/root/data-fs/TorchPort/a1f68d3df81b/evidence/oracle/77e2aecc03aa0f51",
+    "passed": false,
+    "physical_cost": {
+      "cuda_execution_seconds": 579.0101935863495,
+      "execution_wall_seconds": 579.0101935863495,
+      "executions": 3
+    },
+    "repeats": {
+      "failure_code": "PARITY_FAILED",
+      "passed": false,
+      "passed_runs": 0,
+      "required": 2,
+      "runs": 1
+    },
+    "results": [
+      {
+        "aligned": false,
+        "artifacts": {
+          "candidate": "/root/data-fs/TorchPort/a1f68d3df81b/evidence/runs/negctl-loss-sum-v100-20261024/target-20261024-105420-e009bcd1/outputs.npz",
+          "reference": "/root/data-fs/TorchPort/a1f68d3df81b/evidence/oracle/77e2aecc03aa0f51/outputs.npz"
+        },
+        "candidate_identity": "ab008722811ec6c621a38ba9a8f8d87ace4d62ee1d0aa7a5fc8d0efd57bccc57",
+        "envelope_metrics": {
+          "compared_tensors": 100,
+          "failed_gating_tensors": 76,
+          "failed_reported_tensors": 0,
+          "failed_tensors": 76,
+          "gating_tensors": 100,
+          "max_gating_ratio": 837966596.5247561,
+          "max_ratio": 837966596.5247561
+        },
+        "evidence": {
+          "checkpoint": {
+            "complete": true,
+            "loaded": 185,
+            "missing": [],
+            "path": "/root/data-fs/TorchPort/weights-cache/130b2a5237e4084d27a6d71a2cb10305ac982a0e368b7e8c8601f8914206f8c9/gpt2-sm-lora-train.npz",
+            "requested": true,
+            "sha256": "130b2a5237e4084d27a6d71a2cb10305ac982a0e368b7e8c8601f8914206f8c9",
+            "total": 185,
+            "unexpected": []
+          },
+          "input_identical": true,
+          "mode": "normal",
+          "weights": {
+            "complete": true,
+            "extra": [],
+            "loaded": 184,
+            "missing": [],
+            "source": 184,
+            "target_total": 184,
+            "value_mismatch": []
+          }
+        },
+        "failure_code": "PARITY_FAILED",
+        "kind": "torchport.evaluation",
+        "mismatch": {
+          "fp32": {
+            "compared_elements": 590212,
+            "compared_tensors": 103,
+            "extra_tensors": 0,
+            "max_absolute_error": 405.6762647628784,
+            "mismatch_ratio": 6.777225810386776e-06,
+            "mismatched_elements": 4,
+            "mismatched_tensors": 4,
+            "missing_tensors": 0,
+            "skipped_sketched_tensors": 0
+          }
+        },
+        "next": "运行 torchport trace 定位首次分歧",
+        "numerical": "fail",
+        "passed": false,
+        "problems": [
+          "首个超出噪声包络 output.loss.0：超出 source 噪声底"
+        ],
+        "run_id": "target-20261024-105420-e009bcd1",
+        "runnable": "pass",
+        "schema_version": 2,
+        "status": "failed",
+        "strict_aligned": null,
+        "structural": "pass",
+        "summary": "PARITY_FAILED: 首个超出噪声包络 output.loss.0：超出 source 噪声底"
+      }
+    ],
+    "status": "failed",
+    "strict_aligned": false,
+    "summary": "PARITY_FAILED: 首个超出噪声包络 output.loss.0：超出 source 噪声底",
+    "task_digest": "77e2aecc03aa0f513cf67575db921c986564786e06bd88eeab331f1457c08fb8",
+    "task_id": "lora-gpt2-small-train-loss-sum-negctl-v1",
+    "trial_id": "negctl-loss-sum-v100-20261024"
+  },
+  "task": "D:\\科研\\TorchPort\\migrations\\LoRA\\train\\negative-controls\\task-loss-sum.json",
+  "trial": "negctl-loss-sum-v100-20261024"
+}

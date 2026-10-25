@@ -1,0 +1,58 @@
+{
+  "exit_code": 3,
+  "stderr": "",
+  "stdout": {
+    "aligned": false,
+    "artifacts": {
+      "report": "/hy-tmp/TorchPort/harness-trials/4b0e7fd87162/evidence/verify/calib-forward-4090.json"
+    },
+    "failure_code": "RUN_FAILED",
+    "kind": "torchport.verify",
+    "mismatch": null,
+    "next": "查看 stderr，修复目标端导入/构造错误",
+    "oracle": "/hy-tmp/TorchPort/harness-trials/4b0e7fd87162/evidence/oracle/523d09796a12f352",
+    "passed": false,
+    "physical_cost": {
+      "cuda_execution_seconds": 16.57587957382202,
+      "execution_wall_seconds": 16.57587957382202,
+      "executions": 3
+    },
+    "repeats": {
+      "failure_code": "RUN_FAILED",
+      "passed": false,
+      "passed_runs": 0,
+      "required": 2,
+      "runs": 1
+    },
+    "results": [
+      {
+        "aligned": null,
+        "failure_code": "RUN_FAILED",
+        "kind": "torchport.evaluation",
+        "next": "查看 stderr，修复目标端导入/构造错误",
+        "numerical": "not_run",
+        "passed": false,
+        "problems": [
+          "target 运行失败：ModuleNotFoundError: No module named 'yaml'"
+        ],
+        "run_id": "target-20261022-211932-73f14c55",
+        "runnable": "fail",
+        "schema_version": 2,
+        "status": "failed",
+        "stderr_tail": "Traceback (most recent call last):\n  File \"<frozen runpy>\", line 198, in _run_module_as_main\n  File \"<frozen runpy>\", line 88, in _run_code\n  File \"/hy-tmp/TorchPort/harness-trials/4b0e7fd87162/src/torchport/__main__.py\", line 3, in <module>\n    raise SystemExit(main())\n                     ^^^^^^\n  File \"/hy-tmp/TorchPort/harness-trials/4b0e7fd87162/src/torchport/cli.py\", line 107, in main\n    from .capture import main as capture_main\n  File \"/hy-tmp/TorchPort/harness-trials/4b0e7fd87162/src/torchport/capture/__init__.py\", line 7, in <module>\n    from .model import (\n  File \"/hy-tmp/TorchPort/harness-trials/4b0e7fd87162/src/torchport/capture/model.py\", line 15, in <module>\n    from ..contracts import file_hash\n  File \"/hy-tmp/TorchPort/harness-trials/4b0e7fd87162/src/torchport/contracts/__init__.py\", line 14, in <module>\n    from .task import DEFAULT_PROTOCOL, SCHEMA_VERSION, SIDES, load_task, normalize\n  File \"/hy-tmp/TorchPort/harness-trials/4b0e7fd87162/src/torchport/contracts/task.py\", line 9, in <module>\n    import yaml\nModuleNotFoundError: No module named 'yaml'",
+        "strict_aligned": null,
+        "structural": "not_run",
+        "summary": "RUN_FAILED: target 运行失败：ModuleNotFoundError: No module named 'yaml'",
+        "timeout": false
+      }
+    ],
+    "status": "failed",
+    "strict_aligned": false,
+    "summary": "RUN_FAILED: target 运行失败：ModuleNotFoundError: No module named 'yaml'",
+    "task_digest": "523d09796a12f3520620cf8ca6b747502be22119eb9dcba93ff471e4d05d84bf",
+    "task_id": "lora-gpt2-small-forward-v1",
+    "trial_id": "calib-forward-4090"
+  },
+  "task": "D:\\科研\\TorchPort\\experiments\\p2\\lora-gpt2-small-v1\\train\\task-forward.json",
+  "trial": "calib-forward-4090"
+}

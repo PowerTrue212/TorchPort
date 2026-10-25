@@ -190,9 +190,18 @@ PyTorch 使用 CUDA synchronize；Jittor 使用等价的全局同步。计时边
 统计框架。
 
 正式实验还必须由外部隔离 worker 生成 attestation。controller 只校验并冻结该证据；
-它不把 JSON 声明当作隔离实现。attestation 至少证明网络和宿主文件系统隔离、candidate
+它不把 JSON 声明当作隔离实现。attestation 至少证明宿主文件系统与凭据隔离、candidate
 是唯一可写挂载、source 与冻结输入只读、隐藏验收材料未挂载给 Agent，并记录 runtime 与
 不可变 image digest。缺失任一条件时不得生成正式 run-plan。
+正式实验的 attestation 还必须证明：Agent 看不到 Harness/TorchPort 控制代码、人工迁移
+校准实现和其他 candidate 工作区；每个条件从新会话启动，不挂载先前 trial 的历史或持久记忆，
+也无法通过会话工具访问其他 trial。
+公开网络、网页搜索和远程代码搜索保持可用，两组使用相同的普通工具配置，并冻结工具清单摘要。
+公开同题实现可以被 Agent 检索和引用；记录 URL、版本或提交号，结论解释为通用 Agent 在公开
+检索条件下的迁移效果。外部适配层保存网页和代码搜索事件；这些普通工具调用不计入 TorchPort
+Logical Query Cost。公开参考的使用情况单独汇报，不使 trial 无效。
+这些字段由 worker 对实际可见挂载和会话配置生成，不能由实验作者手填 `true` 代替隔离。
+prompt 中的访问规则用于指导 Agent；正式隔离以 worker 实际执行的边界为准。
 
 ## 首轮环境验收
 

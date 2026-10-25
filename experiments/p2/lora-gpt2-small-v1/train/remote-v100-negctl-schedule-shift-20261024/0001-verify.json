@@ -1,0 +1,118 @@
+{
+  "exit_code": 3,
+  "stderr": "",
+  "stdout": {
+    "aligned": false,
+    "artifacts": {
+      "report": "/root/data-fs/TorchPort/3a00723ed2db/evidence/verify/negctl-schedule-shift-v100-20261024.json"
+    },
+    "failure_code": "PARITY_FAILED",
+    "kind": "torchport.verify",
+    "mismatch": {
+      "fp32": {
+        "compared_elements": 590212,
+        "compared_tensors": 103,
+        "extra_tensors": 0,
+        "max_absolute_error": 0.035927772521972656,
+        "mismatch_ratio": 0.5427337973473938,
+        "mismatched_elements": 320328,
+        "mismatched_tensors": 75,
+        "missing_tensors": 0,
+        "skipped_sketched_tensors": 0
+      }
+    },
+    "next": "运行 torchport trace 定位首次分歧",
+    "oracle": "/root/data-fs/TorchPort/3a00723ed2db/evidence/oracle/77e2aecc03aa0f51",
+    "passed": false,
+    "physical_cost": {
+      "cuda_execution_seconds": 581.1279442310333,
+      "execution_wall_seconds": 581.1279442310333,
+      "executions": 3
+    },
+    "repeats": {
+      "failure_code": "PARITY_FAILED",
+      "passed": false,
+      "passed_runs": 0,
+      "required": 2,
+      "runs": 1
+    },
+    "results": [
+      {
+        "aligned": false,
+        "artifacts": {
+          "candidate": "/root/data-fs/TorchPort/3a00723ed2db/evidence/runs/negctl-schedule-shift-v100-20261024/target-20261024-110516-49ef2bcc/outputs.npz",
+          "reference": "/root/data-fs/TorchPort/3a00723ed2db/evidence/oracle/77e2aecc03aa0f51/outputs.npz"
+        },
+        "candidate_identity": "928acae7b4821d52ca79cba4b4e375313482f51305af59e101873044044beea0",
+        "envelope_metrics": {
+          "compared_tensors": 100,
+          "failed_gating_tensors": 99,
+          "failed_reported_tensors": 0,
+          "failed_tensors": 99,
+          "gating_tensors": 100,
+          "max_gating_ratio": 17048.7424133299,
+          "max_ratio": 17048.7424133299
+        },
+        "evidence": {
+          "checkpoint": {
+            "complete": true,
+            "loaded": 185,
+            "missing": [],
+            "path": "/root/data-fs/TorchPort/weights-cache/130b2a5237e4084d27a6d71a2cb10305ac982a0e368b7e8c8601f8914206f8c9/gpt2-sm-lora-train.npz",
+            "requested": true,
+            "sha256": "130b2a5237e4084d27a6d71a2cb10305ac982a0e368b7e8c8601f8914206f8c9",
+            "total": 185,
+            "unexpected": []
+          },
+          "input_identical": true,
+          "mode": "normal",
+          "weights": {
+            "complete": true,
+            "extra": [],
+            "loaded": 184,
+            "missing": [],
+            "source": 184,
+            "target_total": 184,
+            "value_mismatch": []
+          }
+        },
+        "failure_code": "PARITY_FAILED",
+        "kind": "torchport.evaluation",
+        "mismatch": {
+          "fp32": {
+            "compared_elements": 590212,
+            "compared_tensors": 103,
+            "extra_tensors": 0,
+            "max_absolute_error": 0.035927772521972656,
+            "mismatch_ratio": 0.5427337973473938,
+            "mismatched_elements": 320328,
+            "mismatched_tensors": 75,
+            "missing_tensors": 0,
+            "skipped_sketched_tensors": 0
+          }
+        },
+        "next": "运行 torchport trace 定位首次分歧",
+        "numerical": "fail",
+        "passed": false,
+        "problems": [
+          "首个超出噪声包络 train.lr：学习率调度不同"
+        ],
+        "run_id": "target-20261024-110516-49ef2bcc",
+        "runnable": "pass",
+        "schema_version": 2,
+        "status": "failed",
+        "strict_aligned": null,
+        "structural": "pass",
+        "summary": "PARITY_FAILED: 首个超出噪声包络 train.lr：学习率调度不同"
+      }
+    ],
+    "status": "failed",
+    "strict_aligned": false,
+    "summary": "PARITY_FAILED: 首个超出噪声包络 train.lr：学习率调度不同",
+    "task_digest": "77e2aecc03aa0f513cf67575db921c986564786e06bd88eeab331f1457c08fb8",
+    "task_id": "lora-gpt2-small-train-schedule-shift-negctl-v1",
+    "trial_id": "negctl-schedule-shift-v100-20261024"
+  },
+  "task": "D:\\科研\\TorchPort\\migrations\\LoRA\\train\\negative-controls\\task-schedule-shift.json",
+  "trial": "negctl-schedule-shift-v100-20261024"
+}

@@ -1,0 +1,39 @@
+{
+  "schema": "torchport.upstream-materials.v1",
+  "source": {
+    "repository": "https://github.com/microsoft/LoRA",
+    "revision": "c4593f060e6a368d7bb5af5273b8e42810cdef90",
+    "archive_url": "https://api.github.com/repos/microsoft/LoRA/zipball/c4593f060e6a368d7bb5af5273b8e42810cdef90",
+    "archive_sha256": "6c8e4c3d8f9ebb8eb7ce6c04d9e336246e884f5dbd15c8fa4550354dc7136186",
+    "archive_local_path": ".downloads/microsoft-LoRA-c4593f0-api.zip",
+    "local_path": "source/microsoft-LoRA"
+  },
+  "references": [
+    {
+      "role": "gpt2-small-paired-reference-pytorch-v100-jittor-rtx3090",
+      "repository": "https://github.com/zhenrys/LoRA-GPT2-E2E-pytorch-jittor",
+      "revision": "8ee1d5064879a26e7ad9eddcb7bfbb46e27ad253",
+      "archive_url": "https://api.github.com/repos/zhenrys/LoRA-GPT2-E2E-pytorch-jittor/zipball/8ee1d5064879a26e7ad9eddcb7bfbb46e27ad253",
+      "archive_sha256": "92db9688f5f4336f71a3d76b02fe3ce71209cd5f85d5ae5d9d70d0f3772294d4",
+      "archive_local_path": ".downloads/LoRA-GPT2-E2E-pytorch-jittor-8ee1d50.zip",
+      "local_path": "reference/LoRA-GPT2-E2E-pytorch-jittor"
+    },
+    {
+      "role": "secondary-three-dataset-calibration-reference",
+      "repository": "https://github.com/weihuakuang/LoRA-Jittor",
+      "revision": "8920778156e43c7ff6851d731ed75525a34b5c99",
+      "archive_url": "https://codeload.github.com/weihuakuang/LoRA-Jittor/zip/8920778156e43c7ff6851d731ed75525a34b5c99",
+      "archive_sha256": "4ce124cea6896eb0a557f3346ef8619f74dea2bf17b947cafb53a988bd24074f",
+      "archive_local_path": ".downloads/LoRA-Jittor-8920778-bits.zip",
+      "local_path": "reference/LoRA-Jittor"
+    }
+  ],
+  "checkpoint": {
+    "role": "gpt2-small-pretrained-base",
+    "url": "https://s3.amazonaws.com/models.huggingface.co/bert/gpt2-pytorch_model.bin",
+    "size_bytes": 548118077,
+    "sha256": "7c5d3f4b8b76583b422fcb9189ad6c89d5d97a094541ce8932dce3ecabde1421",
+    "local_path": "checkpoint/gpt2-pytorch_model.bin",
+    "is_lora_checkpoint": false
+  }
+}

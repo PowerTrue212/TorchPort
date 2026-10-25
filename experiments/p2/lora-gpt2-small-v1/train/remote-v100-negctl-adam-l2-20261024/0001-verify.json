@@ -1,0 +1,118 @@
+{
+  "exit_code": 3,
+  "stderr": "",
+  "stdout": {
+    "aligned": false,
+    "artifacts": {
+      "report": "/root/data-fs/TorchPort/b33fdbc73636/evidence/verify/negctl-adam-l2-v100-20261024.json"
+    },
+    "failure_code": "PARITY_FAILED",
+    "kind": "torchport.verify",
+    "mismatch": {
+      "fp32": {
+        "compared_elements": 590212,
+        "compared_tensors": 103,
+        "extra_tensors": 0,
+        "max_absolute_error": 0.0008610822260379791,
+        "mismatch_ratio": 0.020550242963545302,
+        "mismatched_elements": 12129,
+        "mismatched_tensors": 72,
+        "missing_tensors": 0,
+        "skipped_sketched_tensors": 0
+      }
+    },
+    "next": "运行 torchport trace 定位首次分歧",
+    "oracle": "/root/data-fs/TorchPort/b33fdbc73636/evidence/oracle/77e2aecc03aa0f51",
+    "passed": false,
+    "physical_cost": {
+      "cuda_execution_seconds": 603.2339625358582,
+      "execution_wall_seconds": 603.2339625358582,
+      "executions": 3
+    },
+    "repeats": {
+      "failure_code": "PARITY_FAILED",
+      "passed": false,
+      "passed_runs": 0,
+      "required": 2,
+      "runs": 1
+    },
+    "results": [
+      {
+        "aligned": false,
+        "artifacts": {
+          "candidate": "/root/data-fs/TorchPort/b33fdbc73636/evidence/runs/negctl-adam-l2-v100-20261024/target-20261024-112449-a185473d/outputs.npz",
+          "reference": "/root/data-fs/TorchPort/b33fdbc73636/evidence/oracle/77e2aecc03aa0f51/outputs.npz"
+        },
+        "candidate_identity": "ce438558846ef2d34e37823658e3bc8a07e0575c9f49eb9bb3a22d5781dfa490",
+        "envelope_metrics": {
+          "compared_tensors": 100,
+          "failed_gating_tensors": 74,
+          "failed_reported_tensors": 0,
+          "failed_tensors": 74,
+          "gating_tensors": 100,
+          "max_gating_ratio": 8503.176359084333,
+          "max_ratio": 8503.176359084333
+        },
+        "evidence": {
+          "checkpoint": {
+            "complete": true,
+            "loaded": 185,
+            "missing": [],
+            "path": "/root/data-fs/TorchPort/weights-cache/130b2a5237e4084d27a6d71a2cb10305ac982a0e368b7e8c8601f8914206f8c9/gpt2-sm-lora-train.npz",
+            "requested": true,
+            "sha256": "130b2a5237e4084d27a6d71a2cb10305ac982a0e368b7e8c8601f8914206f8c9",
+            "total": 185,
+            "unexpected": []
+          },
+          "input_identical": true,
+          "mode": "normal",
+          "weights": {
+            "complete": true,
+            "extra": [],
+            "loaded": 184,
+            "missing": [],
+            "source": 184,
+            "target_total": 184,
+            "value_mismatch": []
+          }
+        },
+        "failure_code": "PARITY_FAILED",
+        "kind": "torchport.evaluation",
+        "mismatch": {
+          "fp32": {
+            "compared_elements": 590212,
+            "compared_tensors": 103,
+            "extra_tensors": 0,
+            "max_absolute_error": 0.0008610822260379791,
+            "mismatch_ratio": 0.020550242963545302,
+            "mismatched_elements": 12129,
+            "mismatched_tensors": 72,
+            "missing_tensors": 0,
+            "skipped_sketched_tensors": 0
+          }
+        },
+        "next": "运行 torchport trace 定位首次分歧",
+        "numerical": "fail",
+        "passed": false,
+        "problems": [
+          "首个超出噪声包络 output.param.1.transformer.h.0.attn.c_attn.lora_A：超出 source 噪声底"
+        ],
+        "run_id": "target-20261024-112449-a185473d",
+        "runnable": "pass",
+        "schema_version": 2,
+        "status": "failed",
+        "strict_aligned": null,
+        "structural": "pass",
+        "summary": "PARITY_FAILED: 首个超出噪声包络 output.param.1.transformer.h.0.attn.c_attn.lora_A：超出 source 噪声底"
+      }
+    ],
+    "status": "failed",
+    "strict_aligned": false,
+    "summary": "PARITY_FAILED: 首个超出噪声包络 output.param.1.transformer.h.0.attn.c_attn.lora_A：超出 source 噪声底",
+    "task_digest": "77e2aecc03aa0f513cf67575db921c986564786e06bd88eeab331f1457c08fb8",
+    "task_id": "lora-gpt2-small-train-adam-l2-negctl-v1",
+    "trial_id": "negctl-adam-l2-v100-20261024"
+  },
+  "task": "D:\\科研\\TorchPort\\migrations\\LoRA\\train\\negative-controls\\task-adam-l2.json",
+  "trial": "negctl-adam-l2-v100-20261024"
+}

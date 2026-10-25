@@ -1,0 +1,77 @@
+{
+  "schema_version": 1,
+  "kind": "torchport.p2-prepared-state",
+  "experiment_id": "lora-gpt2-small-diagnostic-vs-localized-r1",
+  "prepared_at": "2026-10-24",
+  "status": "pilot_prepared_not_formal",
+  "isolation": {
+    "formal_claims_allowed": false,
+    "local_workspaces_are_host_visible": true,
+    "isolation_claim": "open-tool pilot; no host filesystem sandbox claim",
+    "public_research_enabled": true
+  },
+  "source_revision": "c4593f060e6a368d7bb5af5273b8e42810cdef90",
+  "base_checkpoint_sha256": "7c5d3f4b8b76583b422fcb9189ad6c89d5d97a094541ce8932dce3ecabde1421",
+  "initial_candidate_sha256": "0323548d8a2a2ce87846f27a339a9130379c940287a0d9677f0f8540c29c6f83",
+  "common": {
+    "model_card": "gpt2.sm",
+    "n_layer": 12,
+    "n_embd": 768,
+    "n_head": 12,
+    "vocab_size": 50257,
+    "lora_dim": 4,
+    "lora_alpha": 32,
+    "lora_dropout": 0.0,
+    "seed": 20261017,
+    "wall_minutes": 180,
+    "max_turns": 200,
+    "token_budget": "不限"
+  },
+  "conditions": [
+    {
+      "condition": "none",
+      "feedback": "diagnostic",
+      "workspace": "D:\\LoRA-Agent-Workspaces\\candidates\\lora-gpt2-small-none-r1",
+      "git_commit": "d2791e8f66c85067a7d0c60f196adec3e29fab18",
+      "initial_candidate_sha256": "0323548d8a2a2ce87846f27a339a9130379c940287a0d9677f0f8540c29c6f83",
+      "prompt_sha256": "97646cd6e5f8f51df150c090ee05a67ce13ea8dec08de7a6371e7d069750f235"
+    },
+    {
+      "condition": "full",
+      "feedback": "localized",
+      "workspace": "D:\\LoRA-Agent-Workspaces\\candidates\\lora-gpt2-small-full-r1",
+      "git_commit": "37e3402ed551f3a80a00dae5593f85f09d3fda4c",
+      "initial_candidate_sha256": "0323548d8a2a2ce87846f27a339a9130379c940287a0d9677f0f8540c29c6f83",
+      "prompt_sha256": "97646cd6e5f8f51df150c090ee05a67ce13ea8dec08de7a6371e7d069750f235"
+    }
+  ],
+  "data": {
+    "core_equivalence_requires_e2e_dataset": false,
+    "raw_e2e_present_in_source": true,
+    "frozen_token_batch": {
+      "path": "input_ids.npy",
+      "dtype": "int64",
+      "shape": [
+        2,
+        16
+      ],
+      "sha256": "0216901e6e027fbf85997ecee58914a8dfd6c227ac71c5c52fd592c033fca75d"
+    },
+    "deterministic_lora_state": {
+      "path": "lora_state.npz",
+      "format": "npz",
+      "dtype": "float32",
+      "tensor_count": 24,
+      "total_elements": 147456,
+      "sha256": "f7398f36a2cfa2a088499c7b8e4712360f220d56d10e18e17bd92fc22f462e1b",
+      "key_rule": "12 fused-QKV layers; lora_A (8,768), lora_B (1536,4)"
+    },
+    "formatted_jsonl_prepared": false,
+    "task_metrics_require_e2e_dataset": true
+  },
+  "missing_before_formal_run": [
+    "freeze an open-tool benchmark protocol and its claim boundary",
+    "record ordinary tool use and public references for both conditions",
+    "freeze hidden verification, budgets, and any task-performance thresholds in scope"
+  ]
+}

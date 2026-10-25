@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "task_id": "lora-gpt2-small-forward-v1",
+  "source": {
+    "repo": "D:\\科研\\TorchPort\\migrations\\LoRA\\train\\source",
+    "entry": "torchport_train.py",
+    "model": "TorchPortLoRAGPT2Small",
+    "device": "cuda"
+  },
+  "target": {
+    "repo": "D:\\科研\\TorchPort\\migrations\\LoRA\\train\\reference-target",
+    "entry": "torchport_train.py",
+    "model": "TorchPortLoRAGPT2Small",
+    "device": "cuda"
+  },
+  "inputs": [
+    {
+      "shape": [
+        2,
+        16
+      ],
+      "dtype": "int64",
+      "path": "D:\\科研\\TorchPort\\experiments\\p2\\lora-gpt2-small-v1\\fixtures\\input_ids.npy"
+    }
+  ],
+  "weights": "D:\\科研\\TorchPort\\migrations\\LoRA\\checkpoint\\gpt2-sm-lora-train.npz",
+  "seed": 20261020,
+  "protocol": {
+    "profile": "fp32-inference",
+    "repeats": 2,
+    "timeout": 1800
+  }
+}

@@ -1,0 +1,72 @@
+{
+  "exit_code": 0,
+  "stderr": "",
+  "stdout": {
+    "aligned": true,
+    "artifacts": {
+      "candidate": "/root/data-fs/TorchPort/c50d666352aa/evidence/runs/calib-train-v100-20261024-r1/target-20261024-105002-9cd430ae/outputs.npz",
+      "reference": "/root/data-fs/TorchPort/c50d666352aa/evidence/oracle/77e2aecc03aa0f51/outputs.npz"
+    },
+    "candidate_identity": "de51d6b63c2745f90924245fe6197c01402b17ec6874aa924d8c25cfa526663b",
+    "envelope_metrics": {
+      "compared_tensors": 100,
+      "failed_gating_tensors": 0,
+      "failed_reported_tensors": 0,
+      "failed_tensors": 0,
+      "gating_tensors": 100,
+      "max_gating_ratio": 1.9972699446774722,
+      "max_ratio": 1.9972699446774722
+    },
+    "evidence": {
+      "checkpoint": {
+        "complete": true,
+        "loaded": 185,
+        "missing": [],
+        "path": "/root/data-fs/TorchPort/weights-cache/130b2a5237e4084d27a6d71a2cb10305ac982a0e368b7e8c8601f8914206f8c9/gpt2-sm-lora-train.npz",
+        "requested": true,
+        "sha256": "130b2a5237e4084d27a6d71a2cb10305ac982a0e368b7e8c8601f8914206f8c9",
+        "total": 185,
+        "unexpected": []
+      },
+      "input_identical": true,
+      "mode": "normal",
+      "weights": {
+        "complete": true,
+        "extra": [],
+        "loaded": 184,
+        "missing": [],
+        "source": 184,
+        "target_total": 184,
+        "value_mismatch": []
+      }
+    },
+    "failure_code": null,
+    "kind": "torchport.evaluation",
+    "mismatch": {
+      "fp32": {
+        "compared_elements": 590212,
+        "compared_tensors": 103,
+        "extra_tensors": 0,
+        "max_absolute_error": 9.5367431640625e-07,
+        "mismatch_ratio": 0.0,
+        "mismatched_elements": 0,
+        "mismatched_tensors": 0,
+        "missing_tensors": 0,
+        "skipped_sketched_tensors": 0
+      }
+    },
+    "next": null,
+    "numerical": "pass",
+    "passed": true,
+    "problems": [],
+    "run_id": "target-20261024-105002-9cd430ae",
+    "runnable": "pass",
+    "schema_version": 2,
+    "status": "verified",
+    "strict_aligned": null,
+    "structural": "pass",
+    "summary": "通过"
+  },
+  "task": "D:\\科研\\TorchPort\\experiments\\p2\\lora-gpt2-small-v1\\train\\task.json",
+  "trial": "calib-train-v100-20261024-r1"
+}

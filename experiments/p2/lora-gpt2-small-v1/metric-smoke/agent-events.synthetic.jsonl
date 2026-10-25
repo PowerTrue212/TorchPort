@@ -1,0 +1,11 @@
+{"event":"agent_session_started","timestamp":0}
+{"event":"work_interval","category":"migration","started_at":0,"finished_at":60}
+{"event":"work_interval","category":"compilation","started_at":60,"finished_at":90}
+{"event":"model_response","usage":{"total_tokens":500}}
+{"event":"agent_tool_call","tool":"shell"}
+{"event":"agent_tool_call","tool":"verify"}
+{"event":"candidate_revision","digest":"revision-a"}
+{"event":"candidate_revision","digest":"revision-b"}
+{"event":"revision_check","digest":"revision-a","passed":false}
+{"event":"revision_check","digest":"revision-b","passed":true}
+{"event":"agent_session_finished","timestamp":90}

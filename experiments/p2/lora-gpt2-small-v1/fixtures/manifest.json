@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "seed": 20261017,
+  "input": {
+    "path": "input_ids.npy",
+    "dtype": "int64",
+    "shape": [
+      2,
+      16
+    ],
+    "sha256": "0216901e6e027fbf85997ecee58914a8dfd6c227ac71c5c52fd592c033fca75d"
+  },
+  "lora_state": {
+    "path": "lora_state.npz",
+    "format": "npz",
+    "dtype": "float32",
+    "tensor_count": 24,
+    "total_elements": 147456,
+    "sha256": "f7398f36a2cfa2a088499c7b8e4712360f220d56d10e18e17bd92fc22f462e1b",
+    "key_rule": "12 fused-QKV layers; lora_A (8,768), lora_B (1536,4)"
+  }
+}

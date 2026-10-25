@@ -1,0 +1,273 @@
+{
+  "exit_code": 0,
+  "stderr": "",
+  "stdout": {
+    "aligned": true,
+    "artifacts": {
+      "report": "/hy-tmp/TorchPort/harness-trials/4b0e7fd87162/evidence/verify/calib-forward-4090-r2.json"
+    },
+    "failure_code": null,
+    "kind": "torchport.verify",
+    "mismatch": {
+      "fp32": {
+        "compared_elements": 1608256,
+        "compared_tensors": 2,
+        "extra_tensors": 0,
+        "max_absolute_error": 9.1552734375e-05,
+        "mismatch_ratio": 0.0,
+        "mismatched_elements": 0,
+        "mismatched_tensors": 0,
+        "missing_tensors": 0,
+        "skipped_sketched_tensors": 0
+      },
+      "strict": {
+        "compared_elements": 1608256,
+        "compared_tensors": 2,
+        "extra_tensors": 0,
+        "max_absolute_error": 9.1552734375e-05,
+        "mismatch_ratio": 0.0,
+        "mismatched_elements": 0,
+        "mismatched_tensors": 0,
+        "missing_tensors": 0,
+        "skipped_sketched_tensors": 0
+      }
+    },
+    "next": null,
+    "oracle": "/hy-tmp/TorchPort/harness-trials/4b0e7fd87162/evidence/oracle/523d09796a12f352",
+    "passed": true,
+    "physical_cost": {
+      "cuda_execution_seconds": 304.2528212070465,
+      "execution_wall_seconds": 304.2528212070465,
+      "executions": 2
+    },
+    "repeats": {
+      "failure_code": null,
+      "passed": true,
+      "passed_runs": 2,
+      "required": 2,
+      "runs": 2
+    },
+    "results": [
+      {
+        "aligned": true,
+        "artifacts": {
+          "candidate": "/hy-tmp/TorchPort/harness-trials/4b0e7fd87162/evidence/runs/calib-forward-4090-r2/target-20261022-212054-15013796/outputs.npz",
+          "reference": "/hy-tmp/TorchPort/harness-trials/4b0e7fd87162/evidence/oracle/523d09796a12f352/outputs.npz"
+        },
+        "candidate_identity": "967b3c39543964da9296e01b68098884e8500ae351c3e2e26ab793e582101b82",
+        "evidence": {
+          "checkpoint": {
+            "complete": true,
+            "loaded": 185,
+            "missing": [],
+            "path": "/hy-tmp/TorchPort/harness-trials/weights-cache/130b2a5237e4084d27a6d71a2cb10305ac982a0e368b7e8c8601f8914206f8c9/gpt2-sm-lora-train.npz",
+            "requested": true,
+            "sha256": "130b2a5237e4084d27a6d71a2cb10305ac982a0e368b7e8c8601f8914206f8c9",
+            "total": 185,
+            "unexpected": []
+          },
+          "input_identical": true,
+          "mode": "normal",
+          "weights": {
+            "complete": true,
+            "extra": [],
+            "loaded": 184,
+            "missing": [],
+            "source": 184,
+            "target_total": 184,
+            "value_mismatch": []
+          }
+        },
+        "failure_code": null,
+        "kind": "torchport.evaluation",
+        "mismatch": {
+          "fp32": {
+            "compared_elements": 1608256,
+            "compared_tensors": 2,
+            "extra_tensors": 0,
+            "max_absolute_error": 9.1552734375e-05,
+            "mismatch_ratio": 0.0,
+            "mismatched_elements": 0,
+            "mismatched_tensors": 0,
+            "missing_tensors": 0,
+            "skipped_sketched_tensors": 0
+          },
+          "strict": {
+            "compared_elements": 1608256,
+            "compared_tensors": 2,
+            "extra_tensors": 0,
+            "max_absolute_error": 9.1552734375e-05,
+            "mismatch_ratio": 0.0,
+            "mismatched_elements": 0,
+            "mismatched_tensors": 0,
+            "missing_tensors": 0,
+            "skipped_sketched_tensors": 0
+          }
+        },
+        "next": null,
+        "numerical": "pass",
+        "passed": true,
+        "problems": [],
+        "profiles": {
+          "fp32": {
+            "extra": [],
+            "first": null,
+            "first_any": null,
+            "metrics": {
+              "compared_elements": 1608256,
+              "compared_tensors": 2,
+              "extra_tensors": 0,
+              "max_absolute_error": 9.1552734375e-05,
+              "mismatch_ratio": 0.0,
+              "mismatched_elements": 0,
+              "mismatched_tensors": 0,
+              "missing_tensors": 0,
+              "skipped_sketched_tensors": 0
+            },
+            "missing": [],
+            "passed": true
+          },
+          "strict": {
+            "extra": [],
+            "first": null,
+            "first_any": null,
+            "metrics": {
+              "compared_elements": 1608256,
+              "compared_tensors": 2,
+              "extra_tensors": 0,
+              "max_absolute_error": 9.1552734375e-05,
+              "mismatch_ratio": 0.0,
+              "mismatched_elements": 0,
+              "mismatched_tensors": 0,
+              "missing_tensors": 0,
+              "skipped_sketched_tensors": 0
+            },
+            "missing": [],
+            "passed": true
+          }
+        },
+        "run_id": "target-20261022-212054-15013796",
+        "runnable": "pass",
+        "schema_version": 2,
+        "status": "verified",
+        "strict_aligned": true,
+        "structural": "pass",
+        "summary": "通过"
+      },
+      {
+        "aligned": true,
+        "artifacts": {
+          "candidate": "/hy-tmp/TorchPort/harness-trials/4b0e7fd87162/evidence/runs/calib-forward-4090-r2/target-20261022-212554-780c36ab/outputs.npz",
+          "reference": "/hy-tmp/TorchPort/harness-trials/4b0e7fd87162/evidence/oracle/523d09796a12f352/outputs.npz"
+        },
+        "candidate_identity": "967b3c39543964da9296e01b68098884e8500ae351c3e2e26ab793e582101b82",
+        "evidence": {
+          "checkpoint": {
+            "complete": true,
+            "loaded": 185,
+            "missing": [],
+            "path": "/hy-tmp/TorchPort/harness-trials/weights-cache/130b2a5237e4084d27a6d71a2cb10305ac982a0e368b7e8c8601f8914206f8c9/gpt2-sm-lora-train.npz",
+            "requested": true,
+            "sha256": "130b2a5237e4084d27a6d71a2cb10305ac982a0e368b7e8c8601f8914206f8c9",
+            "total": 185,
+            "unexpected": []
+          },
+          "input_identical": true,
+          "mode": "normal",
+          "weights": {
+            "complete": true,
+            "extra": [],
+            "loaded": 184,
+            "missing": [],
+            "source": 184,
+            "target_total": 184,
+            "value_mismatch": []
+          }
+        },
+        "failure_code": null,
+        "kind": "torchport.evaluation",
+        "mismatch": {
+          "fp32": {
+            "compared_elements": 1608256,
+            "compared_tensors": 2,
+            "extra_tensors": 0,
+            "max_absolute_error": 9.1552734375e-05,
+            "mismatch_ratio": 0.0,
+            "mismatched_elements": 0,
+            "mismatched_tensors": 0,
+            "missing_tensors": 0,
+            "skipped_sketched_tensors": 0
+          },
+          "strict": {
+            "compared_elements": 1608256,
+            "compared_tensors": 2,
+            "extra_tensors": 0,
+            "max_absolute_error": 9.1552734375e-05,
+            "mismatch_ratio": 0.0,
+            "mismatched_elements": 0,
+            "mismatched_tensors": 0,
+            "missing_tensors": 0,
+            "skipped_sketched_tensors": 0
+          }
+        },
+        "next": null,
+        "numerical": "pass",
+        "passed": true,
+        "problems": [],
+        "profiles": {
+          "fp32": {
+            "extra": [],
+            "first": null,
+            "first_any": null,
+            "metrics": {
+              "compared_elements": 1608256,
+              "compared_tensors": 2,
+              "extra_tensors": 0,
+              "max_absolute_error": 9.1552734375e-05,
+              "mismatch_ratio": 0.0,
+              "mismatched_elements": 0,
+              "mismatched_tensors": 0,
+              "missing_tensors": 0,
+              "skipped_sketched_tensors": 0
+            },
+            "missing": [],
+            "passed": true
+          },
+          "strict": {
+            "extra": [],
+            "first": null,
+            "first_any": null,
+            "metrics": {
+              "compared_elements": 1608256,
+              "compared_tensors": 2,
+              "extra_tensors": 0,
+              "max_absolute_error": 9.1552734375e-05,
+              "mismatch_ratio": 0.0,
+              "mismatched_elements": 0,
+              "mismatched_tensors": 0,
+              "missing_tensors": 0,
+              "skipped_sketched_tensors": 0
+            },
+            "missing": [],
+            "passed": true
+          }
+        },
+        "run_id": "target-20261022-212554-780c36ab",
+        "runnable": "pass",
+        "schema_version": 2,
+        "status": "verified",
+        "strict_aligned": true,
+        "structural": "pass",
+        "summary": "通过"
+      }
+    ],
+    "status": "verified",
+    "strict_aligned": true,
+    "summary": "通过",
+    "task_digest": "523d09796a12f3520620cf8ca6b747502be22119eb9dcba93ff471e4d05d84bf",
+    "task_id": "lora-gpt2-small-forward-v1",
+    "trial_id": "calib-forward-4090-r2"
+  },
+  "task": "D:\\科研\\TorchPort\\experiments\\p2\\lora-gpt2-small-v1\\train\\task-forward.json",
+  "trial": "calib-forward-4090-r2"
+}

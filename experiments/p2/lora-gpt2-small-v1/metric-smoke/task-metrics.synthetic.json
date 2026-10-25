@@ -1,0 +1,8 @@
+{
+  "provenance": "synthetic_smoke",
+  "description": "Formula test only. These values are not E2E task results.",
+  "metrics": [
+    {"name": "synthetic_quality", "source": 0.8, "target": 0.79, "tau": 0.02},
+    {"name": "synthetic_loss", "source": 1.0, "target": 1.02, "tau": 0.04}
+  ]
+}
