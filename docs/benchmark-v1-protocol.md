@@ -109,6 +109,22 @@ Harness 工具的返回值获得验证信息，看不到验证实现：
 6. 启动前试读上述路径和 `import torchport`，确认全部失败，结果写入 worker attestation。
    事后检查事件日志中的文件读取和 URL，命中者记 `scope_violation`，不计入有效 trial。
 
+实现约定（2026-10-26）：
+
+- 运行身份：Agent 进程使用专用操作系统账户；控制端仓库、控制目录、oracle、另一组工作区
+  对该账户设拒绝读权限。远端 GPU 不向 Agent 开放 SSH，GPU 执行只经 Harness `run`/`verify`。
+  账户和 ACL 属于宿主机配置，由实验负责人确认后建立。
+- MCP：控制端账户用 `mcp_server.py --http 127.0.0.1:<port> --token-file <控制端文件>` 单独启动
+  服务，Agent 通过 DSH 的 `streamable-http` 连接。服务只监听回环地址，每个 trial 一个端口和
+  token；Agent 侧不运行也不可读 Harness 源码。stdio 方式只用于本机自测。
+- 启动前探针：`preflight.py` 以 Agent 账户运行，试读禁止路径、试 `import torchport`、试连
+  禁止 URL，任一成功即不启动 trial；输出原样存入控制目录，作为 attestation 的依据。
+- 金丝雀：`audit_trial.py plant` 在控制目录、oracle 目录和另一组工作区放置唯一标记文件，
+  标记只记在控制端。
+- 事后审计：`audit_trial.py scan` 扫描 Agent 会话日志中的金丝雀、工作区外路径、禁止路径与
+  禁止 URL，并记录模型步数。命中金丝雀或禁止项记 `scope_violation`；只出现工作区外普通路径
+  （如解释器、系统目录）时列出，人工复核。
+
 ## 答案泄露
 
 公开网络和检索保持可用。对有人工迁移的仓库（目前确认 4 个：diffusion、SPD、DP3、CLIP；

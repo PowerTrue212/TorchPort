@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "task_id": "clip-vit-b32-cifar10-pilot-forward-v1",
+  "frozen_at": "2026-10-26",
+  "metrics": [
+    {
+      "name": "top1_accuracy",
+      "tau": 0.01,
+      "source_sigma": 0.0,
+      "source_repeats": 3,
+      "rule": "tau = max(3 * source_sigma, manual_floor)",
+      "manual_floor": 0.01,
+      "manual_floor_reason": "100 images; one prediction flip changes top-1 by 0.01. Source repeats are bitwise identical, so 3 * sigma = 0 and the floor decides."
+    }
+  ],
+  "exact_match_reported": "prediction_match_rate (not part of s)",
+  "source_manifest_sha256": "a7e4b6681fd29f8c921b808d4fee2d22f27e985a1eaaca1869b359e77cc82ff0",
+  "note": "Frozen before any agent trial. Change only as a new protocol version."
+}
