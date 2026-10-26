@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+import os
+import shutil
+import uuid
 from pathlib import Path
 from typing import Any
 
@@ -16,6 +19,19 @@ from ..runtime import (
 from .runner import run_side
 
 ORACLE_KIND = "torchport.oracle"
+
+
+def _materialize_evidence(source: Path, destination: Path) -> None:
+    """Keep full oracle evidence without a second data copy on one filesystem."""
+    temporary = destination.with_name(f".{destination.name}.{uuid.uuid4().hex}.tmp")
+    try:
+        try:
+            os.link(source, temporary)
+        except OSError:
+            shutil.copyfile(source, temporary)
+        os.replace(temporary, destination)
+    finally:
+        temporary.unlink(missing_ok=True)
 
 
 def build_oracle(task: dict[str, Any], root: Path, *, rebuild: bool = False) -> dict[str, Any]:
@@ -72,7 +88,7 @@ def build_oracle(task: dict[str, Any], root: Path, *, rebuild: bool = False) -> 
         names.extend(calibration)
     path.mkdir(parents=True, exist_ok=True)
     for name in names:
-        (path / name).write_bytes((first / name).read_bytes())
+        _materialize_evidence(first / name, path / name)
     meta = {
         "kind": ORACLE_KIND,
         "ok": True,

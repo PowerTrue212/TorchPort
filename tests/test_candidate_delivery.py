@@ -82,6 +82,22 @@ class CandidateDeliveryTests(unittest.TestCase):
             self.assertNotIn(".scratch", git_diff)
             self.assertIn("VALUE = 3", git_diff)
 
+    def test_finalizer_resumes_only_an_unchanged_frozen_snapshot(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            repo, output = root / "repo", root / "delivery"
+            repo.mkdir()
+            (repo / "run.py").write_text("VALUE = 1\n", "utf-8")
+            (repo / "model.py").write_text("VALUE = 2\n", "utf-8")
+            first = finalize_candidate(repo, output, required_entry="run.py")
+            resumed = finalize_candidate(repo, output, required_entry="run.py",
+                                         resume_existing=True)
+            self.assertEqual(first["content_digest"], resumed["content_digest"])
+            (repo / "model.py").write_text("VALUE = 3\n", "utf-8")
+            with self.assertRaisesRegex(ValueError, "已有快照"):
+                finalize_candidate(repo, output, required_entry="run.py",
+                                   resume_existing=True)
+
     def test_repository_contract_rejects_an_entry_only_delivery(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)

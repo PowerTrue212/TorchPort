@@ -49,8 +49,11 @@ class RemoteExecutorTests(unittest.TestCase):
             executor = self._executor(Path(temporary), 255, {})
             with self.assertRaises(RuntimeError) as context:
                 executor.call("verify", Path("task.json"), trial="t0")
+            raw = json.loads((Path(temporary) / "0001-verify.json").read_text("utf-8"))
 
         self.assertNotIn("private stderr", str(context.exception))
+        self.assertEqual(raw["exit_code"], 255)
+        self.assertEqual(raw["stderr"], "private stderr")
 
 
 if __name__ == "__main__":

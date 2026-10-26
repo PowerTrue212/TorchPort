@@ -118,13 +118,21 @@ def run_steps(
     state = _callable(scope, train["optimizer"])(model)
     optimizer = _optimizer(state)
     trainable = _trainable(model, optimizer)
+    requested = train.get("observe")
+    if requested is not None:
+        missing = sorted(set(requested) - set(trainable))
+        if missing:
+            raise ValueError(f"指定观察的参数不在可训练集合中：{missing}")
+        observed = {name: trainable[name] for name in requested}
+    else:
+        observed = trainable
     step = _callable(scope, train["step"])
     outputs: dict[str, np.ndarray] = {}
     lrs: list[float] = []
     for index, (args, kwargs) in enumerate(_batches(arrays, specs, steps, kind, device, dtype)):
         lrs.append(_lr(optimizer))
         outputs[f"output.loss.{index}"] = _scalar(step(model, state, *args, **kwargs), kind)
-        for name, param in trainable.items():
+        for name, param in observed.items():
             outputs[f"output.param.{index}.{name}"] = _to_numpy(param, kind)
     info = {
         "steps": steps,
@@ -132,6 +140,9 @@ def run_steps(
         "trainable_elements": int(sum(np.prod(tuple(p.shape)) for p in trainable.values())),
         "lr": lrs,
     }
+    if requested is not None:
+        info["observed"] = list(observed)
+        info["observed_elements"] = int(sum(np.prod(tuple(p.shape)) for p in observed.values()))
     return outputs, info
 
 

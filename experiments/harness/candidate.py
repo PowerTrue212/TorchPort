@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import os
 import shutil
 import subprocess
@@ -173,6 +174,7 @@ def finalize_candidate(
     output: str | Path,
     *,
     required_entry: str | None = None,
+    resume_existing: bool = False,
 ) -> dict[str, Any]:
     """Freeze a clean repository snapshot and its review evidence before official verify."""
     root = Path(root).resolve()
@@ -195,7 +197,21 @@ def finalize_candidate(
 
     snapshot = output / "repository"
     if snapshot.exists():
-        raise FileExistsError(f"candidate snapshot 已存在：{snapshot}")
+        if not resume_existing:
+            raise FileExistsError(f"candidate snapshot 已存在：{snapshot}")
+        manifest_path = output / "candidate-manifest.json"
+        if not manifest_path.is_file():
+            raise FileNotFoundError(f"已有快照缺少 manifest：{manifest_path}")
+        report = json.loads(manifest_path.read_text(encoding="utf-8"))
+        after = repository_manifest(snapshot)
+        if (report.get("snapshot") != str(snapshot)
+                or report.get("required_entry") != required_entry
+                or report.get("content_digest") != before["content_digest"]
+                or report.get("content_digest") != after["content_digest"]):
+            raise ValueError("已有快照与当前候选或 manifest 不一致")
+        report["manifest"] = str(manifest_path)
+        report["manifest_sha256"] = file_hash(manifest_path)
+        return report
     shutil.copytree(
         root,
         snapshot,

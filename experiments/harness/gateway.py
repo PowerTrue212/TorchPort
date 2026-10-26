@@ -218,6 +218,7 @@ class HarnessGateway:
             self.workspace,
             self.trial_dir / "delivery",
             required_entry=self.protocol.candidate_entry,
+            resume_existing=True,
         )
         official_reports = {}
         official_candidates = {}

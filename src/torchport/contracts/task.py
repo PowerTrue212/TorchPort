@@ -74,7 +74,18 @@ def _train_protocol(protocol: dict[str, Any], inputs: list[Any]) -> None:
     }
     if len(steps) != 1 or min(steps) < 1:
         raise ValueError("train-step 的每个输入第 0 维必须是相同的正步数")
-    protocol["train"] = {"optimizer": train["optimizer"], "step": train["step"]}
+    normalized = {"optimizer": train["optimizer"], "step": train["step"]}
+    if "observe" in train:
+        observed = train["observe"]
+        if (
+            not isinstance(observed, list)
+            or not observed
+            or any(not isinstance(name, str) or not name for name in observed)
+            or len(observed) != len(set(observed))
+        ):
+            raise ValueError("protocol.train.observe 必须是非空且无重复的参数名列表")
+        normalized["observe"] = observed
+    protocol["train"] = normalized
 
 
 def load_task(path: str | Path) -> dict[str, Any]:

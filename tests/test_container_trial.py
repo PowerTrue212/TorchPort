@@ -29,14 +29,18 @@ def test_docker_prefix_uses_wsl_on_windows() -> None:
 
 def test_remove_container_uses_docker_prefix_and_ignores_missing(monkeypatch: pytest.MonkeyPatch) -> None:
     commands = []
+    options = []
 
     def fake_run(command: list[str], **_kwargs: object) -> subprocess.CompletedProcess[str]:
         commands.append(command)
+        options.append(_kwargs)
         return subprocess.CompletedProcess(command, 1, "", "No such container: tp-x")
 
     monkeypatch.setattr(trial.subprocess, "run", fake_run)
     trial.remove_container(trial.docker_prefix(True, "Ubuntu"), "tp-x")
     assert commands == [["wsl.exe", "-d", "Ubuntu", "--", "docker", "rm", "-f", "tp-x"]]
+    assert options[0]["encoding"] == "utf-8"
+    assert options[0]["errors"] == "replace"
 
 
 def test_run_args_mounts_only_workspace_and_listed_paths() -> None:

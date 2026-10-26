@@ -21,13 +21,36 @@ from pathlib import Path
 from typing import Any
 
 CANARY_NAME = "MIGRATION_NOTES.local.md"
-# Windows 盘符路径或 POSIX 绝对路径；JSON 中的反斜杠已转义，按解码后的文本匹配
-PATH_PATTERN = re.compile(r"(?:[A-Za-z]:[\\/][^\s\"'<>|*?\r\n]+|/(?:root|home|mnt|data|tmp|Users)/[^\s\"'<>|*?\r\n]+)")
+# Windows 盘符路径或 POSIX 绝对路径。盘符前不能是单词的一部分，
+# 盘符后的分隔符不能再跟分隔符，避免把 https:// 中的 s:// 当作磁盘路径。
+PATH_PATTERN = re.compile(r"(?:(?<![A-Za-z0-9])[A-Za-z]:[\\/](?![\\/])[^\s\"'<>|*?\r\n]+|/(?:root|home|mnt|data|tmp|Users|work)/[^\s\"'<>|*?\r\n]+)")
 URL_PATTERN = re.compile(r"https?://[^\s\"'<>)\]]+", re.IGNORECASE)
 
 
 def _norm(path: str) -> str:
     return path.replace("\\", "/").rstrip("/").lower()
+
+
+def _contains_path_rule(text: str, rule: str) -> bool:
+    """Match a path component boundary, not a shared prefix such as /mnt/data."""
+    for match in re.finditer(re.escape(rule), text):
+        before = text[match.start() - 1] if match.start() else ""
+        after = text[match.end()] if match.end() < len(text) else ""
+        if (not before or not (before.isalnum() or before in "._-")) and (
+            not after or not (after.isalnum() or after in "._-")
+        ):
+            return True
+    return False
+
+
+def _strings(value: Any) -> list[str]:
+    if isinstance(value, str):
+        return [value]
+    if isinstance(value, dict):
+        return [text for item in value.values() for text in _strings(item)]
+    if isinstance(value, list):
+        return [text for item in value for text in _strings(item)]
+    return []
 
 
 def plant(protected: list[Path], record: Path) -> dict[str, Any]:
@@ -70,8 +93,9 @@ def _events(log: Path) -> list[tuple[int, dict[str, Any] | None, str]]:
             except json.JSONDecodeError:
                 rows.append((number, None, line))  # 中断时末行可能不完整
                 continue
-            # 解码后再序列化一次，使 JSON 转义的反斜杠路径变成可匹配的普通文本
-            rows.append((number, event, json.dumps(event, ensure_ascii=False).replace("\\\\", "\\")))
+            # 扫描解码后的字符串值。重新序列化会把换行变成字面量 \n，
+            # 路径正则可能误把前面的 "e:" 与它拼成 Windows 路径。
+            rows.append((number, event, "\n".join(_strings(event))))
     return rows
 
 
@@ -88,7 +112,7 @@ def scan(
     if record is not None:
         canaries = json.loads(record.read_text(encoding="utf-8"))["canaries"]
     # 容器内路径（如 /work）在 Windows 控制端不能 resolve，否则会变成 D:\work
-    raw_workspace = workspace.as_posix()
+    raw_workspace = str(workspace).replace("\\", "/")
     workspace_key = _norm(raw_workspace if raw_workspace.startswith("/") else str(workspace.resolve()))
     allowed = [_norm(item) for item in allowed_paths]
     forbidden = [_norm(item) for item in forbidden_paths]
@@ -109,12 +133,13 @@ def scan(
                 hits.append({"line": number, "kind": "canary", "match": canary["file"]})
         normalized = _norm(text)
         for rule in forbidden:
-            if rule and rule in normalized:
+            if rule and _contains_path_rule(normalized, rule):
                 hits.append({"line": number, "kind": "forbidden_path", "match": rule})
         for url in URL_PATTERN.findall(text):
             if any(rule in url.lower() for rule in url_rules):
                 hits.append({"line": number, "kind": "forbidden_url", "match": url})
-        for raw in PATH_PATTERN.findall(text):
+        # 截断的 JSON 行仍参与金丝雀和禁止项检查，但不生成需人工复核的路径。
+        for raw in PATH_PATTERN.findall(text if event is not None else ""):
             key = _norm(raw)
             if key.startswith(workspace_key) or any(key.startswith(item) for item in allowed):
                 continue

@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "task_id": "simcse-unsup-bert-base-stsb-forward-v1",
+  "frozen_at": "2026-10-27",
+  "metric": "STS-B test Spearman correlation of cosine similarity",
+  "pairs": 1379,
+  "source_spearman": 0.7685349386294106,
+  "source_repeats": 2,
+  "source_repeat_gap": 0.0,
+  "manual_floor": 0.005,
+  "tau": 0.005,
+  "rule": "tau = max(3 * source_repeat_gap, manual_floor)",
+  "manual_floor_reason": "Exploratory pilot tolerance of 0.5 Spearman percentage point. The source repeats are bitwise identical. This tolerance is a declared judgment, not a calibrated model-error bound.",
+  "source_embeddings_sha256": "8fe2008ca4299e36330930f91c675486ad0bc1af23e7568abb6aa24afb142258",
+  "labels_sha256": "e87cc41702a40113bca3975d8b37242325008fb8ca11499f7b75087e59a5dcfe",
+  "source_score_report": "D:\\科研\\SimCSE-Benchmark-v1\\controller\\prep\\simcse-seed-stsb-r2\\score.json",
+  "official_senteval_log": "D:\\科研\\SimCSE-Benchmark-v1\\controller\\prep\\official-stsb-evaluation-r1.txt",
+  "note": "Frozen before any Agent trial. STS-B test only. A later change requires a new protocol version."
+}

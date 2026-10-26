@@ -104,6 +104,42 @@ class AuditTests(unittest.TestCase):
         self.assertFalse(report["scope_violation"])
         self.assertEqual(report["hits"], [])
 
+    def test_escaped_newlines_and_urls_are_not_windows_paths(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            log = root / "agent.jsonl"
+            log.write_text(json.dumps({
+                "type": "tool_result",
+                "message": "error:\nretry\r\nhttps://github.com/openai/CLIP",
+                "command": "C:\\Python\\python.exe -V",
+            }) + "\n", encoding="utf-8")
+            report = audit_trial.scan(log, Path("/work"), None, [], [], [], None)
+        self.assertEqual(list(report["outside_workspace_paths"]), ["C:\\Python\\python.exe"])
+
+    def test_container_workspace_path_is_kept_posix_on_windows(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            log = Path(temporary) / "agent.jsonl"
+            log.write_text(json.dumps({
+                "type": "tool_call",
+                "input": {"command": "cat /work/run.py /work/.scratch/data/model.bin"},
+            }) + "\n", encoding="utf-8")
+            report = audit_trial.scan(log, Path("/work"), None, [], [], [], None)
+        self.assertEqual(report["outside_workspace_paths"], {})
+
+    def test_forbidden_path_requires_component_boundary(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            log = Path(temporary) / "agent.jsonl"
+            log.write_text(json.dumps({
+                "type": "tool_call", "input": {"command": "ls /mnt/data/cache"},
+            }) + "\n", encoding="utf-8")
+            report = audit_trial.scan(log, Path("/work"), None, ["/mnt/d/"], [], [], None)
+            self.assertFalse(report["scope_violation"])
+            log.write_text(json.dumps({
+                "type": "tool_call", "input": {"command": "ls /mnt/d/secret"},
+            }) + "\n", encoding="utf-8")
+            report = audit_trial.scan(log, Path("/work"), None, ["/mnt/d/"], [], [], None)
+            self.assertTrue(report["scope_violation"])
+
 
 if __name__ == "__main__":
     unittest.main()

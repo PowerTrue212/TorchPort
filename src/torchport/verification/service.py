@@ -77,6 +77,7 @@ def _exact_train_checks(source: dict[str, Any], target: dict[str, Any]) -> list[
         ("trainable", "可训练参数集合不同"),
         ("steps", "训练步数不同"),
         ("lr", "学习率调度不同"),
+        ("observed", "训练观察参数集合不同"),
     ):
         if source.get(key) != target.get(key):
             failures.append({"name": f"train.{key}", "reason": reason})

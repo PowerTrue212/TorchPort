@@ -48,7 +48,10 @@ def docker_prefix(windows: bool, distro: str) -> list[str]:
 
 
 def remove_container(docker: list[str], name: str) -> None:
-    result = subprocess.run(docker + ["rm", "-f", name], capture_output=True, text=True)
+    result = subprocess.run(
+        docker + ["rm", "-f", name], capture_output=True, text=True,
+        encoding="utf-8", errors="replace",
+    )
     if result.returncode and "No such container" not in result.stderr:
         raise RuntimeError(result.stderr.strip() or f"无法删除容器：{name}")
 

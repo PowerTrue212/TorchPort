@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 import tempfile
 import unittest
 from pathlib import Path
@@ -12,6 +13,7 @@ import numpy as np
 
 from torchport import verification as harness
 from torchport.contracts import normalize, tree_hash
+from torchport.verification import oracle as verification_oracle
 from torchport.verification import runner as verification_runner
 
 
@@ -75,6 +77,34 @@ class FakeExec:
 
 
 class HarnessTests(unittest.TestCase):
+    def test_oracle_evidence_hard_link_survives_source_removal(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            source = root / "source.npz"
+            destination = root / "oracle.npz"
+            probe = root / "probe.npz"
+            source.write_bytes(b"full frozen evidence")
+            try:
+                os.link(source, probe)
+            except OSError:
+                self.skipTest("This filesystem does not support hard links")
+            probe.unlink()
+            verification_oracle._materialize_evidence(source, destination)
+            self.assertEqual(source.stat().st_ino, destination.stat().st_ino)
+            source.unlink()
+            self.assertEqual(destination.read_bytes(), b"full frozen evidence")
+
+    def test_oracle_evidence_copy_fallback(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            source = root / "source.npz"
+            destination = root / "oracle.npz"
+            source.write_bytes(b"full frozen evidence")
+            with patch.object(verification_oracle.os, "link", side_effect=OSError("no link")):
+                verification_oracle._materialize_evidence(source, destination)
+            self.assertEqual(destination.read_bytes(), source.read_bytes())
+            self.assertNotEqual(source.stat().st_ino, destination.stat().st_ino)
+
     def _verify(self, fake: FakeExec, repeats: int = 3) -> dict:
         with tempfile.TemporaryDirectory() as tmp, patch.object(verification_runner, "execute", fake):
             root = Path(tmp)

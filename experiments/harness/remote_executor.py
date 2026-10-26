@@ -93,16 +93,29 @@ class RemoteExecutor:
             code, output, stderr = self.transport.run(client, command, timeout=3900)
         finally:
             client.close()
+        self.sequence += 1
+        evidence_path = self.evidence_dir / f"{self.sequence:04d}-{tool}.json"
         if code not in {0, 3}:
-            raise RuntimeError(f"远端 {tool} 执行失败（退出码 {code}）；原始日志仅保存在控制端")
+            write_json(evidence_path, {
+                "task": str(task_path), "trial": trial, "exit_code": code,
+                "stdout": output, "stderr": stderr,
+            })
+            raise RuntimeError(f"远端 {tool} 执行失败（退出码 {code}）；原始日志保存在控制端")
         try:
             report = json.loads(output)
         except json.JSONDecodeError as exc:
-            raise RuntimeError(f"远端 {tool} 未返回有效 JSON；原始日志仅保存在控制端") from exc
+            write_json(evidence_path, {
+                "task": str(task_path), "trial": trial, "exit_code": code,
+                "stdout": output, "stderr": stderr,
+            })
+            raise RuntimeError(f"远端 {tool} 未返回有效 JSON；原始日志保存在控制端") from exc
         if not isinstance(report, dict):
+            write_json(evidence_path, {
+                "task": str(task_path), "trial": trial, "exit_code": code,
+                "stdout": output, "stderr": stderr,
+            })
             raise RuntimeError("远端报告不是 JSON 对象")
-        self.sequence += 1
-        write_json(self.evidence_dir / f"{self.sequence:04d}-{tool}.json", {
+        write_json(evidence_path, {
             "task": str(task_path), "trial": trial, "exit_code": code,
             "stdout": report, "stderr": stderr,
         })
