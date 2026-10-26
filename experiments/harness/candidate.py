@@ -12,6 +12,7 @@ from torchport.contracts import SKIP_DIRS, digest, file_hash
 from torchport.runtime import write_json
 
 DELIVERY_SKIP_DIRS = set(SKIP_DIRS) | {".git"}
+DELIVERY_SKIP_ROOT_DIRS = {".scratch"}
 SENSITIVE_NAMES = {".env", "id_dsa", "id_ecdsa", "id_ed25519", "id_rsa"}
 
 
@@ -20,7 +21,7 @@ def _walk(root: Path):
         base = Path(directory)
         child_directories = []
         for name in sorted(names):
-            if name in DELIVERY_SKIP_DIRS:
+            if name in DELIVERY_SKIP_DIRS or (base == root and name in DELIVERY_SKIP_ROOT_DIRS):
                 continue
             path = base / name
             if path.is_symlink():
@@ -123,12 +124,13 @@ def initialize_git_workspace(root: str | Path) -> bool:
 def _git_evidence(root: Path, output: Path) -> dict[str, Any]:
     if not (root / ".git").exists():
         return {"available": False, "reason": "candidate workspace has no Git baseline"}
-    status = _git(root, "status", "--short", "--untracked-files=all")
+    scratch_exclude = ":(exclude).scratch"
+    status = _git(root, "status", "--short", "--untracked-files=all", "--", ".", scratch_exclude)
     index_path = output / ".candidate-index"
     git_env = os.environ.copy()
     git_env["GIT_INDEX_FILE"] = str(index_path)
     read_tree = _git(root, "read-tree", "HEAD", env=git_env)
-    add = _git(root, "add", "-A", "--", ".", env=git_env)
+    add = _git(root, "add", "-A", "--", ".", scratch_exclude, env=git_env)
     diff = _git(
         root,
         "diff",
@@ -138,6 +140,7 @@ def _git_evidence(root: Path, output: Path) -> dict[str, Any]:
         "HEAD",
         "--",
         ".",
+        scratch_exclude,
         env=git_env,
     )
     index_path.unlink(missing_ok=True)
@@ -201,6 +204,7 @@ def finalize_candidate(
             name
             for name in names
             if name in DELIVERY_SKIP_DIRS
+            or (Path(_directory) == root and name in DELIVERY_SKIP_ROOT_DIRS)
         ],
     )
     after = repository_manifest(snapshot)

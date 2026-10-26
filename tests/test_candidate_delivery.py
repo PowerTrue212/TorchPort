@@ -57,6 +57,31 @@ class CandidateDeliveryTests(unittest.TestCase):
                 result["content_digest"], repository_manifest(snapshot)["content_digest"]
             )
 
+    def test_scratch_is_excluded_from_snapshot_manifest_and_git_diff(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            repo, output = root / "repo", root / "delivery"
+            repo.mkdir()
+            (repo / "run.py").write_text("VALUE = 1\n", "utf-8")
+            (repo / "model.py").write_text("VALUE = 2\n", "utf-8")
+            initialize_git_workspace(repo)
+            scratch = repo / ".scratch"
+            scratch.mkdir()
+            (scratch / "cache.txt").write_text("temporary\n", "utf-8")
+            (repo / "model.py").write_text("VALUE = 3\n", "utf-8")
+
+            result = finalize_candidate(repo, output, required_entry="run.py")
+            snapshot = Path(result["snapshot"])
+            manifest = (output / "candidate-manifest.json").read_text("utf-8")
+            git_status = (output / "git-status.txt").read_text("utf-8")
+            git_diff = (output / "candidate.diff").read_text("utf-8")
+
+            self.assertFalse((snapshot / ".scratch").exists())
+            self.assertNotIn(".scratch", manifest)
+            self.assertNotIn(".scratch", git_status)
+            self.assertNotIn(".scratch", git_diff)
+            self.assertIn("VALUE = 3", git_diff)
+
     def test_repository_contract_rejects_an_entry_only_delivery(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)

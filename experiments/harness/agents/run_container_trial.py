@@ -47,6 +47,12 @@ def docker_prefix(windows: bool, distro: str) -> list[str]:
     return ["wsl.exe", "-d", distro, "--", "docker"] if windows else ["docker"]
 
 
+def remove_container(docker: list[str], name: str) -> None:
+    result = subprocess.run(docker + ["rm", "-f", name], capture_output=True, text=True)
+    if result.returncode and "No such container" not in result.stderr:
+        raise RuntimeError(result.stderr.strip() or f"无法删除容器：{name}")
+
+
 def run_args(
     image: str, name: str, workspace: str, mounts: list[tuple[str, str, bool]],
     env_names: list[str], command: list[str], *, interactive: bool = False,
@@ -54,7 +60,7 @@ def run_args(
     args = ["run", "--rm", "--name", name, "--network", "host"]
     if interactive:
         args.append("-i")
-    args += ["-v", f"{workspace}:{CONTAINER_WORK}"]
+    args += ["-v", f"{workspace}:{CONTAINER_WORK}", "-v", f"{CONTAINER_WORK}/.scratch"]
     for source, target, read_only in mounts:
         args += ["-v", f"{source}:{target}" + (":ro" if read_only else "")]
     for env in env_names:
@@ -138,6 +144,7 @@ def main() -> None:
         probe.mkdir(exist_ok=True)
         shutil.copy2(HERE / "preflight.py", probe / "preflight.py")
         shutil.copy2(controller / "preflight.json", probe / "preflight.json")
+        remove_container(docker, f"{name}-preflight")
         preflight = subprocess.run(
             docker + run_args(
                 args.image, f"{name}-preflight", workspace,
@@ -169,6 +176,7 @@ def main() -> None:
             ["dsh", "--profile", "headless", "--patch", CONTAINER_PATCH, "--json", "-"],
             interactive=True,
         )
+        remove_container(docker, name)
         runtime["agent_started_at"] = time.time()
         with (args.prompt.open("rb") as stdin,
               (controller / "agent.jsonl").open("wb") as stdout,
@@ -179,18 +187,20 @@ def main() -> None:
                     timeout=float(config["max_wall_seconds"]) + 600,
                 ).returncode
             except subprocess.TimeoutExpired:
-                subprocess.run(docker + ["rm", "-f", name], capture_output=True)
                 agent_exit = -1
         runtime["agent_finished_at"] = time.time()
         runtime["agent_exit"] = agent_exit
     finally:
-        mcp.terminate()
         try:
-            mcp.wait(timeout=30)
-        except subprocess.TimeoutExpired:
-            mcp.kill()
-        runtime["finished_at"] = time.time()
-        _write_json(controller / "container-runtime.json", runtime)
+            remove_container(docker, name)
+        finally:
+            mcp.terminate()
+            try:
+                mcp.wait(timeout=30)
+            except subprocess.TimeoutExpired:
+                mcp.kill()
+            runtime["finished_at"] = time.time()
+            _write_json(controller / "container-runtime.json", runtime)
 
     rules = json.loads((controller / "audit-rules.json").read_text(encoding="utf-8"))
     report = audit_trial.scan(

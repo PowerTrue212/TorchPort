@@ -16,6 +16,10 @@ RUN apt-get update \
 
 RUN npm install -g "@deepseek-ai/dsh@${DSH_VERSION}" && npm cache clean --force
 
+# The trial mounts an anonymous volume at /work/.scratch; Docker initializes it from this
+# image path, so it must already exist and belong to the Agent user (uid 1000).
+RUN mkdir -p /work/.scratch && chown node:node /work/.scratch
+
 # uid 1000 matches the default owner of WSL drvfs mounts, so /work stays writable.
 USER node
 ENV HOME=/home/node \
