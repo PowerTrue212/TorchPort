@@ -58,8 +58,19 @@ def run_args(
     for source, target, read_only in mounts:
         args += ["-v", f"{source}:{target}" + (":ro" if read_only else "")]
     for env in env_names:
-        args += ["-e", env]  # 只传变量名，值由 docker CLI 从自身环境读取，不进命令行
+        # 密钥只传变量名，值由 docker CLI 从自身环境读取；代理等非密钥可写成 NAME=value
+        args += ["-e", env]
     return args + [image, *command]
+
+
+def proxy_env(proxy: str | None) -> list[str]:
+    """容器不继承宿主机代理；显式传入，并让回环地址（MCP）绕过代理。"""
+    if not proxy:
+        return []
+    bypass = "localhost,127.0.0.1,::1"
+    return [f"{name}={proxy}" for name in ("HTTP_PROXY", "HTTPS_PROXY", "http_proxy", "https_proxy")] \
+        + [f"{name}={bypass}" for name in ("NO_PROXY", "no_proxy")] \
+        + ["NODE_USE_ENV_PROXY=1"]  # Node 24 的内置 fetch 默认不读代理变量
 
 
 def _write_json(path: Path, value: Any) -> None:
@@ -86,6 +97,7 @@ def main() -> None:
     parser.add_argument("--prompt", type=Path, required=True)
     parser.add_argument("--image", default="jittor-harness-agent:0.1")
     parser.add_argument("--distro", default="Ubuntu")
+    parser.add_argument("--proxy", help="容器出口代理，如 http://127.0.0.1:7890；两组必须相同")
     parser.add_argument("--skip-agent", action="store_true",
                         help="只做 plant/MCP/preflight，用于联调，不启动 DSH 也不 certify")
     args = parser.parse_args()
@@ -100,7 +112,9 @@ def main() -> None:
     docker = docker_prefix(windows, args.distro)
     name = f"tp-{config['trial_id']}"
     workspace = to_docker_path(candidate, windows)
-    runtime: dict[str, Any] = {"started_at": time.time(), "image": args.image}
+    runtime: dict[str, Any] = {"started_at": time.time(), "image": args.image,
+                               "proxy": args.proxy}
+    proxies = proxy_env(args.proxy)
 
     image_id = subprocess.run(
         docker + ["image", "inspect", "--format", "{{.Id}}", args.image],
@@ -127,7 +141,7 @@ def main() -> None:
         preflight = subprocess.run(
             docker + run_args(
                 args.image, f"{name}-preflight", workspace,
-                [(to_docker_path(probe, windows), "/probe", True)], [],
+                [(to_docker_path(probe, windows), "/probe", True)], proxies,
                 ["python3", "/probe/preflight.py", "--config", "/probe/preflight.json"],
             ),
             capture_output=True, text=True, timeout=600,
@@ -151,7 +165,7 @@ def main() -> None:
             args.image, name, workspace,
             [(to_docker_path(controller / "dsh.patch.yml", windows), CONTAINER_PATCH, True),
              (to_docker_path(sessions, windows), CONTAINER_SESSIONS, False)],
-            ["DEEPSEEK_API_KEY"],
+            ["DEEPSEEK_API_KEY", *proxies],
             ["dsh", "--profile", "headless", "--patch", CONTAINER_PATCH, "--json", "-"],
             interactive=True,
         )

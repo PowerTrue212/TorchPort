@@ -128,7 +128,9 @@ Harness 工具的返回值获得验证信息，看不到验证实现：
   不在另一组工作区放置，否则它会在另一组的 trial 中出现在 `/work` 里。容器隔离下这些目录
   本不可见；金丝雀用于证明这一点并发现挂载配置错误。
 - 编排：`run_container_trial.py` 依次执行 plant → 启动 MCP → 容器内 preflight → 容器内 DSH →
-  停止 MCP → scan → certify，全部原始输出写入控制目录。URL 屏蔽暂不在容器出口拦截，
+  停止 MCP → scan → certify，全部原始输出写入控制目录。容器不继承宿主机代理；需要代理时用
+  `--proxy` 显式传入，回环地址绕过代理，两组必须使用同一代理，代理地址写入
+  `container-runtime.json`。URL 屏蔽暂不在容器出口拦截，
   靠事后审计与相似度检查。
 - 事后审计：`audit_trial.py scan` 扫描 Agent 会话日志中的金丝雀、工作区外路径、禁止路径与
   禁止 URL，并记录模型步数。命中金丝雀或禁止项记 `scope_violation`；只出现工作区外普通路径
