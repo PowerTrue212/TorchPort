@@ -87,7 +87,9 @@ def scan(
     canaries = []
     if record is not None:
         canaries = json.loads(record.read_text(encoding="utf-8"))["canaries"]
-    workspace_key = _norm(str(workspace.resolve()))
+    # 容器内路径（如 /work）在 Windows 控制端不能 resolve，否则会变成 D:\work
+    raw_workspace = workspace.as_posix()
+    workspace_key = _norm(raw_workspace if raw_workspace.startswith("/") else str(workspace.resolve()))
     allowed = [_norm(item) for item in allowed_paths]
     forbidden = [_norm(item) for item in forbidden_paths]
     url_rules = [item.lower() for item in forbidden_urls]

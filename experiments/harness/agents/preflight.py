@@ -12,6 +12,7 @@ import getpass
 import json
 import os
 import platform
+import socket
 import subprocess
 import sys
 import time
@@ -62,19 +63,33 @@ def _probe_url(url: str, timeout: float) -> dict[str, Any]:
         return {"url": url, "reachable": False, "reason": type(exc).__name__}
 
 
+def _probe_tcp(address: str, timeout: float) -> dict[str, Any]:
+    host, _, port = address.rpartition(":")
+    try:
+        with socket.create_connection((host, int(port)), timeout=timeout):
+            return {"address": address, "reachable": True}
+    except OSError as exc:
+        return {"address": address, "reachable": False, "reason": type(exc).__name__}
+
+
 def run(config: dict[str, Any]) -> dict[str, Any]:
     python = config.get("python") or sys.executable
     paths = [_probe_path(item) for item in config.get("forbidden_paths", [])]
     imports = [_probe_import(item, python) for item in config.get("forbidden_imports", ["torchport"])]
     timeout = float(config.get("url_timeout", 10))
     urls = [_probe_url(item, timeout) for item in config.get("forbidden_urls", [])]
+    # 出口暂不拦截的 URL 只记录可达性，不阻止启动；靠事后审计
+    advisory = [_probe_url(item, timeout) for item in config.get("advisory_urls", [])]
     # 公开网络必须可用：协议保留网页与代码检索
     required = [_probe_url(item, timeout) for item in config.get("required_urls", [])]
+    # MCP 服务要求 token，HTTP 探测会得到 401，这里只确认 TCP 可连
+    tcp = [_probe_tcp(item, timeout) for item in config.get("required_tcp", [])]
     failures = (
         [f"path:{item['path']}" for item in paths if item["readable"]]
         + [f"import:{item['module']}" for item in imports if item["importable"]]
         + [f"url:{item['url']}" for item in urls if item["reachable"]]
         + [f"required_url_unreachable:{item['url']}" for item in required if not item["reachable"]]
+        + [f"required_tcp_unreachable:{item['address']}" for item in tcp if not item["reachable"]]
     )
     workspace = config.get("workspace")
     writable = None
@@ -99,7 +114,9 @@ def run(config: dict[str, Any]) -> dict[str, Any]:
         "paths": paths,
         "imports": imports,
         "urls": urls,
+        "advisory_urls": advisory,
         "required_urls": required,
+        "required_tcp": tcp,
         "passed": not failures,
         "failures": failures,
     }

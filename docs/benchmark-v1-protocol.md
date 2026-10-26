@@ -111,16 +111,25 @@ Harness 工具的返回值获得验证信息，看不到验证实现：
 
 实现约定（2026-10-26）：
 
-- 运行身份：Agent 进程使用专用操作系统账户；控制端仓库、控制目录、oracle、另一组工作区
-  对该账户设拒绝读权限。远端 GPU 不向 Agent 开放 SSH，GPU 执行只经 Harness `run`/`verify`。
-  账户和 ACL 属于宿主机配置，由实验负责人确认后建立。
+- 运行身份：每个 trial 在一个新的 Docker 容器中运行 Agent（`docker run --rm`），镜像由
+  `experiments/harness/agents/container/Dockerfile` 构建，只含 node、DSH 和不带 torchport 的
+  Python。容器只挂载本组 candidate 到中性路径 `/work`（可写）和本 trial 的 DSH patch（只读）；
+  控制端仓库、控制目录、oracle、另一组工作区和宿主机凭据不挂载。两组使用同一路径 `/work`，
+  路径不暴露组别。DSH 主目录在容器内新建，不继承宿主机会话与记忆。镜像摘要写入 attestation。
+  远端 GPU 不向 Agent 开放 SSH，GPU 执行只经 Harness `run`/`verify`。参考宿主机为 WSL2
+  中的 docker.io（`--network host`）；Linux 服务器用法相同。
 - MCP：控制端账户用 `mcp_server.py --http 127.0.0.1:<port> --token-file <控制端文件>` 单独启动
-  服务，Agent 通过 DSH 的 `streamable-http` 连接。服务只监听回环地址，每个 trial 一个端口和
-  token；Agent 侧不运行也不可读 Harness 源码。stdio 方式只用于本机自测。
-- 启动前探针：`preflight.py` 以 Agent 账户运行，试读禁止路径、试 `import torchport`、试连
-  禁止 URL，任一成功即不启动 trial；输出原样存入控制目录，作为 attestation 的依据。
-- 金丝雀：`audit_trial.py plant` 在控制目录、oracle 目录和另一组工作区放置唯一标记文件，
-  标记只记在控制端。
+  服务，容器以 host 网络经回环地址连接（DSH `streamable-http`）。每个 trial 一个端口和 token；
+  容器内不运行也不可读 Harness 源码。stdio 方式只用于本机自测。
+- 启动前探针：`preflight.py` 在同一镜像、同一挂载的容器内运行，试读宿主机路径、试
+  `import torchport`、试连禁止 URL、确认 `/work` 可写，任一越界成功即不启动 trial；输出原样存入
+  控制目录，作为 attestation 的依据。探针配置只临时挂载，不留在 `/work`。
+- 金丝雀：`audit_trial.py plant` 在控制目录和 oracle 目录放置唯一标记文件，标记只记在控制端。
+  不在另一组工作区放置，否则它会在另一组的 trial 中出现在 `/work` 里。容器隔离下这些目录
+  本不可见；金丝雀用于证明这一点并发现挂载配置错误。
+- 编排：`run_container_trial.py` 依次执行 plant → 启动 MCP → 容器内 preflight → 容器内 DSH →
+  停止 MCP → scan → certify，全部原始输出写入控制目录。URL 屏蔽暂不在容器出口拦截，
+  靠事后审计与相似度检查。
 - 事后审计：`audit_trial.py scan` 扫描 Agent 会话日志中的金丝雀、工作区外路径、禁止路径与
   禁止 URL，并记录模型步数。命中金丝雀或禁止项记 `scope_violation`；只出现工作区外普通路径
   （如解释器、系统目录）时列出，人工复核。

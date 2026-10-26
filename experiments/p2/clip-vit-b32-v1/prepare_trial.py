@@ -1,13 +1,14 @@
 """Prepare controller-only files for one CLIP pilot condition.
 
 Writes, outside the candidate workspace:
-- mcp-trial.json, task.json      gateway config and TaskSpec (controller account only)
+- mcp-trial.json, task.json      gateway config and TaskSpec (controller only)
 - mcp-token.txt                  bearer token for the HTTP MCP service
-- dsh.patch.yml                  DSH overlay: workspace-write + streamable-http MCP
-- preflight.json                 probe config, run as the Agent account before start
+- dsh.patch.yml                  DSH overlay mounted read-only into the container
+- preflight.json                 probe config, run inside the Agent container before start
 - audit-rules.json               rules for audit_trial.py scan after the session
+- container-trial.json           MCP port and container workspace path
 
-It does not start an Agent, create OS accounts, or change ACLs.
+It does not start an Agent; run_container_trial.py does.
 """
 
 from __future__ import annotations
@@ -100,11 +101,12 @@ def main() -> None:
     def quote(value: object) -> str:
         return json.dumps(str(value), ensure_ascii=False)
 
+    # 容器内 candidate 固定挂到 /work，两组同一路径，不暴露组别
     (controller / "dsh.patch.yml").write_text(
         "- id: sandbox-policy\n"
         "  config:\n"
         "    mode: workspace-write\n"
-        f"    workspaceRoot: {quote(candidate)}\n"
+        "    workspaceRoot: \"/work\"\n"
         "- insert:\n"
         "    - id: mcp-migration-check\n"
         "      name: '@deepseek-ai/dsh-mcp-client'\n"
@@ -120,25 +122,31 @@ def main() -> None:
     )
 
     home = Path.home()
-    forbidden_paths = [
+    # 宿主机路径：出现在 Agent 日志里即越界
+    host_paths = [
         str(ROOT), str(CLIP), str(BENCH / "controller"), str(BENCH / "source"),
         str(BENCH / "assets"), str(BENCH / "workspaces" / other),
         str(home / ".tp_ssh.env"), str(home / ".claude"), str(home / ".codex"),
         str(home / ".dsh" / "sessions"),
     ]
+    # 容器内能看到宿主机文件系统的路径（WSL drvfs 与 Linux 宿主常见挂载点）
+    container_paths = ["/mnt/c", "/mnt/d", "/mnt/e", "/mnt/wsl", "/root", "/host"]
     write_json(controller / "preflight.json", {
-        "workspace": str(candidate),
-        "forbidden_paths": forbidden_paths,
-        "forbidden_imports": ["torchport", "experiments.harness"],
-        "forbidden_urls": FORBIDDEN_URLS,
+        "workspace": "/work",
+        "forbidden_paths": container_paths,
+        "forbidden_imports": ["torchport", "experiments.harness", "jittor_harness"],
+        # 出口暂不拦截 URL，只记录可达性
+        "advisory_urls": FORBIDDEN_URLS,
         "required_urls": REQUIRED_URLS,
+        "required_tcp": [f"127.0.0.1:{args.port}"],
     })
     write_json(controller / "audit-rules.json", {
-        "forbidden_paths": forbidden_paths,
+        "forbidden_paths": host_paths + ["/mnt/c/", "/mnt/d/", "/mnt/e/"],
         "forbidden_urls": URL_RULES,
-        "allowed_paths": [],
+        "allowed_paths": ["/usr/", "/home/node/", "/tmp/", "/proc/", "/etc/"],
         "max_steps": 200,
     })
+    write_json(controller / "container-trial.json", {"port": args.port, "workspace": "/work"})
     print(json.dumps({
         "controller": str(controller), "candidate": str(candidate),
         "feedback": config["feedback"], "mcp_url": f"http://127.0.0.1:{args.port}/mcp",
