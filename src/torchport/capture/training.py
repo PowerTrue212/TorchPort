@@ -102,6 +102,51 @@ def _scalar(value: Any, kind: str) -> np.ndarray:
     return array.reshape(1)
 
 
+_HASH_CACHE: dict[tuple[int, int], tuple[np.ndarray, np.ndarray]] = {}
+
+
+def update_sketch(update: np.ndarray, dim: int) -> np.ndarray:
+    """更新量的 CountSketch：元素数 ≤ dim 原样保存，否则按固定哈希与符号压到 dim 个桶。
+
+    哈希只由 (元素数, dim) 决定，两端和三条参考路径用同一投影；投影线性，
+    sketch(a) - sketch(b) = sketch(a - b)，任何非零偏差几乎必然落到某个桶上。
+    """
+    flat = np.asarray(update, dtype=np.float64).reshape(-1)
+    if flat.size <= dim:
+        return flat
+    key = (flat.size, dim)
+    if key not in _HASH_CACHE:
+        rng = np.random.default_rng([flat.size, dim])
+        _HASH_CACHE[key] = (
+            rng.integers(0, dim, flat.size),
+            rng.choice(np.asarray([-1.0, 1.0]), flat.size),
+        )
+    bucket, sign = _HASH_CACHE[key]
+    return np.bincount(bucket, weights=sign * flat, minlength=dim)
+
+
+def _update_stats(update: np.ndarray) -> np.ndarray:
+    flat = np.asarray(update, dtype=np.float64).reshape(-1)
+    if not flat.size:
+        return np.zeros(3)
+    return np.asarray([np.sqrt(np.square(flat).sum()), np.abs(flat).max(), flat.sum()])
+
+
+def _grad_norm(trainable: dict[str, Any], kind: str) -> float | None:
+    """source 侧全局梯度范数，只作覆盖事实（如裁剪是否触发），不参与比较。"""
+    if kind != "source":
+        return None
+    total = 0.0
+    found = False
+    for param in trainable.values():
+        grad = getattr(param, "grad", None)
+        if grad is None:
+            continue
+        found = True
+        total += float(grad.detach().double().square().sum().cpu())
+    return float(np.sqrt(total)) if found else None
+
+
 def run_steps(
     model: Any,
     kind: str,
@@ -126,12 +171,27 @@ def run_steps(
         observed = {name: trainable[name] for name in requested}
     else:
         observed = trainable
+    sketch_dim = train.get("sketch_dim")
+    # sketch 模式比较相对初始状态的更新量；初值在 host 上以 fp64 保存，不依赖 candidate 代码
+    initial = (
+        {name: np.asarray(_to_numpy(param, kind), dtype=np.float64) for name, param in trainable.items()}
+        if sketch_dim else {}
+    )
     step = _callable(scope, train["step"])
     outputs: dict[str, np.ndarray] = {}
     lrs: list[float] = []
+    grad_norms: list[float | None] = []
     for index, (args, kwargs) in enumerate(_batches(arrays, specs, steps, kind, device, dtype)):
         lrs.append(_lr(optimizer))
         outputs[f"output.loss.{index}"] = _scalar(step(model, state, *args, **kwargs), kind)
+        if kind == "source":
+            grad_norms.append(_grad_norm(trainable, kind))
+        if sketch_dim:
+            for name, param in trainable.items():
+                update = np.asarray(_to_numpy(param, kind), dtype=np.float64) - initial[name]
+                outputs[f"output.update.{index}.{name}"] = update_sketch(update, sketch_dim)
+                outputs[f"output.ustat.{index}.{name}"] = _update_stats(update)
+            continue
         for name, param in observed.items():
             outputs[f"output.param.{index}.{name}"] = _to_numpy(param, kind)
     info = {
@@ -143,6 +203,14 @@ def run_steps(
     if requested is not None:
         info["observed"] = list(observed)
         info["observed_elements"] = int(sum(np.prod(tuple(p.shape)) for p in observed.values()))
+    if sketch_dim:
+        info["sketch_dim"] = sketch_dim
+    if kind == "source":
+        # 覆盖事实：只记录，不参与比较；报告据此列出未执行的分支
+        info["coverage"] = {
+            "lr_changed": len(set(lrs)) > 1,
+            "grad_norms": grad_norms,
+        }
     return outputs, info
 
 

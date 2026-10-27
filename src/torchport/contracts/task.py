@@ -85,6 +85,14 @@ def _train_protocol(protocol: dict[str, Any], inputs: list[Any]) -> None:
         ):
             raise ValueError("protocol.train.observe 必须是非空且无重复的参数名列表")
         normalized["observe"] = observed
+    if "sketch_dim" in train:
+        # 全参数更新量的 CountSketch 维度；与 observe 二选一
+        dim = train["sketch_dim"]
+        if isinstance(dim, bool) or not isinstance(dim, int) or dim < 1:
+            raise ValueError("protocol.train.sketch_dim 必须是正整数")
+        if "observe" in normalized:
+            raise ValueError("protocol.train.sketch_dim 与 observe 不能同时使用")
+        normalized["sketch_dim"] = dim
     protocol["train"] = normalized
 
 

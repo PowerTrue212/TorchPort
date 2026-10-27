@@ -284,7 +284,7 @@ JTorch 和转换器没有 Token 和工具调用，N=K=0，按实际值代入。
 
 RL 的训练等价使用固定 rollout buffer 上的 N 次 PPO update。
 
-训练 sketch（v2，方案已定，待实现）：
+训练 sketch（v2，2026-10-27 实现于 `capture/training.py`，由 `protocol.train.sketch_dim` 启用）：
 
 - 比较对象：每步完整记录 loss 与学习率。对每个可训练参数 p，在 host 上用 fp64 计算更新量
   `u_{p,t} = θ_{p,t} − θ_{p,0}`，记录 (a) 整张量的精确统计：L2 范数、max_abs、元素和；(b) 元素数
@@ -292,15 +292,17 @@ RL 的训练等价使用固定 rollout buffer 上的 N 次 PPO update。
   `protocol.train.sketch_dim` 并进入 task digest。
 - 判定：fp64、alt 两条参考路径记录同样的量，沿用 `err(target, fp64) ≤ k·max(err(source, fp64),
   err(source, alt)) + floor` 逐项判定。sketch 是线性的，任何非零的更新偏差几乎必然落到某个桶上；
-  稀疏偏差在桶内会被约 √(n/B) 倍的噪声稀释，由整张量 max_abs 补足。sketch 由 Harness 在两端
-  用同一份 numpy 代码计算，candidate 不能影响。
+  稀疏偏差在桶内会被约 √(n/B) 倍的噪声稀释；整张量的 L2/max/sum 只是更新量本身的统计，
+  不能定位或放大稀疏偏差，灵敏度由 B 调节，并在误判率校准时一并测量。sketch 由 Harness 在两端
+  用同一份 numpy 代码计算，candidate 不能影响。`sketch_dim` 与 `observe` 不能同时使用。
 - 覆盖全部可训练参数，不需要人为挑选观察清单。`protocol.train.observe` 只保留给已完成的 SimCSE
   无监督 preflight，新任务不使用。
 - 存储：BERT-base 每步每条路径约 10 MB；20 步三条参考路径约 0.6 GB，每次 target 运行约 0.2 GB。
 - 未执行分支：source 冻结运行自动记录每步学习率是否变化、全局梯度范数等事实，写入 oracle。
   固定 batch 和步数内没有执行到的分支（warmup 后段、梯度裁剪未触发等）在报告中列为“未覆盖”，
   不声称已检验。
-- 递增 `CAPTURE_VERSION`，旧训练 oracle 失效；LoRA 历史校准记录保持原判定。
+- 不递增全局 `CAPTURE_VERSION`：未设 `sketch_dim` 的任务采集语义不变；设了的任务因该字段进入
+  task digest 而自动使用新 oracle。这样 CLIP 等推理 oracle 不必重建。LoRA 历史校准记录保持原判定。
 
 负对照（方法层面，不按仓库逐个做）：在源端施加与仓库无关的变异，把变异后的源端运行当作候选
 与原 oracle 比较，统计 GATE 的漏检率，不需要人工编写正确的 Jittor 实现。变异只依赖训练契约：
