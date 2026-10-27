@@ -156,3 +156,25 @@ absent, as intended for the Agent task.
 
 The current `none-r0` and `full-r0` remain inference-only pilots. Their
 scores and validity are recorded in [pilot-r0-comparison.md](pilot-r0-comparison.md).
+
+## Supervised training oracle v2 (2026-10-27)
+
+TaskSpec `controller/prep/task-train-sup-v2.json`, digest
+`ca1314b00d197ef04fffa7561b3c28545079847de22dbc6f6666dffe7bb82ab4`. The V100 oracle is
+`/root/SimCSE-Benchmark-v1/harness/7c33664c7ec5/evidence/oracle/ee6524fb32ad16de` (921 MB).
+The untouched seed failed with its intended `NotImplementedError` (`RUN_FAILED`); this
+does not measure Jittor correctness.
+
+- Two source runs were bitwise stable. Checkpoint 199/199 loaded;
+  `bert.embeddings.position_ids` is recorded as ignored.
+- 16 steps, 199 trainable parameters, `sketch_dim=16384`, 6384 outputs, all calibrated.
+- Learning rate decays linearly from 5e-5 to 3.125e-6 (`lr_changed=true`).
+- Losses stay informative across all 16 steps (1.37, 1.11, 0.38, 1.17, ..., 0.59).
+  Steps 0 and 1 equal the v1 probe; later steps differ because of the schedule.
+- Source global gradient norms range from 12.6 to 86.6.
+- The alternate FP32 path is bitwise equal to the main path at every step (BERT has no
+  cuDNN convolution choice). The noise envelope therefore comes from the FP64 distance only.
+- Maximum update-sketch FP64 distance grows from 9.27e-5 at step 0 to 2.23e-4 at step 15
+  (2.4x); the update scale grows from 2.85e-3 to 9.66e-3. The step-0 value is close to
+  2·lr, which matches one Adam sign flip of a near-zero-gradient element.
+- Not covered: gradient clipping (none in the source entry).
