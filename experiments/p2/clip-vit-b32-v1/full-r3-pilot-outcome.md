@@ -18,6 +18,27 @@
 （`tau=0.01`）。两端 top-1 差为 0，按冻结 `tau` 计算 `P_t=100`。
 本次未给出正式 `B_l` 或 `E_m` 分数。
 
+## 探索性 B_l（事后计算，不是预注册分数）
+
+full 组两次 `trace` 的远端原始数组（约 18 GB）用
+[score_full_r3_layers.py](score_full_r3_layers.py) 计算：151 个拥有参数的模块，
+其中 24 个（文本塔 `attn.out_proj`）源端 trace 没有单独输出，不计分母，剩 127 个；
+容差 `a=1e-6, r=1e-5`。
+
+| 轨迹 | 得分 | `d>1` 点数 | 最差模块 |
+| --- | ---: | ---: | --- |
+| 自然轨迹 | 37.90 | 100 | `visual.transformer.resblocks.10.ln_2`（d=160.6） |
+| 隔离执行 | 80.12 | 4 | `model.visual`（d=4.28） |
+
+自然轨迹的低分主要来自上游误差累积到 LayerNorm 后被放大；隔离执行只有 4 点超限，
+最终输出仍通过 `verify`。none-r3 没有调用 `trace`，没有可比数组，因此不能比较两组的 B_l。
+
+逐模块结果与原始数组摘要保存在控制目录 `archive-small/`：
+`clip-full-r3-layer-natural.json`、`clip-full-r3-layer-isolated.json`、
+`clip-full-r3-npz.sha256`（13 个 NPZ 的 SHA-256）、`clip-full-r3-small.tgz`
+（13 个 JSON/日志，SHA-256 `8c857131…`）。远端 18 GB 原始 NPZ 在核对后删除；
+需要逐字节复原时，用冻结快照 `trial/delivery/repository` 重新执行 trace。
+
 ## 审计与效力
 
 运行进程在审计脚本修复前导入了旧代码。原 `audit.json` 把文本中的
