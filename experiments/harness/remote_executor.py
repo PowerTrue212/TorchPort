@@ -55,7 +55,13 @@ class RemoteExecutor:
             system_libstdcxx=str(remote.get("system_libstdcxx", settings.system_libstdcxx)),
             target_path=str(remote.get("target_path") or settings.target_path),
             target_env_defaults=defaults,
-            extra_roots=(*settings.extra_roots, candidate_root.resolve(), evidence_dir.parent.resolve()),
+            # remote.extra_roots：TaskSpec 引用的冻结材料（源仓库、输入、权重）所在目录，由控制端
+            # 配置显式声明，不依赖启动进程恰好设置了 TP_EXTRA_ROOTS
+            extra_roots=(
+                *settings.extra_roots,
+                *(Path(item).resolve() for item in remote.get("extra_roots") or []),
+                candidate_root.resolve(), evidence_dir.parent.resolve(),
+            ),
         )
         self.evidence_dir = evidence_dir
         self.evidence_dir.mkdir(parents=True, exist_ok=True)

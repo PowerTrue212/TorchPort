@@ -109,6 +109,8 @@ def main() -> None:
             "home": "/root/SimCSE-Benchmark-v1/home",
             "target_path": "/usr/local/cuda/bin:/root/data-fs/APT/.venv-jittor/bin:"
                            "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+            # TaskSpec 的源仓库、冻结输入和初始状态都在 BENCH 下；同步打包需显式放行
+            "extra_roots": [str(BENCH)],
         },
     }
     write_json(controller / "mcp-trial.json", config)

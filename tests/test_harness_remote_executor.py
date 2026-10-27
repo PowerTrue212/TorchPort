@@ -56,5 +56,14 @@ class RemoteExecutorTests(unittest.TestCase):
         self.assertEqual(raw["stderr"], "private stderr")
 
 
+def test_remote_extra_roots_are_allowed(tmp_path, monkeypatch) -> None:
+    monkeypatch.setenv("TP_SSH_ENV_FILE", str(tmp_path / "absent.env"))
+    project = Path(__file__).resolve().parents[1]
+    bench = tmp_path / "bench"
+    executor = RemoteExecutor(project, tmp_path / "trial" / "remote-raw", tmp_path / "cand",
+                              {"extra_roots": [str(bench)]})
+    assert bench.resolve() in executor.settings.extra_roots
+
+
 if __name__ == "__main__":
     unittest.main()
