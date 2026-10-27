@@ -38,7 +38,12 @@ def main() -> None:
     parser.add_argument("--dataset", type=Path, required=True)
     parser.add_argument("--tokenizer-dir", type=Path, required=True)
     parser.add_argument("--output-dir", type=Path, required=True)
+    # v1 冻结时为 3 步；训练 GATE v2 用 16 步，每步取不同的 8 行
+    parser.add_argument("--steps", type=int, default=STEPS)
     args = parser.parse_args()
+    steps = args.steps
+    if steps < 1:
+        raise ValueError("--steps must be positive")
     if sha256(args.dataset) != DATASET_SHA256:
         raise ValueError("NLI file differs from the pinned public dataset")
     if sha256(args.tokenizer_dir / "vocab.txt") != VOCAB_SHA256:
@@ -50,19 +55,19 @@ def main() -> None:
         if tuple(reader.fieldnames or ()) != COLUMNS:
             raise ValueError(f"Unexpected NLI header: {reader.fieldnames}")
         for index, row in enumerate(reader):
-            if index >= STEPS * BATCH:
+            if index >= steps * BATCH:
                 break
             if any(not row[column].strip() for column in COLUMNS):
                 raise ValueError(f"Selected NLI row {index} has an empty field")
             rows.append(row)
-    if len(rows) != STEPS * BATCH:
+    if len(rows) != steps * BATCH:
         raise ValueError("NLI file has fewer rows than required")
 
     tokenizer = AutoTokenizer.from_pretrained(str(args.tokenizer_dir), use_fast=True,
                                               local_files_only=True)
     # 固定形状：所有句子补到 MAX_LENGTH；官方 collator 补到 batch 内最长，
     # 被补位置由 attention_mask 屏蔽，CLS 输出只差浮点舍入
-    arrays = {name: np.zeros((STEPS, BATCH, len(COLUMNS), MAX_LENGTH), dtype=np.int64)
+    arrays = {name: np.zeros((steps, BATCH, len(COLUMNS), MAX_LENGTH), dtype=np.int64)
               for name in NAMES}
     truncated = 0
     for slot, column in enumerate(COLUMNS):
@@ -73,7 +78,7 @@ def main() -> None:
                             padding="max_length", return_tensors="np")
         for name in NAMES:
             value = np.asarray(encoded[name], dtype=np.int64)
-            arrays[name][:, :, slot, :] = value.reshape(STEPS, BATCH, MAX_LENGTH)
+            arrays[name][:, :, slot, :] = value.reshape(steps, BATCH, MAX_LENGTH)
 
     args.output_dir.mkdir(parents=True, exist_ok=False)
     files = {}
@@ -86,7 +91,7 @@ def main() -> None:
         "schema_version": 1,
         "source_dataset_sha256": DATASET_SHA256,
         "tokenizer_vocab_sha256": VOCAB_SHA256,
-        "row_indices_zero_based": list(range(STEPS * BATCH)),
+        "row_indices_zero_based": list(range(steps * BATCH)),
         "step_rule": f"step i uses data rows [{BATCH}*i, {BATCH}*(i+1))",
         "columns": list(COLUMNS),
         "row_sha256": [hashlib.sha256("\t".join(row[c] for c in COLUMNS).encode("utf-8"))
