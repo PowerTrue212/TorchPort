@@ -13,7 +13,12 @@ in `run.py`. Keep their names and signatures.
 - `build_optimizer(model)` returns the object that `train_step` receives as
   `state`. Use AdamW with learning rate 5e-5, betas (0.9, 0.999), epsilon 1e-8,
   and weight decay 0 over all model parameters. Apply the upstream linear decay
-  without warmup over 16 total steps.
+  without warmup over 16 total steps. Return either the optimizer or a tuple
+  `(optimizer, scheduler, ...)`. The optimizer must expose `param_groups`: each
+  group lists its `params`, and the learning rate for the next step is in
+  `param_groups[0]["lr"]` or `optimizer.lr`. The evaluator reads the trainable
+  parameters and the learning rate before every step from that object.
+  Jittor's `jt.optim.AdamW` meets this interface.
 - `train_step(model, state, input_ids, attention_mask, token_type_ids)` runs one
   full update and returns the scalar loss. Each input has shape `[8, 3, 32]`:
   8 NLI triplets of premise, entailment, and contradiction. Follow the upstream
