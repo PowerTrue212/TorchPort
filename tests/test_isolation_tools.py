@@ -141,5 +141,31 @@ class AuditTests(unittest.TestCase):
             self.assertTrue(report["scope_violation"])
 
 
+class RequiredUrlRetryTests(unittest.TestCase):
+    def test_required_url_retries_transient_failure(self) -> None:
+        from unittest.mock import patch
+
+        from experiments.harness.agents import preflight
+
+        replies = iter([{"url": "u", "reachable": False, "reason": "URLError"},
+                        {"url": "u", "reachable": True, "status": 200}])
+        with patch.object(preflight, "_probe_url", side_effect=lambda *_: next(replies)):
+            result = preflight._probe_required("u", 1.0, 3)
+        self.assertTrue(result["reachable"])
+        self.assertEqual(result["attempts"], 2)
+        self.assertEqual(result["failed_attempts"], ["URLError"])
+
+    def test_required_url_fails_after_all_attempts(self) -> None:
+        from unittest.mock import patch
+
+        from experiments.harness.agents import preflight
+
+        with patch.object(preflight, "_probe_url",
+                          return_value={"url": "u", "reachable": False, "reason": "URLError"}):
+            result = preflight._probe_required("u", 1.0, 3)
+        self.assertFalse(result["reachable"])
+        self.assertEqual(result["attempts"], 3)
+
+
 if __name__ == "__main__":
     unittest.main()

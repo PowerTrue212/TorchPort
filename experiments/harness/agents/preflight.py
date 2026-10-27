@@ -63,6 +63,17 @@ def _probe_url(url: str, timeout: float) -> dict[str, Any]:
         return {"url": url, "reachable": False, "reason": type(exc).__name__}
 
 
+def _probe_required(url: str, timeout: float, attempts: int) -> dict[str, Any]:
+    tries = []
+    for _ in range(attempts):
+        result = _probe_url(url, timeout)
+        tries.append(result)
+        if result["reachable"]:
+            break
+    return {**tries[-1], "attempts": len(tries),
+            "failed_attempts": [item.get("reason") or item.get("status") for item in tries[:-1]]}
+
+
 def _probe_tcp(address: str, timeout: float) -> dict[str, Any]:
     host, _, port = address.rpartition(":")
     try:
@@ -80,8 +91,11 @@ def run(config: dict[str, Any]) -> dict[str, Any]:
     urls = [_probe_url(item, timeout) for item in config.get("forbidden_urls", [])]
     # 出口暂不拦截的 URL 只记录可达性，不阻止启动；靠事后审计
     advisory = [_probe_url(item, timeout) for item in config.get("advisory_urls", [])]
-    # 公开网络必须可用：协议保留网页与代码检索
-    required = [_probe_url(item, timeout) for item in config.get("required_urls", [])]
+    # 公开网络必须可用：协议保留网页与代码检索。代理偶有超过超时的慢请求，
+    # 必需 URL 重试几次再判不可达；禁止 URL 不重试（一次可达就足以说明越界）
+    attempts = max(1, int(config.get("required_url_attempts", 3)))
+    required = [_probe_required(item, timeout, attempts)
+                for item in config.get("required_urls", [])]
     # MCP 服务要求 token，HTTP 探测会得到 401，这里只确认 TCP 可连
     tcp = [_probe_tcp(item, timeout) for item in config.get("required_tcp", [])]
     failures = (
