@@ -58,6 +58,8 @@ def run_side(
         "module_oracle": str(module_oracle) if module_oracle else None,
         "performance": performance,
         "variant": variant,
+        # 两端用同一份可推导 buffer 排除清单，完整性检查才对称
+        "ignore_state": list(task["protocol"].get("ignore_state") or []),
     }
     write_json(run_dir / "job.json", job)
     record = execute(

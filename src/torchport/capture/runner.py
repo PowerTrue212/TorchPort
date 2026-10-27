@@ -193,31 +193,32 @@ def capture(job: dict[str, Any]) -> dict[str, Any]:
         model.cuda()
 
     oracle = Path(job["oracle"]) if job.get("oracle") else None
+    ignore = tuple(job.get("ignore_state") or ())
     state_path = out / "state.npz"
     if kind == "source":
         if oracle is not None:
             with np.load(oracle / "inputs.npz", allow_pickle=False) as archive:
                 arrays = {name: np.asarray(archive[name]) for name in archive.files}
             state_path = oracle / "state.npz"
-            state = load_state(model, state_path, kind="source")
+            state = load_state(model, state_path, kind="source", ignore=ignore)
             oracle_meta = read_json(oracle / "oracle.json")
             checkpoint = (oracle_meta.get("capture") or {}).get("checkpoint")
         else:
             weights = job.get("weights")
             checkpoint = (
-                load_checkpoint(model, Path(weights))
+                load_checkpoint(model, Path(weights), ignore)
                 if weights
                 else {"requested": False, "complete": True}
             )
             arrays = make_data(job["inputs"], job["seed"])
-            total = save_state(model, state_path)
+            total = save_state(model, state_path, ignore)
             state = {"total": total, "loaded": total, "missing": [], "value_mismatch": []}
     else:
         if oracle is None:
             raise ValueError("target 端缺少 oracle")
         with np.load(oracle / "inputs.npz", allow_pickle=False) as archive:
             arrays = {name: np.asarray(archive[name]) for name in archive.files}
-        state = load_state(model, oracle / "state.npz")
+        state = load_state(model, oracle / "state.npz", ignore=ignore)
         checkpoint = None
 
     if job.get("train"):

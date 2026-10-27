@@ -226,8 +226,11 @@ def load_model(scope: dict[str, Any], name: str, kind: str, args: list, kwargs: 
 # ---------- 权重 ----------
 
 
-def _portable(name: str) -> bool:
-    return not name.endswith(SKIP_KEYS)
+def _portable(name: str, ignore: tuple[str, ...] = ()) -> bool:
+    """ignore 来自 protocol.ignore_state：按完整名或点分后缀匹配，两端使用同一清单。"""
+    if name.endswith(SKIP_KEYS):
+        return False
+    return not any(name == rule or name.endswith("." + rule) for rule in ignore)
 
 
 def _state(value: Any) -> dict[str, Any]:
@@ -258,7 +261,7 @@ def _matched(weights: dict[str, Any], target: dict[str, Any]) -> dict[str, Any]:
     return matched
 
 
-def load_checkpoint(model: Any, path: Path) -> dict[str, Any]:
+def load_checkpoint(model: Any, path: Path, ignore: tuple[str, ...] = ()) -> dict[str, Any]:
     import torch
 
     if not path.is_file():
@@ -285,15 +288,16 @@ def load_checkpoint(model: Any, path: Path) -> dict[str, Any]:
     if not loaded:
         raise ValueError(f"检查点没有可加载的模型权重：{path}")
     model.load_state_dict(loaded, strict=False)
-    missing = sorted(n for n in set(target) - set(loaded) if _portable(n))
+    missing = sorted(n for n in set(target) - set(loaded) if _portable(n, ignore))
     return {
         "requested": True,
         "path": str(path),
         "sha256": file_hash(path),
-        "loaded": sum(_portable(n) for n in loaded),
-        "total": sum(_portable(n) for n in target),
+        "loaded": sum(_portable(n, ignore) for n in loaded),
+        "total": sum(_portable(n, ignore) for n in target),
         "missing": missing,
-        "unexpected": sorted(n for n in set(selected) - set(loaded) if _portable(n)),
+        "unexpected": sorted(n for n in set(selected) - set(loaded) if _portable(n, ignore)),
+        "ignored": sorted(n for n in target if _portable(n) and not _portable(n, ignore)),
         "complete": not missing,
     }
 
@@ -307,7 +311,9 @@ def _storage_key(item: Any) -> tuple | None:
     return ("var", id(item))
 
 
-def unique_state(model: Any) -> tuple[dict[str, Any], dict[str, str]]:
+def unique_state(
+    model: Any, ignore: tuple[str, ...] = ()
+) -> tuple[dict[str, Any], dict[str, str]]:
     """可移植状态按存储去重：同一张量只保留首次出现的名字，其余名字记为别名。
 
     绑定权重（如 GPT-2 的 lm_head 与 wte）在 PyTorch 中列两次、在 Jittor 中列一次；
@@ -317,7 +323,7 @@ def unique_state(model: Any) -> tuple[dict[str, Any], dict[str, str]]:
     aliases: dict[str, str] = {}
     owners: dict[tuple, str] = {}
     for name, item in model.state_dict().items():
-        if not _portable(name):
+        if not _portable(name, ignore):
             continue
         key = _storage_key(item)
         if key is not None and key in owners:
@@ -329,17 +335,19 @@ def unique_state(model: Any) -> tuple[dict[str, Any], dict[str, str]]:
     return unique, aliases
 
 
-def save_state(model: Any, path: Path) -> int:
-    state, _ = unique_state(model)
+def save_state(model: Any, path: Path, ignore: tuple[str, ...] = ()) -> int:
+    state, _ = unique_state(model, ignore)
     np.savez(path, **{name: item.detach().cpu().numpy() for name, item in state.items()})
     return len(state)
 
 
-def load_state(model: Any, path: Path, kind: str = "target") -> dict[str, Any]:
+def load_state(
+    model: Any, path: Path, kind: str = "target", ignore: tuple[str, ...] = ()
+) -> dict[str, Any]:
     """加载 oracle 状态并逐参数回读核验形状、dtype 与数值。"""
     with np.load(path, allow_pickle=False) as archive:
-        weights = {n: np.asarray(archive[n]) for n in archive.files if _portable(n)}
-    target, aliases = unique_state(model)
+        weights = {n: np.asarray(archive[n]) for n in archive.files if _portable(n, ignore)}
+    target, aliases = unique_state(model, ignore)
     matched = _matched(weights, target)
     if kind == "source":
         import torch
@@ -357,10 +365,10 @@ def load_state(model: Any, path: Path, kind: str = "target") -> dict[str, Any]:
         if not np.array_equal(np.asarray(_to_numpy(after[name], kind)), value)
     ]
     # target 多出的参数没有 oracle 值，初始化随机，必须进入证据而不是被忽略
-    extra = sorted(n for n in set(target) - set(matched) if _portable(n))
+    extra = sorted(n for n in set(target) - set(matched) if _portable(n, ignore))
     return {
         "total": len(weights),
-        "target_total": sum(_portable(n) for n in target),
+        "target_total": sum(_portable(n, ignore) for n in target),
         "loaded": len(matched) - len(mismatched),
         "missing": sorted(set(weights) - set(matched)),
         "extra": extra,

@@ -1,7 +1,7 @@
 # Benchmark v1：多领域仓库迁移实验协议
 
 状态：草案，2026-10-19；2026-10-26 修订 LLM 仓库（LoRA、nanoGPT 换为 Llama 3.2-1B、
-Qwen2.5-0.5B）。仓库清单、方法和主模型已确认；B 的修订、训练 GATE 的具体参数和
+Qwen2.5-0.5B）；2026-10-27 增加 SimCSE（NLP 第三项，共 12 个仓库）。仓库清单、方法和主模型已确认；B 的修订、训练 GATE 的具体参数和
 各仓库 τ_j 仍待 pilot 后冻结。冻结前不跑正式 trial。
 
 本协议在 [P2 评测协议](p2-evaluation-protocol.md) 的产物、成本和隐藏验收规则之上增加：
@@ -20,6 +20,7 @@ Qwen2.5-0.5B）。仓库清单、方法和主模型已确认；B 的修订、训
 | --- | --- | --- | --- | --- | --- |
 | LLM | meta-llama/llama-models（Llama 3.2-1B 参考实现） | 待核实（JittorLLMs 等） | RoPE scaling、GQA、RMSNorm、SwiGLU、KV cache；LoRA 微调（参数冻结、注入、checkpoint 分离） | 是 | LoRA 微调 |
 | LLM | Qwen2.5-0.5B（`transformers` 的 `modeling_qwen2.py`，只取单模型文件及其最小依赖） | 待核实 | QKV bias、tied embedding、GQA；LoRA 微调同上 | 是 | LoRA 微调 |
+| NLP | princeton-nlp/SimCSE（BERT-base） | soMewheRetoFloat/SimCSE-Jittor | BERT encoder、CLS pooling、InfoNCE（温度、batch 内负样本、困难负样本） | 是 | 有监督对比训练（全参数，部分参数观察） |
 | CV | CamoFormer | 无 | 分割、PVTv2 | 已完成 | 是 |
 | CV | lucidrains/denoising-diffusion-pytorch | alexfanqi/denoising-diffusion-jittor | 噪声调度、采样循环、EMA | 是 | 是 |
 | CV | AllenXiangX/SnowflakeNet（SPD） | AllenXiangX/SPD_jittor（作者官方） | 点云、Chamfer 距离 | 是 | 是 |
@@ -47,6 +48,25 @@ LLM 两项（2026-10-26 修订）：
   Qwen2 建模文件从 `transformers` 剥离后的最小依赖集合；两者是否存在公开 Jittor 人工迁移
   （JittorLLMs 等），存在则列入屏蔽名单。
 
+SimCSE（2026-10-27 纳入）：
+
+- 来源：Gao et al., EMNLP 2021，官方仓库 `princeton-nlp/SimCSE@49fa580a`。与 Llama/Qwen 的
+  decoder + LoRA 不同，覆盖 encoder 结构与全参数对比学习。材料与 r0 推理 pilot 见
+  `experiments/p2/simcse-bert-base-v1/`。
+- 推理：官方发布的 checkpoint，P_t 用 STS-B Spearman，τ 见该目录 `tau.json`。
+- 训练 GATE 用有监督 SimCSE（NLI 三元组：前提、蕴含句为正样本、矛盾句为困难负样本），
+  dropout=0。无监督 SimCSE 的正样本来自同一句的两次 dropout；关闭 dropout 后两个视图相同，
+  第 1 步 loss 已降到 6.0e-5，任务退化，测不到温度、负样本矩阵等语义。已完成的无监督两步
+  源端证据保留为方法学校准，不作为本仓库的训练 GATE。
+- 可推导 buffer：`embeddings.position_ids` 由 transformers 4.26 写入 state_dict，可由形状推出。
+  权重完整性检查对 source 与 target 双方排除此类可推导、非可训练 buffer（排除清单写入
+  TaskSpec）；其余参数仍要求全部加载。r0 的 full 组因缺该项判 199/200，按原规则保留原判定，
+  不与新规则下的结果比较。
+- 训练观察：BERT-base 每步全状态约 438 MB，用 `protocol.train.observe` 只观察部分参数。
+  观察清单冻结在 TaskSpec，至少覆盖首层注意力、末层 LayerNorm、pooler/MLP；需用负对照证明
+  覆盖足够：温度写错、mean/sum 写反、相似度矩阵转置、困难负样本漏加。漏检时扩大观察集。
+- 区分度可能偏低（BERT 的 Jittor 迁移资料多，none-r0 首次即通过）；分析时单独报告。
+
 未选及原因：OpenFold/OpenFold3/OpenVLA/DLRM-1TB/Graphormer-3D 需要 H100 或多卡；
 Graphormer-slim 依赖 fairseq；PyG 版本依赖整个 `torch_geometric`；Audio、时序、推荐没有人工
 Jittor 迁移；RetinaNet 被 SPD 替换。microsoft/LoRA 移出：官方没有 GPT-2 Small 的任务
@@ -69,7 +89,7 @@ checkpoint，E2E 评测链路需自建，P_t 无法定义；其已完成的 GPT-
   （`trace`、`localize`、首次分歧证据），用于回答定位反馈是否有效。
 - Codex-none 代表另一种 Agent 系统（框架与模型一起变化），与 DSH-none 的反馈条件相同。两者的
   差异是“Agent 系统”之间的差异，不能归因于框架或模型中的单一因素。
-- 不做重复：每个 (仓库, 方法) 只跑一次，共 11×3 = 33 次 Agent 迁移和 22 次基线运行。
+- 不做重复：每个 (仓库, 方法) 只跑一次，共 12×3 = 36 次 Agent 迁移和 24 次基线运行。
 - 每格 n=1，方法比较只做跨仓库的配对比较（仓库作区组，符号检验 / Wilcoxon），不对单个
   仓库下方法优劣的结论。
 - JTorch 和转换器在某仓库无法 import 或运行时记 R_e=0，计入统计，不排除该仓库。
@@ -142,7 +162,7 @@ Harness 工具的返回值获得验证信息，看不到验证实现：
 
 ## 答案泄露
 
-公开网络和检索保持可用。对有人工迁移的仓库（目前确认 4 个：diffusion、SPD、DP3、CLIP；
+公开网络和检索保持可用。对有人工迁移的仓库（目前确认 5 个：diffusion、SPD、DP3、CLIP、SimCSE；
 Llama/Qwen 待核实）：
 
 1. 外部适配层屏蔽对应人工迁移仓库的 URL（含 GitHub、镜像和 raw 地址）。
@@ -246,6 +266,10 @@ JTorch 和转换器没有 Token 和工具调用，N=K=0，按实际值代入。
    事先做功效分析，功效不足报告“未判定”。
 
 RL 的训练等价使用固定 rollout buffer 上的 N 次 PPO update。
+
+部分参数观察（`protocol.train.observe`）：全状态过大的仓库可只观察冻结清单中的参数，观察集合
+本身做精确检查；loss 与学习率仍逐步全部比较。使用该字段的仓库必须在报告中写明观察覆盖率
+（观察元素数 / 可训练元素数），并以负对照证明覆盖足够。目前只有 SimCSE 使用。
 
 负对照（证明 GATE 能抓住训练 bug，pilot 中完成）：loss reduction 用 sum 代替 mean、AdamW 写成
 Adam+L2、漏掉 `zero_grad`、梯度裁剪顺序错、调度器差一步、BN momentum 约定不一致。逐项报告

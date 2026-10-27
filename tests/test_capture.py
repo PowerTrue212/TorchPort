@@ -217,6 +217,44 @@ class StateTests(unittest.TestCase):
         self.assertEqual(state["loaded"], 0)
         self.assertEqual(state["missing"], ["w"])
 
+    def _save_with_position_ids(self, root: Path, ignore: tuple[str, ...]) -> Path:
+        path = root / "state.npz"
+        source = Model({
+            "w": Tensor(np.ones((2, 2), dtype=np.float32)),
+            "embeddings.position_ids": Tensor(np.arange(4)[None]),
+        })
+        save_state(source, path, ignore)
+        return path
+
+    def test_ignored_derivable_buffer_is_excluded_on_both_sides(self) -> None:
+        ignore = ("embeddings.position_ids",)
+        with tempfile.TemporaryDirectory() as directory:
+            path = self._save_with_position_ids(Path(directory), ignore)
+            with np.load(path) as archive:
+                self.assertEqual(archive.files, ["w"])
+            target = Model({"w": Tensor(np.zeros((2, 2), dtype=np.float32))})
+            with patch("torchport.capture.model._to_numpy", side_effect=lambda t, _k: t.numpy()):
+                state = load_state(target, path, ignore=ignore)
+        self.assertEqual((state["total"], state["loaded"], state["target_total"]), (1, 1, 1))
+        self.assertEqual((state["missing"], state["extra"]), ([], []))
+
+    def test_buffer_without_ignore_rule_is_still_required(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = self._save_with_position_ids(Path(directory), ())
+            target = Model({"w": Tensor(np.zeros((2, 2), dtype=np.float32))})
+            with patch("torchport.capture.model._to_numpy", side_effect=lambda t, _k: t.numpy()):
+                state = load_state(target, path)
+        self.assertEqual(state["missing"], ["embeddings.position_ids"])
+
+    def test_ignore_rule_matches_full_name_or_dotted_suffix_only(self) -> None:
+        from torchport.capture.model import _portable
+
+        rule = ("embeddings.position_ids",)
+        self.assertFalse(_portable("embeddings.position_ids", rule))
+        self.assertFalse(_portable("bert.embeddings.position_ids", rule))
+        self.assertTrue(_portable("bert.myembeddings.position_ids", rule))
+        self.assertTrue(_portable("embeddings.position_ids_extra", rule))
+
 
     def test_focused_source_reuses_oracle_state_and_sketches_only_large_trace(self) -> None:
         class FakeModel:

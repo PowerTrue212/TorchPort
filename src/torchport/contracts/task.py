@@ -112,6 +112,17 @@ def normalize(raw: dict[str, Any], base: Path) -> dict[str, Any]:
         _train_protocol(protocol, inputs)
     elif protocol.get("train") is not None:
         raise ValueError("protocol.train 只用于 profile=train-step")
+    if "ignore_state" in protocol:
+        # 可由形状推出、不参与训练的 buffer（如 embeddings.position_ids），两端都不计入完整性
+        ignored = protocol["ignore_state"]
+        if (
+            not isinstance(ignored, list)
+            or not ignored
+            or any(not isinstance(name, str) or not name for name in ignored)
+            or len(ignored) != len(set(ignored))
+        ):
+            raise ValueError("protocol.ignore_state 必须是非空且无重复的状态名列表")
+        protocol["ignore_state"] = sorted(ignored)
     weights = raw.get("weights")
     if weights:
         weights = Path(weights).expanduser()

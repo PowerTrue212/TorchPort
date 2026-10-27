@@ -55,6 +55,31 @@ class TrainObservationTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "observe"):
                 normalize(raw, root)
 
+    def test_ignore_state_is_validated_sorted_and_changes_oracle_digest(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            for name in ("source", "target"):
+                path = root / name
+                path.mkdir()
+                (path / "model.py").write_text("class Model: pass\n", encoding="utf-8")
+            raw = {
+                "task_id": "ignore-state-test",
+                "source": {"repo": "source", "entry": "model.py", "model": "Model"},
+                "target": {"repo": "target", "entry": "model.py", "model": "Model"},
+                "inputs": [{"shape": [1, 4]}],
+            }
+            plain = normalize(raw, root)
+            raw["protocol"] = {"ignore_state": ["z.buf", "embeddings.position_ids"]}
+            task = normalize(raw, root)
+            self.assertEqual(task["protocol"]["ignore_state"],
+                             ["embeddings.position_ids", "z.buf"])
+            # 排除规则改变完整性判定，旧 oracle 必须失效
+            self.assertNotEqual(plain["digest"], task["digest"])
+            for bad in ([], ["a", "a"], [""], "embeddings.position_ids"):
+                raw["protocol"] = {"ignore_state": bad}
+                with self.assertRaisesRegex(ValueError, "ignore_state"):
+                    normalize(raw, root)
+
     def test_selected_output_and_full_trainable_check(self) -> None:
         model = Model()
         optimizer = type("Optimizer", (), {
