@@ -1,5 +1,45 @@
 # SimCSE BERT-base training GATE preparation
 
+## Supervised source check (2026-10-27, current GATE basis)
+
+Benchmark v1 now uses supervised SimCSE for the training GATE (see the protocol).
+The unsupervised two-step results below stay as methodology calibration only:
+with dropout 0 the two views are identical, and the step-1 loss fell to 6.0e-5.
+
+- Data: `nli_for_simcse.csv` (SHA-256 `0747687e...68d48`, pinned revision
+  `e145e8bb`). Rows 0-23, columns premise / entailment / contradiction.
+  Step i uses rows `[8i, 8i+8)`, so each step sees new triplets.
+- Batch: [prepare_sup_train_batch.py](prepare_sup_train_batch.py), official
+  BERT tokenizer, padded to 32 tokens. Shape `[3, 8, 3, 32]`. 6 of 72
+  sentences were truncated. Manifest is in the evidence archive.
+- Source: [probe_sup_train_source.py](probe_sup_train_source.py). Upstream
+  `BertForCL`, BERT-base init, `cls` pooler with MLP in training and evaluation,
+  temperature 0.05, hard-negative weight 0, dropout 0, AdamW lr 5e-5 (official
+  supervised value), FP32, seed 20261027, PyTorch 2.4.1, Transformers 4.26.1, V100.
+
+| Step | FP32 loss | FP64 loss | Grad norm |
+| --- | ---: | ---: | ---: |
+| 0 | 1.3743181 | 1.3743182 | 26.00 |
+| 1 | 1.1057315 | 1.1057297 | 22.85 |
+| 2 | 0.3723490 | 0.3723503 | 15.31 |
+
+The loss stays informative across all three steps. Two fresh FP32 runs gave
+bitwise equal losses, similarity logits (positive and hard-negative blocks),
+selected tensors, and model-state digests after every step
+([compare_sup_train.py](compare_sup_train.py)). FP32 vs FP64 floor: loss
+1.83e-6, logits 1.33e-4, selected gradients 5.41e-6. These describe the source
+floor; they do not set a target tolerance.
+
+Raw evidence: `D:\科研\SimCSE-Benchmark-v1\controller\prep\train-sup-evidence.tgz`
+(SHA-256 `ae94fd5bebc91f45b51b41e57e1024e151d6dd1e9261efa632d28f4fabf39237`,
+same on the V100) and `train-sup-compare.json`.
+
+Not done: training negative controls (deferred by decision), target tolerance,
+TaskSpec and seed with the supervised entry, observation list update for the
+supervised run.
+
+## Unsupervised source check (methodology calibration)
+
 Status: the source-side two-step checks are repeatable on the V100. A new
 candidate seed contains the target training function names. The hidden
 comparison and target tolerance are not frozen. No Agent training trial has

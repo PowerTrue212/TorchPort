@@ -21,7 +21,7 @@ ASSETS = (
      ("config.json", "pytorch_model.bin", "tokenizer_config.json", "vocab.txt")),
     ("datasets", "princeton-nlp/datasets-for-simcse",
      "e145e8bb659b2aa2669f32ef79cb4cdef6c58fef",
-     ("senteval.tar", "wiki1m_for_simcse.txt")),
+     ("senteval.tar", "wiki1m_for_simcse.txt", "nli_for_simcse.csv")),
 )
 
 
