@@ -59,8 +59,12 @@ def remove_container(docker: list[str], name: str) -> None:
 def run_args(
     image: str, name: str, workspace: str, mounts: list[tuple[str, str, bool]],
     env_names: list[str], command: list[str], *, interactive: bool = False,
+    memory: str | None = None,
 ) -> list[str]:
     args = ["run", "--rm", "--name", name, "--network", "host"]
+    if memory:
+        # swap 与内存同额：超限即在容器内 OOM，不借用宿主 swap 拖垮 WSL
+        args += ["--memory", memory, "--memory-swap", memory]
     if interactive:
         args.append("-i")
     args += ["-v", f"{workspace}:{CONTAINER_WORK}", "-v", f"{CONTAINER_WORK}/.scratch"]
@@ -80,6 +84,15 @@ def proxy_env(proxy: str | None) -> list[str]:
     return [f"{name}={proxy}" for name in ("HTTP_PROXY", "HTTPS_PROXY", "http_proxy", "https_proxy")] \
         + [f"{name}={bypass}" for name in ("NO_PROXY", "no_proxy")] \
         + ["NODE_USE_ENV_PROXY=1"]  # Node 24 的内置 fetch 默认不读代理变量
+
+
+def choose_stop_reason(scope_violation: bool, agent_exit: int | None, cleanup_failed: bool) -> str:
+    """越界优先；容器清理失败说明运行环境本身出错，不能归因于 Agent。"""
+    if scope_violation:
+        return "scope_violation"
+    if cleanup_failed:
+        return "infrastructure_error"
+    return "agent_completed" if agent_exit == 0 else "agent_error"
 
 
 def _write_json(path: Path, value: Any) -> None:
@@ -107,6 +120,8 @@ def main() -> None:
     parser.add_argument("--image", default="jittor-harness-agent:0.1")
     parser.add_argument("--distro", default="Ubuntu")
     parser.add_argument("--proxy", help="容器出口代理，如 http://127.0.0.1:7890；两组必须相同")
+    parser.add_argument("--memory", default="5g",
+                        help="Agent 与预检容器的内存上限（docker --memory）；两组必须相同")
     parser.add_argument("--skip-agent", action="store_true",
                         help="只做 plant/MCP/preflight，用于联调，不启动 DSH 也不 certify")
     args = parser.parse_args()
@@ -122,7 +137,7 @@ def main() -> None:
     name = f"tp-{config['trial_id']}"
     workspace = to_docker_path(candidate, windows)
     runtime: dict[str, Any] = {"started_at": time.time(), "image": args.image,
-                               "proxy": args.proxy}
+                               "proxy": args.proxy, "memory": args.memory}
     proxies = proxy_env(args.proxy)
 
     image_id = subprocess.run(
@@ -153,6 +168,7 @@ def main() -> None:
                 args.image, f"{name}-preflight", workspace,
                 [(to_docker_path(probe, windows), "/probe", True)], proxies,
                 ["python3", "/probe/preflight.py", "--config", "/probe/preflight.json"],
+                memory=args.memory,
             ),
             capture_output=True, text=True, timeout=600,
         )
@@ -177,7 +193,7 @@ def main() -> None:
              (to_docker_path(sessions, windows), CONTAINER_SESSIONS, False)],
             ["DEEPSEEK_API_KEY", *proxies],
             ["dsh", "--profile", "headless", "--patch", CONTAINER_PATCH, "--json", "-"],
-            interactive=True,
+            interactive=True, memory=args.memory,
         )
         remove_container(docker, name)
         runtime["agent_started_at"] = time.time()
@@ -194,16 +210,19 @@ def main() -> None:
         runtime["agent_finished_at"] = time.time()
         runtime["agent_exit"] = agent_exit
     finally:
+        # 清理失败（如 WSL 虚拟机重启后 docker 不可用）不中断编排：记为基础设施错误，
+        # 仍写 runtime、跑审计与认证，保持证据链完整；该 trial 按 stop_reason 判无效。
         try:
             remove_container(docker, name)
-        finally:
-            mcp.terminate()
-            try:
-                mcp.wait(timeout=30)
-            except subprocess.TimeoutExpired:
-                mcp.kill()
-            runtime["finished_at"] = time.time()
-            _write_json(controller / "container-runtime.json", runtime)
+        except Exception as exc:  # noqa: BLE001
+            runtime["cleanup_error"] = f"{type(exc).__name__}: {exc}"
+        mcp.terminate()
+        try:
+            mcp.wait(timeout=30)
+        except subprocess.TimeoutExpired:
+            mcp.kill()
+        runtime["finished_at"] = time.time()
+        _write_json(controller / "container-runtime.json", runtime)
 
     rules = json.loads((controller / "audit-rules.json").read_text(encoding="utf-8"))
     report = audit_trial.scan(
@@ -212,10 +231,8 @@ def main() -> None:
         rules.get("allowed_paths", []), rules.get("max_steps"),
     )
     _write_json(controller / "audit.json", report)
-    stop_reason = (
-        "scope_violation" if report["scope_violation"]
-        else "agent_completed" if agent_exit == 0 else "agent_error"
-    )
+    stop_reason = choose_stop_reason(report["scope_violation"], agent_exit,
+                                     "cleanup_error" in runtime)
     from experiments.harness.agents.mcp_server import make_gateway  # noqa: PLC0415
 
     result = make_gateway(config_path).certify(stop_reason)

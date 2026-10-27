@@ -58,6 +58,22 @@ def test_run_args_mounts_only_workspace_and_listed_paths() -> None:
     assert args[-3:] == ["img:1", "dsh", "--json"]
 
 
+def test_memory_limit_sets_equal_swap_and_is_optional() -> None:
+    args = trial.run_args("img:1", "tp-x", "/mnt/d/ws", [], [], ["true"], memory="5g")
+    assert args[args.index("--memory") + 1] == "5g"
+    assert args[args.index("--memory-swap") + 1] == "5g"
+    assert "--memory" not in trial.run_args("img:1", "tp-x", "/mnt/d/ws", [], [], ["true"])
+
+
+def test_stop_reason_precedence() -> None:
+    # 越界优先于基础设施错误；清理失败不归因于 Agent
+    assert trial.choose_stop_reason(True, 0, True) == "scope_violation"
+    assert trial.choose_stop_reason(False, 0, True) == "infrastructure_error"
+    assert trial.choose_stop_reason(False, 0, False) == "agent_completed"
+    assert trial.choose_stop_reason(False, 1, False) == "agent_error"
+    assert trial.choose_stop_reason(False, None, False) == "agent_error"
+
+
 def test_proxy_env_bypasses_loopback_and_is_empty_without_proxy() -> None:
     assert trial.proxy_env(None) == []
     env = trial.proxy_env("http://127.0.0.1:7890")

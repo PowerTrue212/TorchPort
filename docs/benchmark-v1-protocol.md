@@ -152,7 +152,12 @@ Harness 工具的返回值获得验证信息，看不到验证实现：
   `--proxy` 显式传入，回环地址绕过代理，两组必须使用同一代理，代理地址写入
   `container-runtime.json`。URL 屏蔽暂不在容器出口拦截，
   靠事后审计与相似度检查。启动前先删除同名旧容器，结束（含异常退出）后再删一次，避免
-  编排进程被终止时留下孤儿容器继续运行。
+  编排进程被终止时留下孤儿容器继续运行。清理失败（如宿主 WSL 重启后 `docker rm` 报错）不中断
+  编排：记 `stop_reason=infrastructure_error`，照常写 `container-runtime.json`、审计与认证；该
+  trial 不计入有效结果。
+- 资源上限：Agent 容器设 `--memory 5g`（同时 `--memory-swap 5g`，不额外使用 swap），两组相同，
+  写入 `container-runtime.json`。超限只杀容器内进程，Agent 看到报错可自行调整，不会拖垮宿主
+  WSL（SimCSE train none-r1 曾因 WSL 整机重启中断，2026-10-27）。
 - 临时目录：容器在 `/work/.scratch` 挂一个匿名卷（随 `--rm` 删除），供 Agent 安装依赖和存放
   缓存；它不写入宿主机工作区，候选快照也排除 `.scratch`。两组 prompt 用同一句话说明该目录。
   依赖装进工作区其他位置会进入快照，不影响隐藏验收（V100 使用冻结环境），但计入交付内容。
