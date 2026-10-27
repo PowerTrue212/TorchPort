@@ -62,9 +62,9 @@ SimCSE（2026-10-27 纳入）：
   权重完整性检查对 source 与 target 双方排除此类可推导、非可训练 buffer（排除清单写入
   TaskSpec）；其余参数仍要求全部加载。r0 的 full 组因缺该项判 199/200，按原规则保留原判定，
   不与新规则下的结果比较。
-- 训练观察：BERT-base 每步全状态约 438 MB，用 `protocol.train.observe` 只观察部分参数。
-  观察清单冻结在 TaskSpec，至少覆盖首层注意力、末层 LayerNorm、pooler/MLP；需用负对照证明
-  覆盖足够：温度写错、mean/sum 写反、相似度矩阵转置、困难负样本漏加。漏检时扩大观察集。
+- 训练比较：BERT-base 每步全状态约 438 MB，不存原张量，用训练 sketch 覆盖全部可训练参数
+  （见“训练检验”）。有监督源端校准见 `train-gate-prep.md`：3 步 loss 1.374→1.106→0.372，
+  两次 FP32 逐位相同。
 - 区分度可能偏低（BERT 的 Jittor 迁移资料多，none-r0 首次即通过）；分析时单独报告。
 
 未选及原因：OpenFold/OpenFold3/OpenVLA/DLRM-1TB/Graphormer-3D 需要 H100 或多卡；
@@ -173,11 +173,27 @@ Llama/Qwen 待核实）：
 
 最终输出 R_e、B_ℓ、P_t、E_m，并保存全部原始数据，公式变更时从原始数据重算，不重跑实验。
 
+### s：最终验收（0/1），决定 E_m
+
+s=1 当且仅当隐藏 `verify` 通过：权重完整、结构一致、数值落在校准后的噪声包络内；训练任务另需
+训练 GATE 通过。验收取严格标准；成本只在通过的 trial 上有意义（s=0 时 E=0）。
+
+- 临界加跑：verify 对每个 GATE 张量报告比值 `r = err(target, fp64) / (k·noise + floor)`。
+  r_max ≤ 1 通过；r_max > 3 失败；1 < r_max ≤ 3 为临界，对同一候选、同一 oracle 自动再跑 4 次
+  target，取 5 次 r_max 的中位数判定。开发期 verify 与隐藏 verify 用同一规则，临界次数单独报告。
+  上限 3 和加跑次数在误判率校准后冻结。
+- 误判率校准（只用于本实验冻结协议，不属于 Harness 的常规使用流程）：每个仓库取已知正确的
+  候选（pilot 中通过隐藏验收的冻结快照、通过 verify 的公开人工迁移、校准用 target），各重复
+  verify 至少 10 次统计误判率；用源端变异（见“训练检验”）统计漏检率。所有仓库统一取一个 k，
+  使误判率不高于 5%，正式 trial 前冻结。已知正确的候选多来自当前 k 下已通过的快照，存在选择
+  偏差，报告中说明。verify 原始报告全部保存，k 或规则变更时重算 s 与 F，不重跑实验。
+- Agent 可见反馈不变：diagnostic 不增加比值字段，none/full 仍只在定位信息上不同。
+
 ### R_e：是否跑通（0/1）
 
 候选在冻结入口上完成推理（训练任务另需完成规定步数）记 1，否则记 0。
 
-### P_t：任务性能一致性（0~100），决定最终验收 s
+### P_t：任务性能一致性（0~100），第二层结论，不决定 s
 
 相同测试集、预处理和评测代码下复测 source 与 target：
 
@@ -187,8 +203,9 @@ P   = 100/J · Σ_j 1 / max(1, g_j)
 ```
 
 τ_j 在正式实验前由 source 自身的重复/seed 波动确定（例如 3σ_source 与人工下限取较大值），
-写入 TaskSpec。s=1 当且仅当所有 g_j ≤ 1。有可精确比较的离散输出（argmax、贪心解码 token、
-阈值化 mask）时，额外报告精确匹配率。
+写入 TaskSpec。所有 g_j ≤ 1 记为 P_t 达标。有可精确比较的离散输出（argmax、贪心解码 token、
+阈值化 mask）时，额外报告精确匹配率。P_t 与 s 分开报告；数值 verify 未通过但 P_t 达标的情况
+（如 CamoFormer）单独列出，说明数值差异是否影响任务。
 
 ### B_ℓ：逐层行为一致性（0~100），诊断用，不参与 s
 
@@ -250,8 +267,8 @@ JTorch 和转换器没有 Token 和工具调用，N=K=0，按实际值代入。
 比较全量训练结果更严格：后者受轨迹混沌和 seed 波动影响，统计功效低，测不出小 bug。
 
 1. 连续 N 步等价（训练 GATE，v1，`protocol.profile: train-step`）。两端从同一 oracle 初始状态
-   出发，在同一冻结 batch 序列（输入第 0 维为步号）上连续训练 N 步，N 取 3~5。每步记录 loss
-   和更新后的全部可训练参数，与 source 做噪声标定比较：fp64 与 alt 两条参考路径同样连续走 N 步，
+   出发，在同一冻结 batch 序列（输入第 0 维为步号）上连续训练 N 步（v1 取 3~5；v2 取 10~20 并跨过 warmup，进 GATE 的步号在 pilot 后冻结）。
+   每步完整记录 loss，并记录全部可训练参数（v2 为更新量的 sketch，见下文），与 source 做噪声标定比较：fp64 与 alt 两条参考路径同样连续走 N 步，
    噪声基准包含同样的累积误差；缺少标定的 `output.*` 直接判失败。source 开启
    `torch.use_deterministic_algorithms(True)`，oracle 仍要求逐位稳定。v1 要求随机层关闭
    （dropout=0 等），不回放随机 mask。
@@ -267,13 +284,29 @@ JTorch 和转换器没有 Token 和工具调用，N=K=0，按实际值代入。
 
 RL 的训练等价使用固定 rollout buffer 上的 N 次 PPO update。
 
-部分参数观察（`protocol.train.observe`）：全状态过大的仓库可只观察冻结清单中的参数，观察集合
-本身做精确检查；loss 与学习率仍逐步全部比较。使用该字段的仓库必须在报告中写明观察覆盖率
-（观察元素数 / 可训练元素数），并以负对照证明覆盖足够。目前只有 SimCSE 使用。
+训练 sketch（v2，方案已定，待实现）：
 
-负对照（证明 GATE 能抓住训练 bug，pilot 中完成）：loss reduction 用 sum 代替 mean、AdamW 写成
-Adam+L2、漏掉 `zero_grad`、梯度裁剪顺序错、调度器差一步、BN momentum 约定不一致。逐项报告
-被哪一部分检出。
+- 比较对象：每步完整记录 loss 与学习率。对每个可训练参数 p，在 host 上用 fp64 计算更新量
+  `u_{p,t} = θ_{p,t} − θ_{p,0}`，记录 (a) 整张量的精确统计：L2 范数、max_abs、元素和；(b) 元素数
+  ≤ B 时原样保存，> B 时保存 CountSketch。哈希与符号由固定种子生成，B 默认 16384，写入
+  `protocol.train.sketch_dim` 并进入 task digest。
+- 判定：fp64、alt 两条参考路径记录同样的量，沿用 `err(target, fp64) ≤ k·max(err(source, fp64),
+  err(source, alt)) + floor` 逐项判定。sketch 是线性的，任何非零的更新偏差几乎必然落到某个桶上；
+  稀疏偏差在桶内会被约 √(n/B) 倍的噪声稀释，由整张量 max_abs 补足。sketch 由 Harness 在两端
+  用同一份 numpy 代码计算，candidate 不能影响。
+- 覆盖全部可训练参数，不需要人为挑选观察清单。`protocol.train.observe` 只保留给已完成的 SimCSE
+  无监督 preflight，新任务不使用。
+- 存储：BERT-base 每步每条路径约 10 MB；20 步三条参考路径约 0.6 GB，每次 target 运行约 0.2 GB。
+- 未执行分支：source 冻结运行自动记录每步学习率是否变化、全局梯度范数等事实，写入 oracle。
+  固定 batch 和步数内没有执行到的分支（warmup 后段、梯度裁剪未触发等）在报告中列为“未覆盖”，
+  不声称已检验。
+- 递增 `CAPTURE_VERSION`，旧训练 oracle 失效；LoRA 历史校准记录保持原判定。
+
+负对照（方法层面，不按仓库逐个做）：在源端施加与仓库无关的变异，把变异后的源端运行当作候选
+与原 oracle 比较，统计 GATE 的漏检率，不需要人工编写正确的 Jittor 实现。变异只依赖训练契约：
+学习率乘 (1+δ)、某一参数跳过更新、梯度乘常数、多走或少走一步、初始状态扰动。在少数仓库
+（LoRA 校准、SimCSE）上各做一次，结果写入方法验证；新仓库不重做。下面 LoRA 的 Jittor 负对照
+（loss sum/mean、Adam+L2、调度器差一步）是 v1 的历史证据。
 
 实现复用现有 capture/comparison/verification，不建第二套执行器：`capture/training.py` 执行训练步
 和 source 噪声标定，oracle 冻结 `train_fp64.npz`/`train_alt.npz`，最终由 `judge` 统一判定。
