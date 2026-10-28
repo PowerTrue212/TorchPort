@@ -56,6 +56,12 @@ def evaluate(
         result["stderr_tail"] = tail
         result["timeout"] = execution.get("timeout")
         result["run_id"] = run.get("run_id")
+        contract = run.get("contract")
+        if isinstance(contract, dict) and contract.get("code"):
+            # Harness 读取任务契约失败：不是候选代码的运行错误，单独标出
+            result["failure_code"] = "CONTRACT_ERROR"
+            result["contract"] = {"code": contract["code"], "message": contract.get("message")}
+            result["summary"] = f"CONTRACT_ERROR: {contract.get('message')}"
         return result
     reference = Path(oracle["dir"]) / "outputs.npz"
     candidate_path = Path(run["artifacts"]["outputs"])

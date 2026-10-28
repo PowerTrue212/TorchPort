@@ -95,7 +95,8 @@ class TrainObservationTests(unittest.TestCase):
         protocol = {"optimizer": "build_optimizer", "step": "train_step", "observe": ["b"]}
         with (
             patch.object(training, "_batches", return_value=iter([((), {}), ((), {})])),
-            patch.object(training, "_scalar", side_effect=lambda value, _kind: np.asarray([value])),
+            patch.object(training, "_scalar",
+                         side_effect=lambda value, _kind, dtype=None: np.asarray([value])),
             patch.object(training, "_to_numpy", side_effect=lambda value, _kind: value.value.copy()),
         ):
             outputs, info = training.run_steps(
@@ -172,7 +173,8 @@ class TrainObservationTests(unittest.TestCase):
         protocol = {"optimizer": "build_optimizer", "step": "train_step", "sketch_dim": 2}
         with (
             patch.object(training, "_batches", return_value=iter([((), {}), ((), {})])),
-            patch.object(training, "_scalar", side_effect=lambda value, _kind: np.asarray([value])),
+            patch.object(training, "_scalar",
+                         side_effect=lambda value, _kind, dtype=None: np.asarray([value])),
             patch.object(training, "_to_numpy", side_effect=lambda value, _kind: value.value.copy()),
             patch.object(training, "_grad_norm", return_value=None),
         ):

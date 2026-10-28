@@ -26,10 +26,17 @@ P2 只回答一个问题：在相同 Agent、任务、初始 candidate、硬件�
 | `structural/weight_load/aligned/strict_aligned` | 否 | 是 | 是 |
 | `scope/invocation/operator/first_divergence` | 否 | 否 | 是 |
 | 输入/输出证据与 `error_jump` | 否 | 否 | 是 |
+| `contract`（接口契约错误，固定枚举文本） | 否 | 是 | 是 |
 
 `diagnostic` 使用代码中的固定 allowlist，不返回自由文本 `summary`、`problems` 或 `next`，
 也不返回 module、file、line、operator、张量名称或首次分歧。失败码必须归一到通用类别，
 例如 `NUMERICAL_MISMATCH`，不能把定位信息编码进失败原因。
+
+例外是接口契约错误（2026-10-28，feedback schema v2）：Harness 自身的适配代码在读取任务契约
+（训练函数、optimizer 的 `param_groups`/`lr`、loss 的形状与类型）时失败，失败码为 `CONTRACT_ERROR`，
+`contract` 字段给出 `{code, message}`，`message` 只能取代码中冻结的枚举文本，描述接口约定本身，
+不含模块、算子、张量名或数值位置。这类错误由 Harness 抛出，Agent 在本地无法复现，若只返回
+`RUN_FAILED` 会让 trial 测的是“猜中接口约定”而不是迁移能力；因此 diagnostic 与 localized 都返回它。
 
 Agent 使用成熟代码环境自带的文件浏览、搜索、编辑、Shell、Python、Git、测试和公开网络检索。
 Harness 不重写这些能力，只增加 `inspect`、`run`、`evaluate`、`verify`、`trace`、`localize`

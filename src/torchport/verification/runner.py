@@ -110,6 +110,11 @@ def run_side(
         "dir": str(run_dir),
         "capture": read_json(capture) if ok else None,
         "artifacts": artifacts,
+        # 契约错误只在运行失败时出现；内容是冻结枚举 {code, message}
+        "contract": (
+            read_json(run_dir / "contract.json")
+            if not ok and (run_dir / "contract.json").is_file() else None
+        ),
     }
     write_json(run_dir / MANIFEST, manifest)
     return manifest

@@ -28,25 +28,57 @@ def enable_determinism(kind: str) -> None:
     torch.backends.cudnn.benchmark = False
 
 
+# 接口契约错误：Harness 读取训练契约时失败。文本是冻结枚举，只描述接口约定，
+# 不含模块、算子、张量名或数值位置，因此 diagnostic 与 localized 都可返回。
+CONTRACT_MESSAGES = {
+    "TRAIN_FUNCTION_MISSING": "The training entry does not define the required callable `{name}`.",
+    "OPTIMIZER_NO_PARAM_GROUPS": (
+        "build_optimizer must return the optimizer, or a tuple whose first item is the "
+        "optimizer; the optimizer must expose `param_groups`."
+    ),
+    "OPTIMIZER_NO_LR": "Each optimizer param group must have an `lr` entry for the next step.",
+    "OPTIMIZER_FOREIGN_PARAM": "The optimizer holds parameters that are not model parameters.",
+    "OPTIMIZER_NO_TRAINABLE": "The optimizer holds no trainable model parameters.",
+    "LOSS_NOT_SCALAR": "train_step must return a loss with exactly one element.",
+    "LOSS_TYPE": (
+        "train_step must return the loss as a framework tensor, a NumPy scalar, "
+        "or a Python number."
+    ),
+}
+
+
+class ContractError(ValueError):
+    def __init__(self, code: str, **fields: str) -> None:
+        self.code = code
+        self.message = CONTRACT_MESSAGES[code].format(**fields)
+        super().__init__(f"{code}: {self.message}")
+
+    def as_dict(self) -> dict[str, str]:
+        return {"code": self.code, "message": self.message}
+
+
 def _callable(scope: dict[str, Any], name: str) -> Any:
-    value = _lookup(scope, name)
+    try:
+        value = _lookup(scope, name)
+    except Exception:  # noqa: BLE001 - 找不到即契约错误
+        value = None
     if not callable(value):
-        raise ValueError(f"入口中没有可调用的训练函数：{name}")
+        raise ContractError("TRAIN_FUNCTION_MISSING", name=name)
     return value
 
 
 def _optimizer(state: Any) -> Any:
     # optimizer 工厂可返回 optimizer，或 (optimizer, scheduler, ...)；后者整体交给 step。
-    return state[0] if isinstance(state, (tuple, list)) else state
+    return state[0] if isinstance(state, (tuple, list)) and state else state
 
 
 def _lr(optimizer: Any) -> float:
     groups = getattr(optimizer, "param_groups", None) or []
-    if groups and groups[0].get("lr") is not None:
+    if groups and isinstance(groups[0], dict) and groups[0].get("lr") is not None:
         return float(groups[0]["lr"])
     lr = getattr(optimizer, "lr", None)
     if lr is None:
-        raise ValueError("优化器没有可读取的学习率")
+        raise ContractError("OPTIMIZER_NO_LR")
     return float(lr)
 
 
@@ -60,15 +92,18 @@ def _requires_grad(param: Any) -> bool:
 def _trainable(model: Any, optimizer: Any) -> dict[str, Any]:
     """可训练参数 = 优化器参数组中仍需梯度的模型参数；冻结与“不交给优化器”两种写法都覆盖。"""
     names = {id(param): name for name, param in model.named_parameters()}
+    groups = getattr(optimizer, "param_groups", None)
+    if not groups or not all(isinstance(group, dict) for group in groups):
+        raise ContractError("OPTIMIZER_NO_PARAM_GROUPS")
     selected: dict[str, Any] = {}
-    for group in getattr(optimizer, "param_groups", None) or []:
+    for group in groups:
         for param in group.get("params", []):
             if id(param) not in names:
-                raise ValueError("优化器包含模型之外的参数")
+                raise ContractError("OPTIMIZER_FOREIGN_PARAM")
             if _requires_grad(param):
                 selected[names[id(param)]] = param
     if not selected:
-        raise ValueError("优化器中没有可训练参数")
+        raise ContractError("OPTIMIZER_NO_TRAINABLE")
     return dict(sorted(selected.items()))
 
 
@@ -94,10 +129,18 @@ def _batches(
         yield pack_values(values, specs)
 
 
-def _scalar(value: Any, kind: str) -> np.ndarray:
-    array = _to_numpy(value, kind)
+def _scalar(value: Any, kind: str, dtype: Any = None) -> np.ndarray:
+    if isinstance(value, bool) or value is None:
+        raise ContractError("LOSS_TYPE")
+    if isinstance(value, (int, float, np.generic, np.ndarray)):
+        # 非张量 loss（Jittor 没有 0 维 Var 时常见）：主路径 float32，fp64 参考路径 float64
+        array = np.asarray(value, dtype=dtype or np.float32)
+    elif hasattr(value, "numpy") or hasattr(value, "detach"):
+        array = _to_numpy(value, kind)
+    else:
+        raise ContractError("LOSS_TYPE")
     if array.size != 1:
-        raise ValueError(f"step 必须返回标量 loss，实际形状 {array.shape}")
+        raise ContractError("LOSS_NOT_SCALAR")
     # 两框架的标量形状约定不同（() 与 [1]）；loss 统一为 [1]，dtype 仍按实际值比较。
     return array.reshape(1)
 
@@ -183,7 +226,9 @@ def run_steps(
     grad_norms: list[float | None] = []
     for index, (args, kwargs) in enumerate(_batches(arrays, specs, steps, kind, device, dtype)):
         lrs.append(_lr(optimizer))
-        outputs[f"output.loss.{index}"] = _scalar(step(model, state, *args, **kwargs), kind)
+        outputs[f"output.loss.{index}"] = _scalar(
+            step(model, state, *args, **kwargs), kind, dtype=dtype
+        )
         if kind == "source":
             grad_norms.append(_grad_norm(trainable, kind))
         if sketch_dim:

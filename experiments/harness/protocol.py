@@ -5,7 +5,8 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass
 from enum import Enum
 
-FEEDBACK_SCHEMA_VERSION = 1
+# v2（2026-10-28）：diagnostic 增加 contract 字段，返回冻结枚举的接口契约错误
+FEEDBACK_SCHEMA_VERSION = 2
 INVALID_TRIAL_STOP_REASONS = frozenset(
     {"infrastructure_error", "scope_violation", "feedback_leak", "isolation_violation"}
 )
@@ -22,6 +23,7 @@ DIAGNOSTIC_FIELDS = (
     "mismatched_tensors",
     "structural",
     "weight_load",
+    "contract",
 )
 LOCALIZATION_FIELDS = (
     "kind",

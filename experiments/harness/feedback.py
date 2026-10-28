@@ -36,6 +36,8 @@ def public_run(run: dict[str, Any]) -> dict[str, Any]:
         },
         "capture": {key: value for key, value in (run.get("capture") or {}).items()
                     if key in {"ok", "status", "failure_code"}},
+        # 接口契约错误：只放行冻结枚举文本，两种反馈条件都可见
+        "contract": _contract(run.get("contract")),
     }
 
 
@@ -63,6 +65,28 @@ def trace_summary(report: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def _contract(value: Any) -> dict[str, str] | None:
+    """只放行冻结枚举里的 code 与对应文本；未知 code 或被改写的文本一律丢弃。"""
+    from torchport.capture.training import CONTRACT_MESSAGES
+
+    if not isinstance(value, dict):
+        return None
+    code = value.get("code")
+    template = CONTRACT_MESSAGES.get(code) if isinstance(code, str) else None
+    if template is None:
+        return None
+    message = value.get("message")
+    # 唯一带参数的模板是缺失函数名；参数来自 TaskSpec，不来自候选代码
+    if "{" in template:
+        prefix, _, suffix = template.partition("`{name}`")
+        if not (isinstance(message, str) and message.startswith(prefix)
+                and message.endswith(suffix)):
+            return None
+    elif message != template:
+        return None
+    return {"code": code, "message": message}
+
+
 def diagnostic(report: dict[str, Any]) -> dict[str, Any]:
     failure = str(report.get("failure_code") or "")
     codes = {
@@ -73,13 +97,16 @@ def diagnostic(report: dict[str, Any]) -> dict[str, Any]:
         "WEIGHT_LOAD_FAILED": "WEIGHT_LOAD_FAILED",
         "NOT_COMPARED": "NOT_EVALUATED",
         "TOO_FEW_RUNS": "INCOMPLETE_VERIFICATION",
+        "CONTRACT_ERROR": "CONTRACT_ERROR",
     }
     code = codes.get(failure, "VERIFICATION_FAILED" if failure else None)
     structural = report.get("structural", "not_run")
     evidence = report.get("evidence") or {}
     weights = evidence.get("weights") or {}
     weight_load = "pass" if weights.get("complete") else ("fail" if weights else "not_run")
-    if report.get("runnable") == "fail" or code == "RUN_FAILED":
+    if code == "CONTRACT_ERROR":
+        stage = "contract"
+    elif report.get("runnable") == "fail" or code == "RUN_FAILED":
         stage = "runnable"
     elif structural == "fail" or code == "STRUCTURAL_MISMATCH":
         stage = "structural"
@@ -92,6 +119,7 @@ def diagnostic(report: dict[str, Any]) -> dict[str, Any]:
     mismatch = report.get("mismatch") or {}
     metrics = mismatch.get("fp32") or ((report.get("profiles") or {}).get("fp32") or {}).get("metrics", {})
     category = {
+        "contract": "contract",
         "runnable": "runtime", "structural": "structural", "numerical": "numeric",
         "verification": "protocol", "passed": None,
     }[stage]
@@ -108,6 +136,7 @@ def diagnostic(report: dict[str, Any]) -> dict[str, Any]:
         "mismatched_tensors": metrics.get("mismatched_tensors"),
         "structural": structural,
         "weight_load": weight_load,
+        "contract": _contract(report.get("contract")),
     }
     if tuple(result) != DIAGNOSTIC_FIELDS:
         raise AssertionError("diagnostic feedback allowlist drifted")

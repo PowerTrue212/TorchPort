@@ -412,5 +412,14 @@ def capture(job: dict[str, Any]) -> dict[str, Any]:
 
 
 def main(job_path: str) -> int:
-    capture(read_json(Path(job_path)))
+    from .training import ContractError
+
+    job = read_json(Path(job_path))
+    try:
+        capture(job)
+    except ContractError as exc:
+        # 接口契约错误单独落盘：它是 Harness 读取任务契约时的失败，Agent 本地无法复现，
+        # 由 run manifest 带回，供 diagnostic 返回冻结的枚举文本
+        write_json(Path(job["out_dir"]) / "contract.json", exc.as_dict())
+        raise
     return 0
