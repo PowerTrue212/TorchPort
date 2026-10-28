@@ -64,6 +64,7 @@ class CandidateDeliveryTests(unittest.TestCase):
             repo.mkdir()
             (repo / "run.py").write_text("VALUE = 1\n", "utf-8")
             (repo / "model.py").write_text("VALUE = 2\n", "utf-8")
+            (repo / ".gitignore").write_text(".scratch/\n", "utf-8")
             initialize_git_workspace(repo)
             scratch = repo / ".scratch"
             scratch.mkdir()

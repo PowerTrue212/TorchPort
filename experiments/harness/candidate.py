@@ -131,7 +131,10 @@ def _git_evidence(root: Path, output: Path) -> dict[str, Any]:
     git_env = os.environ.copy()
     git_env["GIT_INDEX_FILE"] = str(index_path)
     read_tree = _git(root, "read-tree", "HEAD", env=git_env)
-    add = _git(root, "add", "-A", "--", ".", scratch_exclude, env=git_env)
+    # An explicit negative pathspec makes `git add` reject an ignored .scratch
+    # directory on Windows. Add to the temporary index, then exclude it from
+    # the evidence diff below; the real repository index is never changed.
+    add = _git(root, "add", "-A", "--", ".", env=git_env)
     diff = _git(
         root,
         "diff",
