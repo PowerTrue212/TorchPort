@@ -312,6 +312,28 @@ RL 的训练等价使用固定 rollout buffer 上的 N 次 PPO update。
 - 不递增全局 `CAPTURE_VERSION`：未设 `sketch_dim` 的任务采集语义不变；设了的任务因该字段进入
   task digest 而自动使用新 oracle。这样 CLIP 等推理 oracle 不必重建。LoRA 历史校准记录保持原判定。
 
+训练重复性包络 pilot（2026-10-29，当前实现名 `train-repeat-envelope-v1-pilot`）：
+
+- 旧 `train-step` 噪声判定与所有旧 trial 结果保持原样。SimCSE v2 的
+  source alt 与主路径 6,384 个输出逐位相同；仅删除 `ustat` 的 sum
+  或增大其噪声，正确参考仍失败。诊断记录见
+  [SimCSE v2 校准](../experiments/p2/simcse-bert-base-v1/train-v2-rule-calibration-20261029.md)。
+- 新 pilot 的候选无关噪声基数：对每个张量的 max_abs、p99，取 source
+  FP32/FP64/alt 距离与控制端固定的正确 target 参考重复差之较大者；
+  判定仍为 `err(candidate, fp64) <= k × noise + floor`，现用 `k=8`、
+  `floor=1e-7`。`output.ustat.*` 只比较 L2 与 max_abs，保留
+  `output.update.*` 的全参数 sketch、每步 loss 和精确学习率/参数集合。
+  target 重复差必须在新候选运行前冻结到只读标定文件，记录 SHA256；
+  Agent 候选的自身波动绝不能用于放宽其验收。
+- 两次参考建立的固定基数使另外三次有效参考全量通过，最坏阈值
+  使用率 0.867；`adamw-bias` 与 `temp-006` 两个显式 v2 负对照
+  分别有 5,999、5,814 个输出超限。另一次参考发生 Jittor
+  `double free or corruption`，无数值结果。当前仍是 pilot；
+  新 TaskSpec 的隐藏 `verify` 已在控制端再次运行正确参考，目标重复
+  两次均通过且各 6,384 个输出零超限；这不追溯修改旧结果。
+  至少十次有效参考重复、其他源端/目标端变异和任务参数冻结前，
+  不把该规则用于正式 Benchmark v1 成功判定。
+
 负对照（方法层面，不按仓库逐个做）：在源端施加与仓库无关的变异，把变异后的源端运行当作候选
 与原 oracle 比较，统计 GATE 的漏检率，不需要人工编写正确的 Jittor 实现。变异只依赖训练契约：
 学习率乘 (1+δ)、某一参数跳过更新、梯度乘常数、多走或少走一步、初始状态扰动。在少数仓库

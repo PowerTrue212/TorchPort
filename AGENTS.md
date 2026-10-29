@@ -1,6 +1,6 @@
 # Jittor Harness 跨对话工作说明
 
-更新时间：2026-10-13
+更新时间：2026-10-29
 当前开发分支：`codex/reorganize-repository`
 
 这份文件是新对话和新 Agent 的项目入口。它只保存当前方向、不可破坏的边界和接手顺序。
@@ -84,6 +84,44 @@ P2 比较三种反馈：
 ## 现在正在做什么
 
 当前主任务是把 P2 从“管线能运行”推进到“可以公平评测真实迁移效果”：
+
+当前训练验收校准（先保留原判，再讨论新协议）：SimCSE train none/full r4
+都是失败的 `pilot_only`，不能混入正式 Benchmark v1；参考 train-step v2
+两次也按现行规则失败。2026-10-29 的离线重判显示，单独去掉 `ustat`
+的 sum，或用更新 sketch 的 L2 扩大 sum 噪声，仍不能让两次参考通过；
+剩余超限包括 loss 和更新量范数/max_abs。source alt 与主路径逐位相同，
+只有一份 FP32 与 FP64 距离，不足以冻结新包络。见
+[SimCSE v2 校准记录](experiments/p2/simcse-bert-base-v1/train-v2-rule-calibration-20261029.md)。
+另以两次控制端参考的重复差建立固定目标噪声基数，离线重判
+全部 6,384 个输出张量时，三次新增有效参考都通过，最小余量
+约 13.3%；同一固定规则下，显式 v2 `adamw-bias`、`temp-006`
+负对照分别有 5,999、5,814 个超限张量，见同一校准记录。
+已实现另有名称的训练重复性包络 **pilot 协议**
+`train-repeat-envelope-v1-pilot`；控制端新隐藏 `verify` 的两次
+参考目标运行均通过，6,384 个输出张量零超限。此处通过仅是新
+pilot 合约的结果，不改写旧失败。噪声基数
+逐张量取 source FP32/FP64/alt 距离与控制端已知正确参考的固定
+目标重复差之较大者；`ustat` 不用元素和，但保留 L2、max_abs，
+并始终比较 loss 和全参数更新 sketch。校准文件和 SHA256 必须冻结，
+候选不能提供或改变该基数。现有两次校准加三次有效留出参考尚
+不足以估计正式误判率；达到 Benchmark v1 的十次参考复验与其他
+仓库负对照前，不启动新协议的正式 Agent trial。旧 JSON/JSONL/NPZ
+与旧判定原样保留。
+
+CLIP ViT-B/32 训练仍在 pilot 校准：source oracle 已建，控制端 Jittor
+参考 r1/r2/r3 均未通过；r2 与 r3 的 `train_alt.npz` 不同，比较前必须
+固定文件和哈希或冻结多 alt 聚合方法。现有报告见
+[CLIP 训练准备](experiments/p2/clip-vit-b32-v1/train-gate-prep-20261028.md)。
+用固定 r1 目标参考重复差和明确哈希的 r3 alt，对 CLIP r1 两次、
+r2b/r2c、r3 两次的原始输出离线重判，六次均零超限；这仍是敏感性
+分析，尚无 CLIP 负对照，不证明 Jittor 参考正确。CLIP 的 Agent
+训练 trial 尚未启动。LightGCN 已固定官方源码与 LastFM 数据，V100
+源端两步 pilot 能运行；两步训练 TaskSpec、FP32/FP64/alt source oracle
+已建立，复跑显示 10 个训练输出中 8 个有小幅跨进程数值波动。
+控制端 Jittor 参考 r1 可运行但隐藏 `verify` 为 `PARITY_FAILED`：
+首步 loss 一致，首步参数更新明显不同；须比较梯度与优化器状态。
+负对照和训练后指标尚未建立。见
+[LightGCN 准备记录](experiments/p2/lightgcn-v1/prep-20261029.md)。
 
 1. 校准 CamoFormer 暴露出的数值验收问题，区分模型实现错误、后端正常数值差异和重复运行
    波动；在证据充分前保留正式失败。

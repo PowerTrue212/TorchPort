@@ -101,6 +101,14 @@ def build_bundle(task_path: Path, base: PurePosixPath, settings: RemoteSettings)
         inputs.append((local, remote))
     if weights := local_weights(task_path, rewritten, settings):
         rewritten["weights"] = str(cached_weights_path(*weights, settings))
+    train_baseline = None
+    if item := rewritten.get("protocol", {}).get("train_noise_baseline"):
+        train_baseline = inside_workspace(item, settings)
+        expected = rewritten["protocol"].get("train_noise_baseline_sha256")
+        actual = hashlib.sha256(train_baseline.read_bytes()).hexdigest()
+        if actual != expected:
+            raise ValueError("固定参考重复性文件 SHA256 不匹配")
+        rewritten["protocol"]["train_noise_baseline"] = str(base / "judge" / train_baseline.name)
 
     stream = io.BytesIO()
     with tarfile.open(fileobj=stream, mode="w:gz") as package:
@@ -109,6 +117,8 @@ def build_bundle(task_path: Path, base: PurePosixPath, settings: RemoteSettings)
         _add_tree(package, package_root, "src/torchport")
         for local, remote in inputs:
             package.add(local, arcname=remote)
+        if train_baseline is not None:
+            package.add(train_baseline, arcname=f"judge/{train_baseline.name}")
         payload = json.dumps(rewritten, ensure_ascii=False, indent=2).encode()
         info = tarfile.TarInfo("task.json")
         info.size = len(payload)

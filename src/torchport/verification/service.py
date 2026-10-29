@@ -107,6 +107,8 @@ def _evaluate_train(
         root / "train_alt.npz",
         k=float(protocol.get("pass_k", 8.0)),
         require_calibrated=True,
+        target_baseline_path=protocol.get("train_noise_baseline"),
+        drop_ustat_sum=protocol.get("train_envelope") == "train-repeat-envelope-v1-pilot",
     )
     exact = _exact_train_checks(
         (oracle["capture"] or {}).get("train") or {}, (run["capture"] or {}).get("train") or {}

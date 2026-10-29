@@ -10,6 +10,7 @@ import numpy as np
 from .common import SHAPE_PREFIX, _band, _diameter, _is_output, _l2, _leaf_key, _max_abs, _rel
 
 ENVELOPE_V3 = "noise-envelope-v3"
+TRAIN_REPEAT_ENVELOPE_V1 = "train-repeat-envelope-v1-pilot"
 
 
 def compare_noise_calibrated(
@@ -22,6 +23,8 @@ def compare_noise_calibrated(
     k: float = 8.0,
     atol_floor: float = 1e-7,
     require_calibrated: bool = False,
+    target_baseline_path: str | Path | None = None,
+    drop_ustat_sum: bool = False,
 ) -> dict[str, Any]:
     """以 source 自身 FP32 噪声为基准判定：err(candidate, fp64) <= k*noise + atol_floor。
 
@@ -31,10 +34,15 @@ def compare_noise_calibrated(
     """
     if k <= 0 or atol_floor < 0:
         raise ValueError("k 必须为正数，atol_floor 必须非负。")
+    if drop_ustat_sum and target_baseline_path is None:
+        raise ValueError("去除 ustat sum 只用于固定参考重复性包络")
     paths = [Path(p).expanduser().resolve() for p in (reference_path, candidate_path, fp64_path, alt_path)]
     for path in paths:
         if not path.is_file():
             raise ValueError(f"证据不存在：{path}")
+    baseline_path = Path(target_baseline_path).expanduser().resolve() if target_baseline_path else None
+    if baseline_path is not None and not baseline_path.is_file():
+        raise ValueError(f"固定目标重复性证据不存在：{baseline_path}")
 
     def stats(a: np.ndarray, b: np.ndarray) -> tuple[float, float]:
         diff = np.abs(a.astype(np.float64) - b.astype(np.float64)).reshape(-1)
@@ -48,6 +56,7 @@ def compare_noise_calibrated(
     first_divergence: dict[str, Any] | None = None
     first_gating_divergence: dict[str, Any] | None = None
     reference, candidate, fp64, alt = (np.load(p, allow_pickle=False) for p in paths)
+    baseline = np.load(baseline_path, allow_pickle=False) if baseline_path is not None else None
     try:
         for position, name in enumerate(reference.files):
             if name not in candidate:
@@ -65,16 +74,35 @@ def compare_noise_calibrated(
                 }
                 first_gating_divergence = first_gating_divergence or dict(first_divergence)
                 continue
+            if baseline is not None and _is_output(name) and name not in baseline:
+                uncalibrated.append(name)
+                item = {"name": name, "position": position, "passed": False, "reason": "缺少固定目标重复性证据"}
+                item["gating"] = True
+                tensors.append(item)
+                first_divergence = first_divergence or {
+                    "name": name, "position": position, "reason": item["reason"]
+                }
+                first_gating_divergence = first_gating_divergence or dict(first_divergence)
+                continue
             ref, cand, truth, other = reference[name], candidate[name], fp64[name], alt[name]
             if not (ref.shape == cand.shape == truth.shape == other.shape):
                 item = {"name": name, "position": position, "passed": False, "reason": "张量形状不同"}
             elif not all(np.all(np.isfinite(x)) for x in (ref, cand, truth, other)):
                 item = {"name": name, "position": position, "passed": False, "reason": "张量包含 NaN 或无穷值"}
+            elif drop_ustat_sum and name.startswith("output.ustat.") and ref.size != 3:
+                item = {"name": name, "position": position, "passed": False, "reason": "ustat 必须有三个分量"}
             else:
+                if drop_ustat_sum and name.startswith("output.ustat."):
+                    ref, cand, truth, other = (value[:2] for value in (ref, cand, truth, other))
                 cand_max, cand_p99 = stats(cand, truth)
                 ref_max, ref_p99 = stats(ref, truth)
                 alt_max, alt_p99 = stats(ref, other)
                 noise_max, noise_p99 = max(ref_max, alt_max), max(ref_p99, alt_p99)
+                if baseline is not None and _is_output(name):
+                    fixed = np.asarray(baseline[name], dtype=np.float64)
+                    if fixed.shape != (2,) or not np.all(np.isfinite(fixed)) or np.any(fixed < 0):
+                        raise ValueError(f"固定目标重复性证据无效：{name}")
+                    noise_max, noise_p99 = max(noise_max, float(fixed[0])), max(noise_p99, float(fixed[1]))
                 limit_max, limit_p99 = k * noise_max + atol_floor, k * noise_p99 + atol_floor
                 item = {
                     "name": name,
@@ -103,13 +131,15 @@ def compare_noise_calibrated(
                     "reason": item.get("reason", "超出 source 噪声底"),
                 }
     finally:
-        for archive in (reference, candidate, fp64, alt):
+        for archive in (reference, candidate, fp64, alt, baseline):
+            if archive is None:
+                continue
             archive.close()
 
     gating = [item for item in tensors if item["gating"]]
     return {
         "schema_version": 1,
-        "profile": "noise-calibrated",
+        "profile": TRAIN_REPEAT_ENVELOPE_V1 if baseline_path is not None else "noise-calibrated",
         "k": k,
         "atol_floor": atol_floor,
         "passed": first_divergence is None and bool(tensors),

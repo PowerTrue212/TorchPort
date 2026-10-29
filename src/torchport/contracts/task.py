@@ -120,6 +120,23 @@ def normalize(raw: dict[str, Any], base: Path) -> dict[str, Any]:
         _train_protocol(protocol, inputs)
     elif protocol.get("train") is not None:
         raise ValueError("protocol.train 只用于 profile=train-step")
+    envelope = protocol.get("train_envelope")
+    baseline = protocol.get("train_noise_baseline")
+    if envelope is not None or baseline is not None:
+        if protocol["profile"] != "train-step" or envelope != "train-repeat-envelope-v1-pilot":
+            raise ValueError("固定参考重复性包络只用于 train-step pilot")
+        if not isinstance(baseline, str) or not baseline:
+            raise ValueError("train-repeat-envelope-v1-pilot 缺少 train_noise_baseline")
+        baseline_path = Path(baseline).expanduser()
+        baseline_path = (baseline_path if baseline_path.is_absolute() else base / baseline_path).resolve()
+        if baseline_path.suffix.lower() != ".npz" or not baseline_path.is_file():
+            raise ValueError(f"固定参考重复性文件不存在：{baseline_path}")
+        baseline_hash = file_hash(baseline_path)
+        if protocol.get("train_noise_baseline_sha256") != baseline_hash:
+            raise ValueError("固定参考重复性文件 SHA256 不匹配")
+        protocol["train_noise_baseline"] = str(baseline_path)
+    elif protocol.get("train_noise_baseline_sha256") is not None:
+        raise ValueError("train_noise_baseline_sha256 缺少对应标定文件")
     if "ignore_state" in protocol:
         # 可由形状推出、不参与训练的 buffer（如 embeddings.position_ids），两端都不计入完整性
         ignored = protocol["ignore_state"]

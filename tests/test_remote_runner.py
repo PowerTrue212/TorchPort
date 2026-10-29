@@ -9,6 +9,7 @@ import types
 from pathlib import Path, PurePosixPath
 from typing import Any
 
+import numpy as np
 import pytest
 
 RUNNER_PATH = Path(__file__).resolve().parents[1] / "scripts" / "remote" / "dsh_torchport.py"
@@ -94,6 +95,38 @@ def _bundled_task(
         task_file = package.extractfile("task.json")
         assert task_file is not None
         return json.load(task_file)
+
+
+def test_train_repeat_baseline_is_bundled_for_evaluator_only(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+) -> None:
+    from torchport.contracts.identity import file_hash
+
+    runner = _load_runner(monkeypatch, tmp_path)
+    task_path = _write_task(tmp_path)
+    baseline = tmp_path / "baseline.npz"
+    np.savez(baseline, **{"output.loss.0": np.asarray([1e-6, 1e-6])})
+    task = json.loads(task_path.read_text("utf-8"))
+    task["protocol"] = {
+        "profile": "train-step",
+        "train_envelope": "train-repeat-envelope-v1-pilot",
+        "train_noise_baseline": str(baseline),
+        "train_noise_baseline_sha256": file_hash(baseline),
+    }
+    task_path.write_text(json.dumps(task), encoding="utf-8")
+    base = runner._remote_base(task_path)
+    archive = runner._build_bundle(task_path, base)
+    with tarfile.open(fileobj=io.BytesIO(archive), mode="r:gz") as package:
+        task_file = package.extractfile("task.json")
+        judge_file = package.extractfile("judge/baseline.npz")
+        assert task_file is not None and judge_file is not None
+        bundled = json.load(task_file)
+        assert bundled["protocol"]["train_noise_baseline"] == str(base / "judge" / "baseline.npz")
+        assert judge_file.read() == baseline.read_bytes()
+    task["protocol"]["train_noise_baseline_sha256"] = "0" * 64
+    task_path.write_text(json.dumps(task), encoding="utf-8")
+    with pytest.raises(ValueError, match="SHA256"):
+        runner._build_bundle(task_path, base)
 
 
 def test_remote_runner_defaults_are_preserved(

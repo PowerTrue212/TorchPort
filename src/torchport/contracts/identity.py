@@ -19,7 +19,10 @@ def digest(value: Any) -> str:
 CAPTURE_VERSION = 4
 # 只影响判定、不影响 source 证据的协议参数；调整它们不应使 oracle/envelope 失效重建。
 # 实际取值仍完整写入每份 verify 报告。
-JUDGE_KEYS = ("pass_k", "floor_k", "noise_floor", "noise_probe")
+JUDGE_KEYS = (
+    "pass_k", "floor_k", "noise_floor", "noise_probe",
+    "train_envelope", "train_noise_baseline", "train_noise_baseline_sha256",
+)
 
 
 def oracle_key(task: dict[str, Any]) -> str:
