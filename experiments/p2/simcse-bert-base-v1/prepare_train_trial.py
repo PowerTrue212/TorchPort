@@ -43,10 +43,15 @@ def main() -> None:
     parser.add_argument("--port", type=int, required=True)
     parser.add_argument("--controller-dir", type=Path)
     parser.add_argument("--ssh-env-file", type=Path, default=Path.home() / ".tp_ssh.env")
+    # 默认值保持 r4 的布置；新一轮用新工作区、带判定字段的 TaskSpec 和 data-fs 远端路径
+    parser.add_argument("--workspace-root", type=Path, default=BENCH / "workspaces-train")
+    parser.add_argument("--task", type=Path, default=TASK)
+    parser.add_argument("--remote-base", default="/root/SimCSE-Benchmark-v1")
+    parser.add_argument("--status", default="pilot_only")
     args = parser.parse_args()
 
     other = "full" if args.condition == "none" else "none"
-    candidate = (BENCH / "workspaces-train" / args.condition).resolve()
+    candidate = (args.workspace_root / args.condition).resolve()
     controller = (args.controller_dir or BENCH / "controller" / args.trial_id).resolve()
     if not (candidate / "run.py").is_file():
         raise ValueError(f"Candidate entry is missing: {candidate}")
@@ -67,15 +72,15 @@ def main() -> None:
     if controller.exists():
         raise FileExistsError(f"Controller directory already exists: {controller}")
 
-    task = json.loads(TASK.read_text(encoding="utf-8"))
+    task = json.loads(args.task.read_text(encoding="utf-8"))
     task["target"]["repo"] = str(candidate)
     task["target"]["env"]["JITTOR_HOME"] = (
-        f"/root/SimCSE-Benchmark-v1/jittor-cache-train-{args.condition}"
+        f"{args.remote_base}/jittor-cache-train-{args.condition}"
     )
     controller.mkdir(parents=True)
     task_path = controller / "task.json"
     write_json(task_path, task)
-    original_digest = load_task(TASK)["digest"]
+    original_digest = load_task(args.task)["digest"]
     trial_digest = load_task(task_path)["digest"]
     if original_digest != trial_digest or trial_digest != ORACLE_DIGEST:
         raise ValueError(
@@ -85,7 +90,7 @@ def main() -> None:
 
     config = {
         "schema_version": 1,
-        "status": "pilot_only",
+        "status": args.status,
         "project_root": str(ROOT),
         "candidate_root": str(candidate),
         "tasks": {"training": str(task_path)},
@@ -100,13 +105,13 @@ def main() -> None:
         "candidate_entry": "run.py",
         "remote": {
             "ssh_env_file": str(args.ssh_env_file.resolve()),
-            "root": "/root/SimCSE-Benchmark-v1/harness",
+            "root": f"{args.remote_base}/harness",
             "source_python": "/root/SimCSE-Benchmark-v1/source_python.sh",
             "target_python": "/root/data-fs/APT/.venv-jittor/bin/python",
             "python_config": "",
             "system_libstdcxx": "",
             "nvcc_path": "/usr/local/cuda/bin/nvcc",
-            "home": "/root/SimCSE-Benchmark-v1/home",
+            "home": f"{args.remote_base}/home",
             "target_path": "/usr/local/cuda/bin:/root/data-fs/APT/.venv-jittor/bin:"
                            "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
             # TaskSpec 的源仓库、冻结输入和初始状态都在 BENCH 下；同步打包需显式放行
@@ -143,7 +148,8 @@ def main() -> None:
         str(ROOT), str(BENCH / "controller"), str(BENCH / "source"),
         str(BENCH / "reference"), str(BENCH / "assets"),
         str(BENCH / "workspaces" / other),
-        str(BENCH / "workspaces-train" / other), str(home / ".tp_ssh.env"),
+        str(BENCH / "workspaces-train" / other), str(args.workspace_root / other),
+        str(home / ".tp_ssh.env"),
         str(home / ".claude"), str(home / ".codex"),
         str(home / ".dsh" / "sessions"),
     ]

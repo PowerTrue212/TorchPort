@@ -31,6 +31,10 @@ def main() -> None:
     parser.add_argument("--trial", required=True)
     parser.add_argument("--remote-root", required=True)
     parser.add_argument("--remote-home", required=True)
+    # 远端工作目录按 TaskSpec 路径哈希命名；多个候选串行共用一个路径即可复用同一份 oracle
+    parser.add_argument("--shared-task", type=Path)
+    # trace 只采集诊断证据（B_ℓ 用），不签发验收
+    parser.add_argument("--tool", choices=("verify", "trace"), default="verify")
     args = parser.parse_args()
     controller = args.controller.resolve()
     if controller.exists():
@@ -48,12 +52,16 @@ def main() -> None:
     write_json(bound_path, bound_task)
     if load_task(bound_path)["digest"] != load_task(args.task.resolve())["digest"]:
         raise RuntimeError("绑定 target 后 source oracle 身份发生变化")
+    if args.shared_task is not None:
+        args.shared_task.parent.mkdir(parents=True, exist_ok=True)
+        write_json(args.shared_task, bound_task)
+        bound_path = args.shared_task.resolve()
     write_json(controller / "remote-config.json",
                {key: value for key, value in remote.items() if key != "ssh_env_file"})
     executor = RemoteExecutor(ROOT, controller / "remote-raw",
                               args.candidate_root.resolve(), remote)
-    report = executor.call("verify", bound_path, trial=args.trial)
-    write_json(controller / "verify-result.json", report)
+    report = executor.call(args.tool, bound_path, trial=args.trial)
+    write_json(controller / f"{args.tool}-result.json", report)
     print(json.dumps({
         "controller": str(controller),
         "passed": report.get("passed"),
