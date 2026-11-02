@@ -230,6 +230,29 @@ class GatewayTests(unittest.TestCase):
         self.assertFalse(response["ok"])
         self.assertEqual(response["budget"]["oracle_queries"], 0)
 
+    def test_trace_hidden_and_not_charged_without_inference_task(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            gateway, _ = _fixture(Path(temporary), FeedbackLevel.LOCALIZED)
+            with patch.object(HarnessGateway, "_traceable", return_value=False):
+                names = {tool["name"] for tool in gateway.tool_schemas()}
+                traced = gateway.call("trace")
+                localized = gateway.call("localize")
+
+        self.assertTrue({"trace", "localize"}.isdisjoint(names))
+        self.assertFalse(traced["ok"])
+        self.assertIn("没有支持 trace", traced["error"]["message"])
+        self.assertFalse(localized["ok"])
+        self.assertEqual(localized["budget"]["oracle_queries"], 0)
+
+    def test_evaluate_without_run_is_not_charged(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            gateway, _ = _fixture(Path(temporary), FeedbackLevel.DIAGNOSTIC)
+            response = gateway.call("evaluate")
+
+        self.assertFalse(response["ok"])
+        self.assertIn("没有可评估的 run_id", response["error"]["message"])
+        self.assertEqual(response["budget"]["oracle_queries"], 0)
+
     def test_oracle_query_budget_cannot_be_exceeded(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             gateway, _ = _fixture(Path(temporary), queries=1)

@@ -112,7 +112,8 @@ class HarnessGateway:
             self._save_state()
 
     def tool_schemas(self) -> list[dict[str, Any]]:
-        return tool_schemas(self.protocol, tuple(self.task_paths) if len(self.task_paths) > 1 else ())
+        return tool_schemas(self.protocol, tuple(self.task_paths) if len(self.task_paths) > 1 else (),
+                            traceable=self._traceable())
 
     def call(self, tool: str, arguments: dict[str, Any] | None = None) -> dict[str, Any]:
         """调用一个白名单工具，并追加不可变事件。"""
@@ -125,6 +126,9 @@ class HarnessGateway:
         try:
             self._check_wall_budget()
             self._validate_call(tool, arguments)
+            if tool == "evaluate":
+                # 执行前即可判定失败的调用不计 query
+                self._evaluable_run(arguments)
             if tool in ORACLE_TOOLS:
                 self._spend_oracle_query(tool)
             response = {"ok": True, "data": self._dispatch(tool, arguments)}
@@ -310,12 +314,7 @@ class HarnessGateway:
             self._add_physical(cost)
             return {**public_run(manifest), "run_id": run_id, "task": name, "physical_cost": cost}
         if tool == "evaluate":
-            run_id = str(arguments.get("run_id") or self._last_run_id or "")
-            if run_id not in self._runs:
-                raise ValueError("没有可评估的 run_id；请先调用 run")
-            name, manifest = self._runs[run_id]
-            if arguments.get("task") and arguments["task"] != name:
-                raise ValueError("run_id 与任务不匹配")
+            name, manifest = self._runs[self._evaluable_run(arguments)]
             task = self._task(name)
             report = (
                 evaluate(load_oracle(task, self.evidence_root / name), manifest,
@@ -354,7 +353,20 @@ class HarnessGateway:
 
     def _validate_call(self, tool: str, arguments: dict[str, Any]) -> None:
         validate_call(self.protocol, tool, arguments,
-                      tuple(self.task_paths) if len(self.task_paths) > 1 else ())
+                      tuple(self.task_paths) if len(self.task_paths) > 1 else (),
+                      traceable=self._traceable())
+
+    def _traceable(self) -> bool:
+        """trace 只支持推理任务；任务全是 train-step 时不向 Agent 暴露 trace/localize。"""
+        return any(self._task(name)["protocol"]["profile"] != "train-step" for name in self.task_paths)
+
+    def _evaluable_run(self, arguments: dict[str, Any]) -> str:
+        run_id = str(arguments.get("run_id") or self._last_run_id or "")
+        if run_id not in self._runs:
+            raise ValueError("没有可评估的 run_id；请先调用 run")
+        if arguments.get("task") and arguments["task"] != self._runs[run_id][0]:
+            raise ValueError("run_id 与任务不匹配")
+        return run_id
 
     def _feedback(self, report: dict[str, Any]) -> dict[str, Any]:
         result = filter_feedback(report, self.protocol.feedback)

@@ -40,7 +40,9 @@ P2 只回答一个问题：在相同 Agent、任务、初始 candidate、硬件�
 
 Agent 使用成熟代码环境自带的文件浏览、搜索、编辑、Shell、Python、Git、测试和公开网络检索。
 Harness 不重写这些能力，只增加 `inspect`、`run`、`evaluate`、`verify`、`trace`、`localize`
-六个 TorchPort 工具。`trace` 和 `localize` 只在 localized 条件出现。最终认证入口不注册为
+六个 TorchPort 工具。`trace` 和 `localize` 只在 localized 条件出现；trace 目前只支持推理任务，
+trial 的任务全是 `train-step` 时这两个工具不向 Agent 暴露（2026-11-02 起，此前 trial 原样保留）。
+此时 localized 与 diagnostic 的差别只剩 evaluate/verify 反馈中的首次分歧等定位字段。最终认证入口不注册为
 Agent tool，隐藏 TaskSpec、oracle 和 evaluator 也不在 candidate 工作区内。
 
 Agent 在迁移前自行检查依赖、运行设备、显存、内存、磁盘、数据和 checkpoint，并决定是否安装、
@@ -79,7 +81,9 @@ experiments/p2/runs/<experiment>/<task>/<condition>/<trial>/
 artifact，以及 provider 返回的原始 usage。聚合器不得覆盖或删掉失败尝试。
 
 一次 `evaluate`、`verify` 或 `trace` 请求记为一个 logical oracle query；`inspect`、`run`
-和对已有 trace 的确定性 `localize` 不计。重复查询同一 candidate 仍计数，同时另记
+和对已有 trace 的确定性 `localize` 不计。执行前即可判定必然失败的调用（工具在本条件不可用、
+参数不合法、`evaluate` 没有可评估的 run）不计；已到达验证服务后被拒绝的调用（如产物与当前
+candidate 不符）仍计数。重复查询同一 candidate 仍计数，同时另记
 唯一 candidate query 数量。trial 同时受 oracle query 和 wall time 限制，先到者停止。
 
 Logical Query Cost 与 Physical Evaluation Cost 分开保存，不能互相替代：
