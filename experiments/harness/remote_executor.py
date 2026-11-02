@@ -51,7 +51,8 @@ class RemoteExecutor:
             root=PurePosixPath(remote["root"]) if remote.get("root") else settings.root,
             source_python=str(remote.get("source_python") or settings.source_python),
             target_python=str(remote.get("target_python") or settings.target_python),
-            python_config=str(remote.get("python_config") or settings.python_config),
+            # 与 system_libstdcxx 相同：显式空字符串表示不注入，不能退回默认的 python3.12-config
+            python_config=str(remote.get("python_config", settings.python_config)),
             system_libstdcxx=str(remote.get("system_libstdcxx", settings.system_libstdcxx)),
             target_path=str(remote.get("target_path") or settings.target_path),
             target_env_defaults=defaults,

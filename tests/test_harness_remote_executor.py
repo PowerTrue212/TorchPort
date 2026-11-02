@@ -65,5 +65,17 @@ def test_remote_extra_roots_are_allowed(tmp_path, monkeypatch) -> None:
     assert bench.resolve() in executor.settings.extra_roots
 
 
+def test_empty_python_config_is_not_replaced_by_default(tmp_path, monkeypatch) -> None:
+    # 空字符串必须保留为"不注入"；否则 target 会拿到另一解释器的 python-config
+    monkeypatch.setenv("TP_SSH_ENV_FILE", str(tmp_path / "absent.env"))
+    project = Path(__file__).resolve().parents[1]
+    executor = RemoteExecutor(project, tmp_path / "trial" / "remote-raw", tmp_path / "cand",
+                              {"python_config": ""})
+    assert executor.settings.python_config == ""
+    explicit = RemoteExecutor(project, tmp_path / "trial2" / "remote-raw", tmp_path / "cand",
+                              {"python_config": "/env/bin/python3.9-config"})
+    assert explicit.settings.python_config == "/env/bin/python3.9-config"
+
+
 if __name__ == "__main__":
     unittest.main()
