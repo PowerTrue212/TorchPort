@@ -54,9 +54,45 @@ T 取墙钟减 Harness 耗时（上界），N 取 provider total，F 暂记 0（
 | none-five-r5 | 0.353 | 1.204 | 0.96 | 0.719 | 58.2 |
 | full-five-r3 | 0.169 | 0.755 | 0.72 | 0.442 | 69.4 |
 
-R_e 两组均为 1，s（pilot 规则）均为 1。Agent 候选尚未做 LastFM 推理指标（P_t）
-和逐层 B_ℓ；现有任务指标重放只覆盖控制端 Jittor 参考，见
-[任务指标记录](task-metrics-3080ti-20261102.md)。
+R_e 两组均为 1，s（pilot 规则）均为 1。
+
+## P_t 与 B_ℓ（RTX 4090 重放，2026-11-03，exploratory）
+
+3080 Ti 已不可用，source 与 target 在 RTX 4090 上重新运行，结果只在 4090 内部比较。
+同一训练 checkpoint（SHA256 `cb919a7a…`，取自已核对的 3080 Ti 任务指标归档）；
+source 先跑作者 `Procedure.Test`，再导出两次 Top-20/评分（r1、r2）及传播表，另用
+NumPy FP64 计算参考表。两个冻结候选各重放两次，只调用候选自己的 `load_train_model()`
+与 `model(users, items)`，排序规则同源端（sigmoid、屏蔽训练正样本、Top-20）。
+控制端参考按 3 层与 2 层（负对照）各重放一次。脚本：`export_source_tables.py`、
+`replay_candidate_lastfm.py`、`score_candidate_replay.py`；编排与上传在控制端
+`candidate-replay-4090/`，上传 44 个文件远端哈希一致。
+
+- P_t：Precision/Recall/NDCG@20 三项，`τ_j = max(3·|source r1 − r2|, 1e-3)`；下限在
+  打分前固定。source r1 与 r2 三项逐位相同，故 τ 取下限。
+- B_ℓ：检查点为传播后 user 表、item 表、测试用户 × 全部物品的 logits（共 3 个）。
+  固定容差 a=1e-6、r=1e-5；噪声标定 k=8、floor=1e-7，噪声取 source FP32 与 FP64 距离。
+  检查点和容差在试验后选定，只作诊断。
+
+| | none-five-r5 | full-five-r3 | 参考 3 层 | 参考 2 层（负对照） |
+| --- | ---: | ---: | ---: | ---: |
+| Precision@20（source 0.032912） | 0.032912 | 0.032912 | 0.032912 | 0.034526 |
+| Recall@20（source 0.119542） | 0.119542 | 0.119542 | 0.119542 | 0.125062 |
+| NDCG@20（source 0.081380） | 0.081380 | 0.081380 | 0.081380 | 0.084749 |
+| Top-20 完全一致用户 | 1858/1858 | 1858/1858 | 1858/1858 | 0/1858 |
+| P_t | 100 | 100 | 100 | 36.58 |
+| B_ℓ 固定容差 / 噪声标定 | 100 / 100 | 100 / 100 | — | — |
+| 评分与源端最大绝对差 | 2.38e-7 | 2.38e-7 | — | — |
+| 两次重放差 | 0（逐位相同） | 0（逐位相同） | — | — |
+
+B_ℓ 各检查点最大比值：user 表 d_fixed 0.018 / d_noise 0.100，item 表 0.026 / 0.183，
+logits 0.156 / 0.102。两组候选在三个检查点上的数值完全相同，表方法分别为
+`propagate`（none）与 `computer`（full）。source FP32 与 FP64 的距离：user 表 5.05e-8，
+item 表 5.78e-8，logits 1.51e-6。
+
+2 层负对照的推荐指标反而更高，P_t 仍降到 36.58：P_t 按与源端的偏差扣分，不按指标
+高低，因此能检出该错误。推理 LightGCN 对两组都不区分；两组候选均为正确的前向实现。
+原始输出（约 494 MB）在远端 `replay-4090/out/`，`score.json` 与各 `result.json` 的
+SHA256 已核对，见 `out/json-sha256.txt`。
 
 ## 无效记录（保留，不计入）
 
