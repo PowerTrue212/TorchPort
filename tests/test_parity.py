@@ -10,6 +10,17 @@ from torchport.comparison import compare_tensor_archives
 
 
 class TensorParityTests(unittest.TestCase):
+    def test_complex_imaginary_difference_is_compared(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            root = Path(temporary_directory)
+            reference = root / "reference.npz"
+            candidate = root / "candidate.npz"
+            np.savez(reference, output=np.asarray([1 + 2j], dtype=np.complex64))
+            np.savez(candidate, output=np.asarray([1 + 3j], dtype=np.complex64))
+            report = compare_tensor_archives(reference, candidate, profile="fp32-inference")
+        self.assertFalse(report["passed"])
+        self.assertEqual(report["first_divergence"]["name"], "output")
+
     def test_strict_trace_skips_large_sketch_but_compares_small_values_exactly(self) -> None:
         from torchport.capture import SKETCH_DIM, sketch_layers
 

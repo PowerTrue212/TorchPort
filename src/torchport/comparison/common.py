@@ -10,12 +10,13 @@ SHAPE_PREFIX = "__shape__/"
 def _l2(x: np.ndarray) -> float:
     # 不走 np.linalg.norm：它调用多线程 BLAS dot，在 65536 维 sketch 上线程调度开销
     # 比计算本身大约 4500 倍（48 线程实测 7e-2 s 对 1.6e-5 s）。ufunc 求和不进 BLAS。
-    flat = x.astype(np.float64, copy=False).reshape(-1)
-    return float(np.sqrt(np.sum(flat * flat)))
+    flat = x.astype(np.complex128 if np.iscomplexobj(x) else np.float64, copy=False).reshape(-1)
+    return float(np.sqrt(np.sum(np.abs(flat) ** 2)))
 
 
 def _rel(a: np.ndarray, b: np.ndarray, scale: float) -> float:
-    return _l2(a.astype(np.float64) - b.astype(np.float64)) / scale
+    dtype = np.complex128 if np.iscomplexobj(a) or np.iscomplexobj(b) else np.float64
+    return _l2(a.astype(dtype) - b.astype(dtype)) / scale
 
 
 def _diameter(arrays: list[np.ndarray], scale: float) -> float:
@@ -31,7 +32,8 @@ def _is_output(name: str) -> bool:
 
 
 def _max_abs(a: np.ndarray, b: np.ndarray) -> float:
-    return float(np.max(np.abs(a.astype(np.float64) - b.astype(np.float64)), initial=0.0))
+    dtype = np.complex128 if np.iscomplexobj(a) or np.iscomplexobj(b) else np.float64
+    return float(np.max(np.abs(a.astype(dtype) - b.astype(dtype)), initial=0.0))
 
 
 def _band(ratio: float, pass_k: float, floor_k: float) -> str:

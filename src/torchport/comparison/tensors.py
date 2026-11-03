@@ -212,8 +212,9 @@ def compare_arrays(
         else:
             return {**base, "passed": False, "reason": "张量形状不同"}
 
-    reference64 = reference.astype(np.float64, copy=False)
-    candidate64 = candidate.astype(np.float64, copy=False)
+    dtype = np.complex128 if np.iscomplexobj(reference) or np.iscomplexobj(candidate) else np.float64
+    reference64 = reference.astype(dtype, copy=False)
+    candidate64 = candidate.astype(dtype, copy=False)
     finite = np.isfinite(reference64) & np.isfinite(candidate64)
     if not bool(np.all(finite)):
         return {**base, "passed": False, "reason": "张量包含 NaN 或无穷值"}
@@ -227,7 +228,7 @@ def compare_arrays(
     candidate_flat = candidate64.reshape(-1)
     norm_product = float(np.linalg.norm(reference_flat) * np.linalg.norm(candidate_flat))
     cosine_similarity = (
-        float(np.dot(reference_flat, candidate_flat) / norm_product)
+        float(np.vdot(reference_flat, candidate_flat).real / norm_product)
         if norm_product > 0
         else (1.0 if np.array_equal(reference64, candidate64) else 0.0)
     )

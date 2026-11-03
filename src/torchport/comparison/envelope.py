@@ -45,7 +45,8 @@ def compare_noise_calibrated(
         raise ValueError(f"固定目标重复性证据不存在：{baseline_path}")
 
     def stats(a: np.ndarray, b: np.ndarray) -> tuple[float, float]:
-        diff = np.abs(a.astype(np.float64) - b.astype(np.float64)).reshape(-1)
+        dtype = np.complex128 if np.iscomplexobj(a) or np.iscomplexobj(b) else np.float64
+        diff = np.abs(a.astype(dtype) - b.astype(dtype)).reshape(-1)
         if not diff.size:
             return 0.0, 0.0
         return float(diff.max()), float(np.quantile(diff, 0.99))

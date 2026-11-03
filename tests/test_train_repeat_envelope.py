@@ -11,6 +11,7 @@ import pytest
 from torchport.comparison import compare_noise_calibrated
 from torchport.contracts import normalize
 from torchport.contracts.identity import file_hash
+from torchport.verification.noise import _rel_spread
 
 
 def _archive(path: Path, loss: float, norm: float, update: float, summed: float) -> Path:
@@ -57,6 +58,27 @@ def test_fixed_repeat_baseline_passes_reference_and_rejects_two_errors() -> None
         )
         assert not report["passed"]
         assert "output.ustat.0.w" in report["uncalibrated"]
+
+
+def test_complex_spectral_weight_imaginary_error_is_not_discarded() -> None:
+    with tempfile.TemporaryDirectory() as temp:
+        root = Path(temp)
+        key = "output.param.0.spectral_weight"
+        source = root / "source.npz"
+        fp64 = root / "fp64.npz"
+        alt = root / "alt.npz"
+        candidate = root / "candidate.npz"
+        for path in (source, fp64, alt):
+            np.savez(path, **{key: np.asarray([1 + 2j], dtype=np.complex64)})
+        np.savez(candidate, **{key: np.asarray([1 + 3j], dtype=np.complex64)})
+        report = compare_noise_calibrated(
+            source, candidate, fp64, alt, require_calibrated=True,
+        )
+        assert not report["passed"]
+        assert report["tensors"][0]["candidate_max_abs"] == 1.0
+        assert _rel_spread([
+            np.asarray([1 + 2j]), np.asarray([1 + 3j]),
+        ]) > 0
 
 
 def test_baseline_hash_is_required_and_does_not_change_source_oracle() -> None:

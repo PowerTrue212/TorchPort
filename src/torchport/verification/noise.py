@@ -100,13 +100,14 @@ def reduce_shape(config: dict[str, dict[str, Any]], shapes: dict[str, list[int]]
 
 def _rel_spread(runs: list[np.ndarray]) -> float:
     """重复运行两两之间的最大相对 L2 距离（相对第一次运行的范数）。"""
-    first = runs[0].astype(np.float64).reshape(-1)
-    scale = max(float(np.sqrt(np.sum(first * first))), np.finfo(np.float64).tiny)
+    dtype = np.complex128 if any(np.iscomplexobj(run) for run in runs) else np.float64
+    first = runs[0].astype(dtype).reshape(-1)
+    scale = max(float(np.sqrt(np.sum(np.abs(first) ** 2))), np.finfo(np.float64).tiny)
     worst = 0.0
     for i in range(len(runs)):
         for j in range(i + 1, len(runs)):
-            diff = (runs[i].astype(np.float64) - runs[j].astype(np.float64)).reshape(-1)
-            worst = max(worst, float(np.sqrt(np.sum(diff * diff))) / scale)
+            diff = (runs[i].astype(dtype) - runs[j].astype(dtype)).reshape(-1)
+            worst = max(worst, float(np.sqrt(np.sum(np.abs(diff) ** 2))) / scale)
     return worst
 
 
