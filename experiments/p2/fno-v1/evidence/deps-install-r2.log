@@ -1,0 +1,11 @@
+Looking in indexes: http://mirrors.aliyun.com/pypi/simple
+Collecting tensorly
+  Using cached tensorly-0.9.0-py3-none-any.whl (7.4 MB)
+Collecting tensorly-torch
+  Using cached tensorly_torch-0.5.0-py3-none-any.whl (59 kB)
+Collecting opt-einsum
+  Using cached opt_einsum-3.4.0-py3-none-any.whl (71 kB)
+Installing collected packages: tensorly-torch, tensorly, opt-einsum
+
+Successfully installed opt-einsum-3.4.0 tensorly-0.9.0 tensorly-torch-0.5.0
+WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.

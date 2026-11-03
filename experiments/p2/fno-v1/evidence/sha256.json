@@ -1,0 +1,217 @@
+[
+  {
+    "file": "convert_source_file_capture_executed.py",
+    "bytes": 1127,
+    "sha256": "d87bc46aa8637a643aafd63fbf5b036b0cc86dc7755601c1026be2f79e01ef6d"
+  },
+  {
+    "file": "deps-install-r1.log",
+    "bytes": 8038,
+    "sha256": "253a458e98e1e399cbf37e35a5e1ddcaf5acabee5add0f44c126789d35f2dabc"
+  },
+  {
+    "file": "deps-install-r2.log",
+    "bytes": 809,
+    "sha256": "75be9724c120350eee923194f8065366ac10177d8bf784892533c83d4c6f1e8b"
+  },
+  {
+    "file": "fno-convert.log",
+    "bytes": 4148,
+    "sha256": "6ff32825835212739e24b46c8fb38eae7dc49e352ebeb16f56c3cedd6eca14d0"
+  },
+  {
+    "file": "fno_converted.py",
+    "bytes": 20894,
+    "sha256": "103d90609db89b86e6fa1f120a2e7910edd8a6d7046cb53a8d35912325f31174"
+  },
+  {
+    "file": "import-r1.log",
+    "bytes": 1205,
+    "sha256": "e0d34a88d54c968766e83328b12e037498cc7947506c80ecbdd2eb89310cec9a"
+  },
+  {
+    "file": "import-r2.log",
+    "bytes": 818,
+    "sha256": "305dae21ce5723a89d4b24073067d0f866fa2deecce7362d7de41438a4089ef5"
+  },
+  {
+    "file": "import-r3.log",
+    "bytes": 34,
+    "sha256": "2c55f018a24b55839d056989aa400dcecda144611a801aa79a2d0b376fa720c9"
+  },
+  {
+    "file": "isolated-deps.json",
+    "bytes": 394,
+    "sha256": "a06d928a0232b56f268fb5c12bc9882e1460c5c64214323248848ad9c3e6a135"
+  },
+  {
+    "file": "jittor-fft-api-shared-cache.log",
+    "bytes": 4708,
+    "sha256": "d830e1777e132ef0fc4df17d6c615180637171871af2eeb84e8b1f48829c232d"
+  },
+  {
+    "file": "jittor-fft-api.log",
+    "bytes": 14424,
+    "sha256": "8ecd65dd9b81230a995d62abf3d86e43c18e6f0c34dab7905a7e4cf52c546d9b"
+  },
+  {
+    "file": "jittor-fft-r1/fft-backward.npz",
+    "bytes": 4823,
+    "sha256": "65dadb5d1979beadfd7e2141da82aecf1c372f1bcb2b32e7fd747fe9b7bcc879"
+  },
+  {
+    "file": "jittor-fft-r1/fft-forward.npz",
+    "bytes": 5389,
+    "sha256": "4f55547f39bdc9dda7b067fbe8a48ce70d1fb7321f6ec38df29e94313a16119d"
+  },
+  {
+    "file": "jittor-fft-r1/result.json",
+    "bytes": 314,
+    "sha256": "043127021feb019f029474f07aecea2b24a02357fbd11e01bfa6365b6eb02d51"
+  },
+  {
+    "file": "jittor-fft-r1.log",
+    "bytes": 5113,
+    "sha256": "7022bc434b7ac8384edfc9f98753cb8398fe79423378c1bc4480036464e8698d"
+  },
+  {
+    "file": "jtorch-import-r1.log",
+    "bytes": 6784,
+    "sha256": "5081a88504b6a32f71c703b723950ab00113d55a604f9bcddaafbae0d8bcd129"
+  },
+  {
+    "file": "jtorch-import-r2.log",
+    "bytes": 2750,
+    "sha256": "a4108b82151da217e2ea406abfaa23a3cd4e9ab6a59f0f4dc3da25bbe4e165ee"
+  },
+  {
+    "file": "jtorch-module-path.log",
+    "bytes": 4254,
+    "sha256": "57e18f5c16fe1cbf7aa76044a8f9fc2a55bf3b8af867b5b29b7347a172b41876"
+  },
+  {
+    "file": "preflight-results.json",
+    "bytes": 1297,
+    "sha256": "8bf57bea265fd7749915d1fdf34207a51bbf7c5e29f223b08f5d7a93282b56d8"
+  },
+  {
+    "file": "probe_jittor_fft_r1.py",
+    "bytes": 2031,
+    "sha256": "3c74439c86a09b2092192acad9cfbc09736828d7d6701d0009f7b149529c7610"
+  },
+  {
+    "file": "probe_source_pilot_r1.py",
+    "bytes": 2512,
+    "sha256": "3807aa417efc50a22939dc2649d68be29a0827f32e2a38da7a87eff2ff59fff0"
+  },
+  {
+    "file": "probe_source_pilot_r2.py",
+    "bytes": 2428,
+    "sha256": "c857d642be67f12ca28d3d9fb23cf3ee777f8ba529ebe3997dab2d06360cef75"
+  },
+  {
+    "file": "repeat-comparison.json",
+    "bytes": 895,
+    "sha256": "b205ecdf9728fc4b7c505685f3140e9b4b7f619452d832388e577aa0e07cb66b"
+  },
+  {
+    "file": "requests-install.log",
+    "bytes": 1161,
+    "sha256": "55100d6382d99efe97015a56bb54adaba480c4646bea40f7910fae3d3e0adb1d"
+  },
+  {
+    "file": "scipy-install.log",
+    "bytes": 773,
+    "sha256": "e5cc77c9e03862f064464c7475fa796c526e1319a9a5bb16265610b323025254"
+  },
+  {
+    "file": "source-pilot-r1/inputs.npz",
+    "bytes": 2397,
+    "sha256": "fdcffde8debe6ba4b7d7f353ddd0e784c2cd477b7d0f9cd39b1a9901341ba189"
+  },
+  {
+    "file": "source-pilot-r1.log",
+    "bytes": 455,
+    "sha256": "9cd2c0b1c0c3cb6432214359c77898bcd1536d65e955eadb3202a64d92f46708"
+  },
+  {
+    "file": "source-pilot-r2/initial.pt",
+    "bytes": 24974,
+    "sha256": "96aba72f6994d0106c68c670dec84677112870c34c384d6d0c08d47f8b753d69"
+  },
+  {
+    "file": "source-pilot-r2/inputs.npz",
+    "bytes": 2397,
+    "sha256": "fdcffde8debe6ba4b7d7f353ddd0e784c2cd477b7d0f9cd39b1a9901341ba189"
+  },
+  {
+    "file": "source-pilot-r2/outputs.npz",
+    "bytes": 2159,
+    "sha256": "3122d290d8246cbbf3aedbf3c3e93ff81cd3f4fe44ededc107c63159d6d12e21"
+  },
+  {
+    "file": "source-pilot-r2/post.pt",
+    "bytes": 24314,
+    "sha256": "f34ddd3f65096713a0d75dac0054d078da00837d48a5169dbf8d5967df3da2ef"
+  },
+  {
+    "file": "source-pilot-r2/result.json",
+    "bytes": 497,
+    "sha256": "148d80d791f082942bd8b8812b219c138df14c55a0d3bfab3199805c5f3f9770"
+  },
+  {
+    "file": "source-pilot-r2.log",
+    "bytes": 497,
+    "sha256": "148d80d791f082942bd8b8812b219c138df14c55a0d3bfab3199805c5f3f9770"
+  },
+  {
+    "file": "source-pilot-r3/initial.pt",
+    "bytes": 24974,
+    "sha256": "96aba72f6994d0106c68c670dec84677112870c34c384d6d0c08d47f8b753d69"
+  },
+  {
+    "file": "source-pilot-r3/inputs.npz",
+    "bytes": 2397,
+    "sha256": "fdcffde8debe6ba4b7d7f353ddd0e784c2cd477b7d0f9cd39b1a9901341ba189"
+  },
+  {
+    "file": "source-pilot-r3/outputs.npz",
+    "bytes": 2159,
+    "sha256": "3122d290d8246cbbf3aedbf3c3e93ff81cd3f4fe44ededc107c63159d6d12e21"
+  },
+  {
+    "file": "source-pilot-r3/post.pt",
+    "bytes": 24314,
+    "sha256": "f34ddd3f65096713a0d75dac0054d078da00837d48a5169dbf8d5967df3da2ef"
+  },
+  {
+    "file": "source-pilot-r3/result.json",
+    "bytes": 496,
+    "sha256": "de75d7f52495389472b9fe00e11fe0384ff205d3f79b2572a14f90d8798a13f9"
+  },
+  {
+    "file": "source-pilot-r3.log",
+    "bytes": 496,
+    "sha256": "de75d7f52495389472b9fe00e11fe0384ff205d3f79b2572a14f90d8798a13f9"
+  },
+  {
+    "file": "spectral-convert-capture.log",
+    "bytes": 1811,
+    "sha256": "c25a4968f9b5fc6120f34869869f549da1b2884e08883e3bf02628cb370c823a"
+  },
+  {
+    "file": "spectral-convert.log",
+    "bytes": 5882,
+    "sha256": "de5123b67c73dfd0ab179428dfaff2a40348a5590721e6cc9aa6978511966e19"
+  },
+  {
+    "file": "spectral_convolution_converted_raw.py",
+    "bytes": 24708,
+    "sha256": "fabdc8f399490bb9657968d252b7943bca9349206380405222dc02689c5831df"
+  },
+  {
+    "file": "target-packaging-install.log",
+    "bytes": 685,
+    "sha256": "048e5f8b3f88aebc734ee0b959956c5da55bb0ccbf9d019f1d5a801d8dafd4ad"
+  }
+]

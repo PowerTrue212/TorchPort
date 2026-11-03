@@ -1,0 +1,14 @@
+[i 1030 02:29:50.059895 24 compiler.py:955] Jittor(1.3.11.0) src: /root/data-fs/APT/.venv-jittor/lib/python3.9/site-packages/jittor
+[i 1030 02:29:50.067124 24 compiler.py:956] g++ at /usr/bin/g++(7.5.0)
+[i 1030 02:29:50.067346 24 compiler.py:957] cache_path: /root/data-fs/TorchPort-baselines/jittor-cache/.cache/jittor/jt1.3.11/g++7.5.0/py3.9.23/Linux-5.15.0-1xb6/IntelRXeonRSilx76/2015/default
+[i 1030 02:29:50.076515 24 __init__.py:412] Found /usr/local/cuda/bin/nvcc(11.3.109) at /usr/local/cuda/bin/nvcc.
+[i 1030 02:29:50.084704 24 __init__.py:412] Found addr2line(2.30) at /usr/bin/addr2line.
+[i 1030 02:29:50.328403 24 compiler.py:1012] cuda key:cu11.3.109_sm_70
+[i 1030 02:29:52.950538 24 jit_compiler.cc:28] Load cc_path: /usr/bin/g++
+[i 1030 02:29:52.950588 24 parallel_compiler.cc:26] Load use_parallel_op_compiler: 0
+[i 1030 02:29:53.156983 24 init.cc:63] Found cuda archs: [70,]
+raise RuntimeError('''origin source: <k_embed.reshape(1, (- 1), *shape)>,There are only 1 args in Pytorch reshape function, but you provide 3''')
+
+raise RuntimeError('''origin source: <condition_embedding.reshape(B, (- 1), *([1] * n_kept))>,There are only 1 args in Pytorch reshape function, but you provide 3''')
+
+{"source": "/root/data-fs/FNO-Benchmark-v1/source/neuralop/layers/spectral_convolution.py", "source_sha256": "e0a2e761833957dabd5009b6e43330f73b7d72034dfeb14b9167726eeeb0196f", "output": "/root/data-fs/FNO-Benchmark-v1/evidence/spectral_convolution_converted_raw.py", "output_sha256": "fabdc8f399490bb9657968d252b7943bca9349206380405222dc02689c5831df", "output_bytes": 24708, "compiles": false, "error_type": "SyntaxError", "error_message": "invalid syntax (spectral_convolution_converted_raw.py, line 326)", "error_line": 326, "error_text": "            k_embed = k_embed[(:, :, :self.k_embed_dim)]\n"}

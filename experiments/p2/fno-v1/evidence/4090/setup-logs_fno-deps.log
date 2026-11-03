@@ -1,0 +1,18 @@
+Looking in indexes: http://mirrors.aliyun.com/pypi/simple
+Collecting tensorly==0.9.0
+  Downloading tensorly-0.9.0-py3-none-any.whl (7.4 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 7.4/7.4 MB 3.9 MB/s  0:00:01
+Collecting tensorly-torch==0.5.0
+  Downloading tensorly_torch-0.5.0-py3-none-any.whl (59 kB)
+Collecting opt-einsum==3.4.0
+  Downloading opt_einsum-3.4.0-py3-none-any.whl (71 kB)
+Collecting scipy==1.13.1
+  Downloading scipy-1.13.1-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (38.6 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 38.6/38.6 MB 3.9 MB/s  0:00:09
+Collecting numpy (from tensorly==0.9.0)
+  Downloading numpy-2.2.6-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (16.8 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 16.8/16.8 MB 3.9 MB/s  0:00:04
+Installing collected packages: opt-einsum, numpy, scipy, tensorly-torch, tensorly
+
+Successfully installed numpy-2.2.6 opt-einsum-3.4.0 scipy-1.13.1 tensorly-0.9.0 tensorly-torch-0.5.0
+WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.

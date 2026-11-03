@@ -1,0 +1,44 @@
+{
+  "kind": "torchport.oracle",
+  "ok": false,
+  "reason": "SOURCE_RUN_FAILED",
+  "run": {
+    "kind": "torchport.run",
+    "run_id": "source-20261103-053130-e012774c",
+    "trial_id": "oracle-0",
+    "side": "source",
+    "mode": "normal",
+    "task_id": "fno-darcy16-train-five-step-4090-pilot-r1",
+    "task_digest": "f1e4d41fdb057c5a6bef96055451b0395715c96743eeee442e5d66d9ae2f022a",
+    "side_identity": "883e0fe51cb75171e30f18467610b8ae0bf547d1fc80ad0266b03f414770badd",
+    "oracle": null,
+    "execution": {
+      "command": [
+        "/root/autodl-tmp/envs/source/bin/python",
+        "-m",
+        "torchport",
+        "_capture",
+        "/root/autodl-tmp/FNO-Benchmark-v1/oracle-bundle-r1/evidence/runs/oracle-0/source-20261103-053130-e012774c/job.json"
+      ],
+      "cwd": "/root/autodl-tmp/FNO-Benchmark-v1/oracle-bundle-r1/source",
+      "cache": "/root/autodl-tmp/FNO-Benchmark-v1/oracle-bundle-r1/evidence/cache/oracle-0/source-_root_autodl-tmp_envs_source_bin_python",
+      "started": 1793655090.7536871,
+      "timeout": false,
+      "exit_code": 1,
+      "finished": 1793655094.3244913,
+      "seconds": 3.5708041191101074,
+      "ok": false,
+      "stderr_tail": "Traceback (most recent call last):\n  File \"/root/autodl-tmp/envs/source/lib/python3.10/runpy.py\", line 196, in _run_module_as_main\n    return _run_code(code, main_globals, None,\n  File \"/root/autodl-tmp/envs/source/lib/python3.10/runpy.py\", line 86, in _run_code\n    exec(code, run_globals)\n  File \"/root/autodl-tmp/FNO-Benchmark-v1/oracle-bundle-r1/src/torchport/__main__.py\", line 3, in <module>\n    raise SystemExit(main())\n  File \"/root/autodl-tmp/FNO-Benchmark-v1/oracle-bundle-r1/src/torchport/cli.py\", line 109, in main\n    return capture_main(str(args.job))\n  File \"/root/autodl-tmp/FNO-Benchmark-v1/oracle-bundle-r1/src/torchport/capture/runner.py\", line 419, in main\n    capture(job)\n  File \"/root/autodl-tmp/FNO-Benchmark-v1/oracle-bundle-r1/src/torchport/capture/runner.py\", line 214, in capture\n    total = save_state(model, state_path, ignore)\n  File \"/root/autodl-tmp/FNO-Benchmark-v1/oracle-bundle-r1/src/torchport/capture/model.py\", line 340, in save_state\n    np.savez(path, **{name: item.detach().cpu().numpy() for name, item in state.items()})\n  File \"/root/autodl-tmp/FNO-Benchmark-v1/oracle-bundle-r1/src/torchport/capture/model.py\", line 340, in <dictcomp>\n    np.savez(path, **{name: item.detach().cpu().numpy() for name, item in state.items()})\nAttributeError: 'dict' object has no attribute 'detach'\n"
+    },
+    "ok": false,
+    "dir": "/root/autodl-tmp/FNO-Benchmark-v1/oracle-bundle-r1/evidence/runs/oracle-0/source-20261103-053130-e012774c",
+    "capture": null,
+    "artifacts": {},
+    "contract": null
+  },
+  "physical_cost": {
+    "executions": 2,
+    "execution_wall_seconds": 6.6905357837677,
+    "cuda_execution_seconds": 6.6905357837677
+  }
+}

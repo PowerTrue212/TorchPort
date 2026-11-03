@@ -1,0 +1,34 @@
+[i 1030 02:23:38.145267 32 compiler.py:955] Jittor(1.3.11.0) src: /root/data-fs/APT/.venv-jittor/lib/python3.9/site-packages/jittor
+[i 1030 02:23:38.152417 32 compiler.py:956] g++ at /usr/bin/g++(7.5.0)
+[i 1030 02:23:38.152508 32 compiler.py:957] cache_path: /root/data-fs/TorchPort-baselines/jittor-cache/.cache/jittor/jt1.3.11/g++7.5.0/py3.9.23/Linux-5.15.0-1xb6/IntelRXeonRSilx76/2015/default
+[i 1030 02:23:38.161639 32 __init__.py:412] Found /usr/local/cuda/bin/nvcc(11.3.109) at /usr/local/cuda/bin/nvcc.
+[i 1030 02:23:38.171123 32 __init__.py:412] Found addr2line(2.30) at /usr/bin/addr2line.
+[i 1030 02:23:38.454077 32 compiler.py:1012] cuda key:cu11.3.109_sm_70
+[i 1030 02:23:39.979050 32 jit_compiler.cc:28] Load cc_path: /usr/bin/g++
+[i 1030 02:23:39.979091 32 parallel_compiler.cc:26] Load use_parallel_op_compiler: 0
+[i 1030 02:23:40.185430 32 init.cc:63] Found cuda archs: [70,]
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+  File "/root/data-fs/FNO-Benchmark-v1/source/neuralop/__init__.py", line 3, in <module>
+    from .models import TFNO, FNO, RNO, get_model
+  File "/root/data-fs/FNO-Benchmark-v1/source/neuralop/models/__init__.py", line 1, in <module>
+    from .fno import TFNO, FNO, ConditionalFNO
+  File "/root/data-fs/FNO-Benchmark-v1/source/neuralop/models/fno.py", line 17, in <module>
+    from ..layers.spectral_convolution import SpectralConv, ConditionalSpectralConv
+  File "/root/data-fs/FNO-Benchmark-v1/source/neuralop/layers/spectral_convolution.py", line 10, in <module>
+    from tltorch.factorized_tensors.core import FactorizedTensor
+  File "/root/data-fs/FNO-Benchmark-v1/deps/tltorch/__init__.py", line 4, in <module>
+    from . import factorized_tensors
+  File "/root/data-fs/FNO-Benchmark-v1/deps/tltorch/factorized_tensors/__init__.py", line 1, in <module>
+    from .factorized_tensors import (CPTensor, TuckerTensor, TTTensor,
+  File "/root/data-fs/FNO-Benchmark-v1/deps/tltorch/factorized_tensors/factorized_tensors.py", line 8, in <module>
+    tl.set_backend('pytorch')
+  File "/root/data-fs/FNO-Benchmark-v1/deps/tensorly/backend/__init__.py", line 333, in set_backend
+    backend = cls.load_backend(backend)
+  File "/root/data-fs/FNO-Benchmark-v1/deps/tensorly/backend/__init__.py", line 311, in load_backend
+    importlib.import_module(f"tensorly.backend.{backend_name}_backend")
+  File "/root/data-fs/APT/.venv-jittor/lib/python3.9/importlib/__init__.py", line 127, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+  File "/root/data-fs/FNO-Benchmark-v1/deps/tensorly/backend/pytorch_backend.py", line 249, in <module>
+    PyTorchBackend.register_method(name, getattr(torch, name))
+AttributeError: module 'torch' has no attribute 'complex64'

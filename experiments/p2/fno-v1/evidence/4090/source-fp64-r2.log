@@ -1,0 +1,10 @@
+{
+  "torch.float32": {
+    "loss": 0.2931555509567261,
+    "finite": true
+  },
+  "torch.float64": {
+    "loss": 0.29315556208981863,
+    "finite": true
+  }
+}

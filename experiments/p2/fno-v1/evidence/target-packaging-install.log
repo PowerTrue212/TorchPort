@@ -1,0 +1,6 @@
+Looking in indexes: http://mirrors.aliyun.com/pypi/simple
+Collecting packaging
+  Using cached http://mirrors.aliyun.com/pypi/packages/63/34/ba1c580383c9eada3711951fef0795c80b829a078d72188184bcab9dd527/packaging-26.3-py3-none-any.whl (129 kB)
+Installing collected packages: packaging
+Successfully installed packaging-26.3
+WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.

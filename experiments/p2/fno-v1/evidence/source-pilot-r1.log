@@ -1,0 +1,6 @@
+Traceback (most recent call last):
+  File "/root/data-fs/FNO-Benchmark-v1/probe_source_pilot.py", line 37, in <module>
+    torch.save({k: v.detach().cpu() for k, v in model.state_dict().items()}, out / "initial.pt")
+  File "/root/data-fs/FNO-Benchmark-v1/probe_source_pilot.py", line 37, in <dictcomp>
+    torch.save({k: v.detach().cpu() for k, v in model.state_dict().items()}, out / "initial.pt")
+AttributeError: 'dict' object has no attribute 'detach'

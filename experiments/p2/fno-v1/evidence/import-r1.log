@@ -1,0 +1,19 @@
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+  File "/root/data-fs/FNO-Benchmark-v1/source/neuralop/__init__.py", line 3, in <module>
+    from .models import TFNO, FNO, RNO, get_model
+  File "/root/data-fs/FNO-Benchmark-v1/source/neuralop/models/__init__.py", line 1, in <module>
+    from .fno import TFNO, FNO, ConditionalFNO
+  File "/root/data-fs/FNO-Benchmark-v1/source/neuralop/models/fno.py", line 17, in <module>
+    from ..layers.spectral_convolution import SpectralConv, ConditionalSpectralConv
+  File "/root/data-fs/FNO-Benchmark-v1/source/neuralop/layers/spectral_convolution.py", line 8, in <module>
+    import tensorly as tl
+  File "/root/data-fs/FNO-Benchmark-v1/deps/tensorly/__init__.py", line 5, in <module>
+    from .base import unfold, fold
+  File "/root/data-fs/FNO-Benchmark-v1/deps/tensorly/base.py", line 2, in <module>
+    from . import backend as tl
+  File "/root/data-fs/FNO-Benchmark-v1/deps/tensorly/backend/__init__.py", line 3, in <module>
+    from .core import Backend, backend_array
+  File "/root/data-fs/FNO-Benchmark-v1/deps/tensorly/backend/core.py", line 11, in <module>
+    import scipy.special
+ModuleNotFoundError: No module named 'scipy'

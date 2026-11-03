@@ -1,0 +1,56 @@
+/root/autodl-tmp/envs/source/lib/python3.10/site-packages/torch/nn/modules/module.py:1160: UserWarning: Casting complex values to real discards the imaginary part (Triggered internally at ../aten/src/ATen/native/Copy.cpp:305.)
+  return t.to(
+Traceback (most recent call last):
+  File "/root/autodl-tmp/FNO-Benchmark-v1/materials/probe_4090_source_fp64.py", line 29, in <module>
+    loss = train_step(model, optimizer, x, y)
+  File "/root/autodl-tmp/FNO-Benchmark-v1/source/torchport_train_adapter.py", line 33, in train_step
+    loss = torch.mean((network(x) - y) ** 2)
+  File "/root/autodl-tmp/envs/source/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1553, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/root/autodl-tmp/envs/source/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1562, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/root/autodl-tmp/FNO-Benchmark-v1/source/neuralop/models/fno.py", line 386, in forward
+    return self._forward_impl(x, output_shape=output_shape)
+  File "/root/autodl-tmp/FNO-Benchmark-v1/source/neuralop/models/fno.py", line 405, in _forward_impl
+    x = self.fno_blocks(x, layer_idx, output_shape=output_shape[layer_idx], **block_kwargs)
+  File "/root/autodl-tmp/envs/source/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1553, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/root/autodl-tmp/envs/source/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1562, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/root/autodl-tmp/FNO-Benchmark-v1/source/neuralop/layers/fno_block.py", line 384, in forward
+    return self.forward_with_postactivation(x, index, output_shape)
+  File "/root/autodl-tmp/FNO-Benchmark-v1/source/neuralop/layers/fno_block.py", line 401, in forward_with_postactivation
+    x_fno = self._apply_conv(index, x, output_shape, condition_embedding)
+  File "/root/autodl-tmp/FNO-Benchmark-v1/source/neuralop/layers/fno_block.py", line 375, in _apply_conv
+    return self.convs[index](x, output_shape=output_shape)
+  File "/root/autodl-tmp/envs/source/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1553, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/root/autodl-tmp/envs/source/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1562, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/root/autodl-tmp/FNO-Benchmark-v1/source/neuralop/layers/spectral_convolution.py", line 443, in forward
+    return self._forward_impl(x, output_shape=output_shape)
+  File "/root/autodl-tmp/FNO-Benchmark-v1/source/neuralop/layers/spectral_convolution.py", line 546, in _forward_impl
+    out_fft[slices_x] = self._contract(x_kept, weight, separable=self.separable)
+  File "/root/autodl-tmp/FNO-Benchmark-v1/source/neuralop/layers/spectral_convolution.py", line 47, in _contract_dense
+    return tl.einsum(eq, x, weight)
+  File "/root/autodl-tmp/FNO-Benchmark-v1/deps-pinned/tensorly/backend/__init__.py", line 202, in wrapped_backend_method
+    return getattr(
+  File "/root/autodl-tmp/FNO-Benchmark-v1/deps-pinned/tensorly/plugins.py", line 77, in cached_einsum
+    return expression(*args)
+  File "/root/autodl-tmp/FNO-Benchmark-v1/deps-pinned/opt_einsum/contract.py", line 895, in __call__
+    return self._contract(ops, out=out, backend=backend, evaluate_constants=evaluate_constants)
+  File "/root/autodl-tmp/FNO-Benchmark-v1/deps-pinned/opt_einsum/contract.py", line 816, in _contract
+    return _core_contract(
+  File "/root/autodl-tmp/FNO-Benchmark-v1/deps-pinned/opt_einsum/contract.py", line 702, in _core_contract
+    new_view = _einsum(einsum_str, *tmp_operands, backend=backend, out=out_kwarg, **kwargs)
+  File "/root/autodl-tmp/FNO-Benchmark-v1/deps-pinned/opt_einsum/sharing.py", line 164, in cached_einsum
+    return einsum(*args, **kwargs)
+  File "/root/autodl-tmp/FNO-Benchmark-v1/deps-pinned/opt_einsum/contract.py", line 451, in _einsum
+    return fn(einsum_str, *operands, **kwargs)
+  File "/root/autodl-tmp/FNO-Benchmark-v1/deps-pinned/opt_einsum/backends/torch.py", line 48, in einsum
+    return torch.einsum(equation, operands)
+  File "/root/autodl-tmp/envs/source/lib/python3.10/site-packages/torch/functional.py", line 381, in einsum
+    return einsum(equation, *_operands)
+  File "/root/autodl-tmp/envs/source/lib/python3.10/site-packages/torch/functional.py", line 386, in einsum
+    return _VF.einsum(equation, operands)  # type: ignore[attr-defined]
+RuntimeError: expected scalar type ComplexFloat but found Float

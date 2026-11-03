@@ -1,0 +1,29 @@
+[i 1103 00:45:40.462847 04 compiler.py:955] Jittor(1.3.11.0) src: /root/autodl-tmp/envs/target/lib/python3.9/site-packages/jittor
+[i 1103 00:45:40.468576 04 compiler.py:956] g++ at /usr/bin/g++(11.4.0)
+[i 1103 00:45:40.468691 04 compiler.py:957] cache_path: /root/autodl-tmp/jittor-cache-fno-smoke/.cache/jittor/jt1.3.11/g++11.4.0/py3.9.25/Linux-5.15.0-9x00/IntelRXeonRGolx95/ab54/default
+[i 1103 00:45:40.472751 04 compiler.py:900] Found nvcc(12.8.93) at /usr/local/cuda-12.8/bin/nvcc
+[i 1103 00:45:40.477721 04 __init__.py:412] Found addr2line(2.38) at /usr/bin/addr2line.
+[i 1103 00:45:40.710567 04 compiler.py:1012] cuda key:cu12.8.93_sm_89
+[i 1103 00:45:41.463480 04 __init__.py:227] Total mem: 1007.52GB, using 16 procs for compiling.
+[i 1103 00:45:41.588499 04 jit_compiler.cc:28] Load cc_path: /usr/bin/g++
+[i 1103 00:45:41.588530 04 jit_compiler.cc:31] Load nvcc_path: /usr/local/cuda-12.8/bin/nvcc
+[i 1103 00:45:41.863251 04 init.cc:63] Found cuda archs: [89,]
+[i 1103 00:45:43.668099 04 cuda_flags.cc:55] CUDA enabled.
+
+Compiling Operators(3/6) used: 3.31s eta: 3.31s Compiling Operators(4/6) used: 4.31s eta: 2.16s Compiling Operators(6/6) used: 5.31s eta:    0s 
+
+Compiling Operators(1/2) used: 4.31s eta: 4.31s Compiling Operators(2/2) used: 5.31s eta:    0s 
+
+Compiling Operators(1/4) used: 3.31s eta: 9.94s Compiling Operators(4/4) used: 5.31s eta:    0s 
+cufft_ops_available True
+{
+  "status": "pilot_only",
+  "jittor": "1.3.11.0",
+  "cuda_enabled": 1,
+  "public_jt_fft_available": false,
+  "nn_pair_fft_available": true,
+  "fft_max_abs_vs_numpy": 5.2761774938300025e-06,
+  "inverse_max_abs": 7.152557373046875e-07,
+  "gradient_real_max_abs": 9.313225746154785e-09,
+  "gradient_finite": true
+}

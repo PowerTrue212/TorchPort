@@ -1,0 +1,56 @@
+{
+  "status": "pilot_only",
+  "arrays": {
+    "inputs.npz": {
+      "x": {
+        "shape": [
+          2,
+          1,
+          16,
+          16
+        ],
+        "equal": true,
+        "max_abs": 0.0
+      },
+      "y": {
+        "shape": [
+          2,
+          1,
+          16,
+          16
+        ],
+        "equal": true,
+        "max_abs": 0.0
+      }
+    },
+    "outputs.npz": {
+      "prediction": {
+        "shape": [
+          2,
+          1,
+          16,
+          16
+        ],
+        "equal": true,
+        "max_abs": 0.0
+      },
+      "loss": {
+        "shape": [],
+        "equal": true,
+        "max_abs": 0.0
+      }
+    }
+  },
+  "states": {
+    "initial.pt": {
+      "tensor_count": 24,
+      "differing_tensors": {},
+      "metadata_equal": true
+    },
+    "post.pt": {
+      "tensor_count": 24,
+      "differing_tensors": {},
+      "metadata_equal": true
+    }
+  }
+}

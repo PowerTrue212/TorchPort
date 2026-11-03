@@ -1,0 +1,35 @@
+{
+  "status": "pilot_only",
+  "source_commit": "a6648eeeb60fe0837f2d7d021517a945a159a0c8",
+  "jtorch": {
+    "version": "0.1.7",
+    "torch_module": "/root/data-fs/TorchPort-baselines/jtorch-py39/torch/__init__.py",
+    "original_package_import": "fail",
+    "exception_type": "AttributeError",
+    "exception_message": "module 'torch' has no attribute 'complex64'",
+    "raw_log": "jtorch-import-r2.log",
+    "official_R_e": null,
+    "hidden_verify_failure_code": null
+  },
+  "jittor_pytorch_converter": {
+    "jittor_version": "1.3.11.0",
+    "model_file": {
+      "source_sha256": "46c799a920402bf4aca10d5f1a68f81ac9fe7bfed351119d56da3932fa5cc418",
+      "conversion": "pass",
+      "python_compilation": "pass",
+      "raw_log": "fno-convert.log"
+    },
+    "spectral_convolution_file": {
+      "source_sha256": "e0a2e761833957dabd5009b6e43330f73b7d72034dfeb14b9167726eeeb0196f",
+      "output_sha256": "fabdc8f399490bb9657968d252b7943bca9349206380405222dc02689c5831df",
+      "conversion": "pass",
+      "python_compilation": "fail",
+      "exception_type": "SyntaxError",
+      "first_error_line": 326,
+      "raw_output": "spectral_convolution_converted_raw.py",
+      "raw_log": "spectral-convert-capture.log"
+    },
+    "official_R_e": null,
+    "hidden_verify_failure_code": null
+  }
+}
