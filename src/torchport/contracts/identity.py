@@ -22,6 +22,7 @@ CAPTURE_VERSION = 4
 JUDGE_KEYS = (
     "pass_k", "floor_k", "noise_floor", "noise_probe",
     "train_envelope", "train_noise_baseline", "train_noise_baseline_sha256",
+    "marginal_rerun",
 )
 
 

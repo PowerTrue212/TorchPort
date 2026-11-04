@@ -30,6 +30,7 @@ Qwen2.5-0.5B）；2026-10-27 增加 SimCSE（NLP 第三项，共 12 个仓库）
 | AI4S | neuraloperator/neuraloperator（FNO） | 无 | `fft`、复数张量、einsum | 是 | 是 |
 | RL | vwxyzjn/cleanrl（PPO） | 无 | 分布、采样、log_prob、环境循环 | 是 | 是 |
 | 多模态 | openai/CLIP（ViT-B/32） | uyzhang/JCLIP | 双塔、对比损失 | 是 | 微调 |
+| 光流 | princeton-vl/RAFT（`2888e15`，`raft-things.pth`） | 待核实 | 4D correlation volume、`grid_sample` 双线性采样、多次 GRU 迭代与误差累积、sequence loss | 是 | 从 checkpoint 微调（2026-11-03 加入；推理与训练在同一 trial 内两个任务同时验收） |
 
 每个仓库在 TaskSpec 中冻结：源仓库 commit、入口、数据子集、checkpoint 来源、GPU 档位。
 人工迁移只在本协议的 `verify` 通过后才作为对照；未通过时作为“人工迁移质量”数据单独报告。
@@ -187,6 +188,19 @@ s=1 当且仅当隐藏 `verify` 通过：权重完整、结构一致、数值落
   r_max ≤ 1 通过；r_max > 3 失败；1 < r_max ≤ 3 为临界，对同一候选、同一 oracle 自动再跑 4 次
   target，取 5 次 r_max 的中位数判定。开发期 verify 与隐藏 verify 用同一规则，临界次数单独报告。
   上限 3 和加跑次数在误判率校准后冻结。
+  实现（2026-11-04，目前只用于 `train-step`）：TaskSpec 写
+  `protocol.marginal_rerun = {"upper": 3.0, "runs": 5}` 才启用，默认关闭，旧任务的判定和
+  oracle 身份都不变（该字段属于只影响判定的参数）。`runs` 是包括已有运行在内的总次数，必须是
+  大于 `repeats` 的奇数。正式运行首次失败若只因数值超限（可运行、结构、权重、精确检查都通过）
+  且 `max_gating_usage` 落在 (1, upper]，就对同一候选、同一 oracle 补跑到 `runs` 次，已有运行
+  全部计入，不取最好一次；补跑中任何一次出现非数值失败即判失败。全部 usage 的中位数 ≤ 1 判通过，
+  否则记 `PARITY_FAILED`。每次运行的 usage、中位数和物理成本都写入报告。`usage = max(err_max/(k·noise_max+floor),
+  err_p99/(k·noise_p99+floor))`，与 `ratio_*` 不同，ratio 不含 k 与 floor。
+- 训练参数的规范名（2026-11-04）：共享模块（同一参数挂在多个名字下，如 RAFT 的 `norm3` 与
+  `downsample.1`）在 PyTorch 的 `named_parameters()` 里只出现先注册的名字，Jittor 则每个名字
+  各出现一次。target 端可训练参数集合和 `output.update/ustat` 的键改为取先出现的名字，与 PyTorch
+  一致；source 端行为不变，oracle 不重建。此前 RAFT none-r1 因 Jittor 侧取到后出现的
+  `downsample.1` 被判 `STRUCTURE_MISMATCH`，原判定保留。
 - 误判率校准（只用于本实验冻结协议，不属于 Harness 的常规使用流程）：每个仓库取已知正确的
   候选（pilot 中通过隐藏验收的冻结快照、通过 verify 的公开人工迁移、校准用 target），各重复
   verify 至少 10 次统计误判率；用源端变异（见“训练检验”）统计漏检率。所有仓库统一取一个 k，

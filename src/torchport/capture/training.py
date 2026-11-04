@@ -90,8 +90,14 @@ def _requires_grad(param: Any) -> bool:
 
 
 def _trainable(model: Any, optimizer: Any) -> dict[str, Any]:
-    """可训练参数 = 优化器参数组中仍需梯度的模型参数；冻结与“不交给优化器”两种写法都覆盖。"""
-    names = {id(param): name for name, param in model.named_parameters()}
+    """可训练参数 = 优化器参数组中仍需梯度的模型参数；冻结与“不交给优化器”两种写法都覆盖。
+
+    共享模块（如 RAFT 的 norm3 与 downsample.1）在 Jittor 的 named_parameters() 中按每个名字
+    各出现一次，PyTorch 则去重并保留先注册的名字。这里同样取先出现的名字，两端规范名一致。
+    """
+    names: dict[int, str] = {}
+    for name, param in model.named_parameters():
+        names.setdefault(id(param), name)
     groups = getattr(optimizer, "param_groups", None)
     if not groups or not all(isinstance(group, dict) for group in groups):
         raise ContractError("OPTIMIZER_NO_PARAM_GROUPS")

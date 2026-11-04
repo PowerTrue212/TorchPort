@@ -137,6 +137,23 @@ def normalize(raw: dict[str, Any], base: Path) -> dict[str, Any]:
         protocol["train_noise_baseline"] = str(baseline_path)
     elif protocol.get("train_noise_baseline_sha256") is not None:
         raise ValueError("train_noise_baseline_sha256 缺少对应标定文件")
+    if "marginal_rerun" in protocol:
+        # 临界加跑：train-step 首次失败仅为数值超限且最大阈值使用率在 (1, upper] 时，
+        # 对同一候选补跑到 runs 次，取各次最大使用率的中位数判定
+        rerun = protocol["marginal_rerun"]
+        if protocol["profile"] != "train-step":
+            raise ValueError("protocol.marginal_rerun 只用于 profile=train-step")
+        if not isinstance(rerun, dict) or set(rerun) != {"upper", "runs"}:
+            raise ValueError("protocol.marginal_rerun 必须是只含 upper、runs 的对象")
+        upper, runs = rerun["upper"], rerun["runs"]
+        if isinstance(upper, bool) or not isinstance(upper, (int, float)) or not upper > 1:
+            raise ValueError("protocol.marginal_rerun.upper 必须大于 1")
+        if (
+            isinstance(runs, bool) or not isinstance(runs, int)
+            or runs < 3 or runs % 2 == 0 or runs <= int(protocol["repeats"])
+        ):
+            raise ValueError("protocol.marginal_rerun.runs 必须是大于 repeats 的奇数且至少为 3")
+        protocol["marginal_rerun"] = {"upper": float(upper), "runs": runs}
     if "ignore_state" in protocol:
         # 可由形状推出、不参与训练的 buffer（如 embeddings.position_ids），两端都不计入完整性
         ignored = protocol["ignore_state"]

@@ -5,6 +5,8 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
+import numpy as np
+
 from ..comparison import (
     ENVELOPE_V3,
     called_modules,
@@ -123,6 +125,7 @@ def _evaluate_train(
         }
     numerical["exact"] = {"passed": not exact, "failures": exact}
     result = judge(oracle["capture"], run["capture"], structure, None, protocol, numerical=numerical)
+    result["train_exact"] = numerical["exact"]
     result["mismatch"] = {"fp32": structure.get("metrics")}
     result["run_id"] = run["run_id"]
     result["candidate_identity"] = run["side_identity"]
@@ -282,6 +285,57 @@ def verify_envelope(task: dict[str, Any], root: Path, *, trial: str = "t0") -> d
     return report
 
 
+def _numeric_only(result: dict[str, Any]) -> bool:
+    """本次运行除数值超限外全部合格：可运行、结构一致、权重完整、离散训练事实一致。"""
+    metrics = result.get("envelope_metrics") or {}
+    return (
+        result.get("runnable") == "pass"
+        and result.get("structural") == "pass"
+        and result.get("failure_code") in (None, "PARITY_FAILED")
+        and (result.get("train_exact") or {}).get("passed") is True
+        and metrics.get("numeric_only_failures") is True
+        and metrics.get("max_gating_usage") is not None
+    )
+
+
+def _marginal_rerun(
+    task: dict[str, Any],
+    root: Path,
+    trial: str,
+    oracle: dict[str, Any],
+    results: list[dict[str, Any]],
+    target_runs: list[dict[str, Any]],
+    rerun: dict[str, Any],
+) -> dict[str, Any] | None:
+    """临界加跑：首个失败只是数值超限且最大使用率在 (1, upper] 时，补跑到 runs 次取中位数。
+
+    已有的运行全部计入，不取最好一次；补跑中任何一次出现非数值失败即判失败。
+    """
+    last = results[-1]
+    usage = (last.get("envelope_metrics") or {}).get("max_gating_usage")
+    if not (_numeric_only(last) and usage is not None and 1 < usage <= rerun["upper"]):
+        return None
+    protocol = task["protocol"]
+    while len(results) < rerun["runs"]:
+        run = run_side(task, "target", root, trial=trial, oracle=Path(oracle["dir"]))
+        target_runs.append(run)
+        results.append(evaluate(oracle, run, protocol, task["target_identity"]))
+        if not _numeric_only(results[-1]):
+            break
+    eligible = len(results) >= rerun["runs"] and all(_numeric_only(item) for item in results)
+    usages = [(item.get("envelope_metrics") or {}).get("max_gating_usage") for item in results]
+    median = float(np.median(usages)) if eligible else None
+    return {
+        "triggered": True,
+        "upper": rerun["upper"],
+        "required_runs": rerun["runs"],
+        "runs": len(results),
+        "usages": usages,
+        "median_usage": median,
+        "passed": eligible and median is not None and median <= 1,
+    }
+
+
 def verify(task: dict[str, Any], root: Path, *, trial: str = "t0") -> dict[str, Any]:
     """正式验收：冻结 oracle，candidate 正常运行 repeats 次，全部通过才算通过。"""
     if task["protocol"]["profile"] in ("noise-envelope", ENVELOPE_V3):
@@ -301,6 +355,20 @@ def verify(task: dict[str, Any], root: Path, *, trial: str = "t0") -> dict[str, 
         if not results[-1]["passed"]:
             break  # 一次失败即不可能全部通过，保留已有证据即可
     repeat = judge_repeats(results, int(protocol["repeats"]))
+    marginal = None
+    if protocol.get("marginal_rerun") and oracle.get("ok") and not repeat["passed"] and results:
+        marginal = _marginal_rerun(
+            task, root, trial, oracle, results, target_runs, protocol["marginal_rerun"]
+        )
+        if marginal is not None:
+            repeat = {
+                "passed": marginal["passed"],
+                "required": int(protocol["repeats"]),
+                "runs": len(results),
+                "passed_runs": sum(item["passed"] for item in results),
+                "failure_code": None if marginal["passed"] else "PARITY_FAILED",
+                "marginal": True,
+            }
     target_physical = add_physical_cost(
         *(
             run_physical_cost(run, task["target"]["device"])
@@ -321,7 +389,12 @@ def verify(task: dict[str, Any], root: Path, *, trial: str = "t0") -> dict[str, 
         "mismatch": results[-1].get("mismatch") if results else None,
         "physical_cost": add_physical_cost(oracle.get("physical_cost"), target_physical),
         "repeats": repeat,
-        "summary": results[-1]["summary"] if results else "未运行",
+        "marginal_rerun": marginal,
+        "summary": (
+            "通过（临界加跑中位数）"
+            if marginal and marginal["passed"]
+            else (results[-1]["summary"] if results else "未运行")
+        ),
         "next": results[-1].get("next") if results else None,
         "oracle": oracle.get("dir"),
         "results": results,

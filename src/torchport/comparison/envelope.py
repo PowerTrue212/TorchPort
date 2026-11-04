@@ -115,6 +115,8 @@ def compare_noise_calibrated(
                     "noise_p99_abs": noise_p99,
                     "ratio_max": cand_max / max(noise_max, atol_floor),
                     "ratio_p99": cand_p99 / max(noise_p99, atol_floor),
+                    # 阈值使用率：> 1 即超限；临界加跑按它判定，ratio 不含 k 与 floor
+                    "usage": max(_usage(cand_max, limit_max), _usage(cand_p99, limit_p99)),
                     "passed": cand_max <= limit_max and cand_p99 <= limit_p99,
                 }
             item["gating"] = leaves is None or _leaf_key(name, leaves)
@@ -162,9 +164,22 @@ def compare_noise_calibrated(
                 (max(item["ratio_max"], item["ratio_p99"]) for item in gating if "ratio_max" in item),
                 default=None,
             ),
+            "max_gating_usage": max(
+                (item["usage"] for item in gating if "usage" in item), default=None
+            ),
+            # 超限的门控张量是否全部是数值超限（有 usage）；形状、NaN、缺标定都不算
+            "numeric_only_failures": all(
+                "usage" in item for item in gating if not item["passed"]
+            ),
         },
         "tensors": tensors,
     }
+
+
+def _usage(error: float, limit: float) -> float:
+    if limit > 0:
+        return error / limit
+    return 0.0 if error == 0 else float("inf")
 
 
 def compare_envelope(
