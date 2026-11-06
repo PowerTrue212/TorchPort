@@ -1,0 +1,56 @@
+{
+  "failure_code": "TRACE_TOO_LARGE",
+  "kind": "torchport.trace",
+  "passed": false,
+  "physical_cost": {
+    "cuda_execution_seconds": 17.97313404083252,
+    "execution_wall_seconds": 17.97313404083252,
+    "executions": 3
+  },
+  "reason": "trace 预计写入 4552509056 bytes，超过上限 4294967296 bytes",
+  "source_run": {
+    "artifacts": {},
+    "capture": null,
+    "contract": {
+      "code": "TRACE_TOO_LARGE",
+      "estimated_bytes": 4552509056,
+      "limit_bytes": 4294967296,
+      "message": "trace 预计写入 4552509056 bytes，超过上限 4294967296 bytes"
+    },
+    "dir": "/root/autodl-tmp/RAFT-Benchmark-v1/trace-probe-r5/evidence/runs/reference-last-window-r5-trace-source/source-20261104-205227-4d6e3f72",
+    "execution": {
+      "cache": "/root/autodl-tmp/RAFT-Benchmark-v1/trace-probe-r5/evidence/cache/reference-last-window-r5-trace-source/source-_root_autodl-tmp_envs_source_bin_python",
+      "command": [
+        "/root/autodl-tmp/envs/source/bin/python",
+        "-m",
+        "torchport",
+        "_capture",
+        "/root/autodl-tmp/RAFT-Benchmark-v1/trace-probe-r5/evidence/runs/reference-last-window-r5-trace-source/source-20261104-205227-4d6e3f72/job.json"
+      ],
+      "cwd": "/root/autodl-tmp/RAFT-Benchmark-v1/oracle-bundle-inference-r1-r6/source",
+      "exit_code": 1,
+      "finished": 1793796758.121606,
+      "ok": false,
+      "seconds": 10.93283200263977,
+      "started": 1793796747.188774,
+      "stderr_tail": "/root/autodl-tmp/RAFT-Benchmark-v1/oracle-bundle-inference-r1-r6/source/core/raft.py:99: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.\n  with autocast(enabled=self.args.mixed_precision):\n/root/autodl-tmp/RAFT-Benchmark-v1/oracle-bundle-inference-r1-r6/source/core/raft.py:110: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.\n  with autocast(enabled=self.args.mixed_precision):\n/root/autodl-tmp/envs/source/lib/python3.10/site-packages/torch/functional.py:513: UserWarning: torch.meshgrid: in an upcoming release, it will be required to pass the indexing argument. (Triggered internally at ../aten/src/ATen/native/TensorShape.cpp:3609.)\n  return _VF.meshgrid(tensors, **kwargs)  # type: ignore[attr-defined]\n/root/autodl-tmp/RAFT-Benchmark-v1/oracle-bundle-inference-r1-r6/source/core/raft.py:127: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.\n  with autocast(enabled=self.args.mixed_precision):\ntorchport: trace 预计写入 4552509056 bytes，超过上限 4294967296 bytes\n",
+      "timeout": false
+    },
+    "kind": "torchport.run",
+    "mode": "trace",
+    "ok": false,
+    "oracle": "/root/autodl-tmp/RAFT-Benchmark-v1/trace-probe-r5/evidence/oracle/efc4d43155b728b5",
+    "run_id": "source-20261104-205227-4d6e3f72",
+    "side": "source",
+    "side_identity": "b987aaaae6ffe3b0421b45216dc0514b49a7d1165e3dd82c7c4a090d46f0386f",
+    "task_digest": "efc4d43155b728b584c59b9bc37e8cb57502b2520bbd238eea4ab502d9fe1ef1",
+    "task_id": "raft-inference-r1-4090-pilot-r1",
+    "trial_id": "reference-last-window-r5-trace-source"
+  },
+  "stage": "source",
+  "status": "run_failed",
+  "target_run": null,
+  "task_digest": "efc4d43155b728b584c59b9bc37e8cb57502b2520bbd238eea4ab502d9fe1ef1",
+  "task_id": "raft-inference-r1-4090-pilot-r1",
+  "trial_id": "reference-last-window-r5"
+}

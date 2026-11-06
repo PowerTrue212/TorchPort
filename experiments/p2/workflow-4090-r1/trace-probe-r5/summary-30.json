@@ -1,0 +1,53 @@
+{
+  "failure_code": null,
+  "focus": [
+    "fnet.layer2",
+    "fnet.layer2.1",
+    "fnet.layer3.0.conv1",
+    "fnet.layer3.0.conv2",
+    "fnet.layer3.0.downsample",
+    "fnet.layer3.0.downsample.0",
+    "fnet.layer3.0.norm1",
+    "fnet.layer3.0.norm2"
+  ],
+  "focus_tensor": {
+    "batch_excluded": 0,
+    "effective_variants": 2,
+    "elements": 1572864,
+    "floor_applied": false,
+    "l2_ratio": 1.6568597658914197,
+    "limit": 3.3224455375472943e-06,
+    "name": "fnet.layer3.0.downsample.0",
+    "position": 46,
+    "ratio": 1.6568597658914197,
+    "relative_error": 6.881032919409503e-07,
+    "run_errors": [
+      6.881032919409503e-07,
+      6.80255804236229e-07
+    ],
+    "source_noise": 4.153056921934118e-07,
+    "status": "pass",
+    "target_noise": 6.060146699145528e-07,
+    "unstable": true,
+    "variant_errors": [
+      3.9689670858646103e-07,
+      0.0,
+      4.153056921934118e-07
+    ]
+  },
+  "passed": false,
+  "report": "/root/autodl-tmp/RAFT-Benchmark-v1/trace-probe-r5/evidence/trace/reference-30-window-r5.json",
+  "sizes": {
+    "source_run": {
+      "bytes": 268532007,
+      "contract": null,
+      "ok": true
+    },
+    "target_run": {
+      "bytes": 92358128,
+      "contract": null,
+      "ok": true
+    }
+  },
+  "trial_id": "reference-30-window-r5"
+}

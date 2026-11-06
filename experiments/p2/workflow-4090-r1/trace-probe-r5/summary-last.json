@@ -1,0 +1,49 @@
+{
+  "failure_code": "TRACE_TOO_LARGE",
+  "focus": null,
+  "focus_tensor": {
+    "batch_excluded": 0,
+    "effective_variants": 2,
+    "elements": 12288,
+    "floor_applied": false,
+    "l2_ratio": 1.179001191545683,
+    "limit": 0.013379941031990776,
+    "name": "update_block#20.2",
+    "position": 604,
+    "ratio": 1.179001191545683,
+    "relative_error": 0.0019718708024410126,
+    "run_errors": [
+      0.0014203406464355318,
+      0.0019718708024410126
+    ],
+    "source_noise": 0.001672492628998847,
+    "status": "pass",
+    "target_noise": 0.0014825952700550369,
+    "unstable": false,
+    "variant_errors": [
+      null,
+      0.00161551263192434,
+      0.001672492628998847
+    ]
+  },
+  "passed": false,
+  "report": "/root/autodl-tmp/RAFT-Benchmark-v1/trace-probe-r5/evidence/trace/reference-last-window-r5.json",
+  "sizes": {
+    "source_run": {
+      "bytes": 6147,
+      "contract": {
+        "code": "TRACE_TOO_LARGE",
+        "estimated_bytes": 4552509056,
+        "limit_bytes": 4294967296,
+        "message": "trace 预计写入 4552509056 bytes，超过上限 4294967296 bytes"
+      },
+      "ok": false
+    },
+    "target_run": {
+      "bytes": 0,
+      "contract": null,
+      "ok": null
+    }
+  },
+  "trial_id": "reference-last-window-r5"
+}

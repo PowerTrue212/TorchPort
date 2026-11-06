@@ -1,0 +1,1445 @@
+{
+  "focus": [
+    "fnet.layer2",
+    "fnet.layer2.1",
+    "fnet.layer3.0.conv1",
+    "fnet.layer3.0.conv2",
+    "fnet.layer3.0.downsample",
+    "fnet.layer3.0.downsample.0",
+    "fnet.layer3.0.norm1",
+    "fnet.layer3.0.norm2"
+  ],
+  "isolated": {
+    "atol": 1e-06,
+    "calibrated": {
+      "atol_floor": 1e-07,
+      "first_divergence": null,
+      "first_gating_divergence": null,
+      "k": 8.0,
+      "metrics": {
+        "compared_tensors": 4,
+        "failed_gating_tensors": 0,
+        "failed_reported_tensors": 0,
+        "failed_tensors": 0,
+        "gating_tensors": 4,
+        "max_gating_ratio": 2.848774385271044,
+        "max_ratio": 2.848774385271044
+      },
+      "missing_in_candidate": [],
+      "passed": true,
+      "profile": "noise-calibrated",
+      "schema_version": 1,
+      "tensors": [
+        {
+          "candidate_max_abs": 1.408099342814495e-05,
+          "candidate_p99_abs": 3.1094185292435122e-06,
+          "elements": 4718592,
+          "gating": true,
+          "name": "fnet.layer2.1",
+          "noise_max_abs": 5.243252587661118e-06,
+          "noise_p99_abs": 1.2897824882818207e-06,
+          "passed": true,
+          "position": 0,
+          "ratio_max": 2.6855455068637317,
+          "ratio_p99": 2.410808456072088
+        },
+        {
+          "candidate_max_abs": 8.800179969625788e-05,
+          "candidate_p99_abs": 1.6120350934585267e-05,
+          "elements": 1572864,
+          "gating": true,
+          "name": "fnet.layer3.0.conv1",
+          "noise_max_abs": 8.800179969625788e-05,
+          "noise_p99_abs": 1.6120350934585267e-05,
+          "passed": true,
+          "position": 1,
+          "ratio_max": 1.0,
+          "ratio_p99": 1.0
+        },
+        {
+          "candidate_max_abs": 2.878822926888347e-05,
+          "candidate_p99_abs": 7.4620026667559845e-06,
+          "elements": 1572864,
+          "gating": true,
+          "name": "fnet.layer3.0.conv2",
+          "noise_max_abs": 1.0105478839506077e-05,
+          "noise_p99_abs": 3.3179815539163805e-06,
+          "passed": true,
+          "position": 2,
+          "ratio_max": 2.848774385271044,
+          "ratio_p99": 2.2489584542590983
+        },
+        {
+          "candidate_max_abs": 7.810952677544947e-06,
+          "candidate_p99_abs": 1.8230398626251058e-06,
+          "elements": 1572864,
+          "gating": true,
+          "name": "fnet.layer3.0.downsample.0",
+          "noise_max_abs": 7.810952677544947e-06,
+          "noise_p99_abs": 1.8230398626251058e-06,
+          "passed": true,
+          "position": 3,
+          "ratio_max": 1.0,
+          "ratio_p99": 1.0
+        }
+      ],
+      "uncalibrated": []
+    },
+    "candidate": "/root/autodl-tmp/RAFT-Benchmark-v1/trace-probe-r5/evidence/runs/reference-30-window-r5-trace-target/target-20261104-205320-1ed87b07/isolated.npz",
+    "capture": {
+      "available": true,
+      "failed_modules": [],
+      "missing_modules": [],
+      "recorded": 4,
+      "succeeded": 4,
+      "unsupported_inputs": []
+    },
+    "envelope_v3": {
+      "first_divergence": null,
+      "first_marginal": null,
+      "floor_k": 8.0,
+      "metrics": {
+        "compared_tensors": 4,
+        "failed_tensors": 0,
+        "marginal_tensors": 0,
+        "max_ratio": 2.5851284455292585,
+        "unstable_tensors": 1
+      },
+      "missing_in_candidate": [],
+      "noise_floor": 0.0,
+      "pass_k": 8.0,
+      "passed": true,
+      "per_op_floor": false,
+      "profile": "isolated-envelope-v3",
+      "schema_version": 1,
+      "tensors": [
+        {
+          "floor_applied": false,
+          "name": "fnet.layer2.1",
+          "noise_floor": 0.0,
+          "position": 0,
+          "ratio": 2.5851284455292585,
+          "relative_error": 5.801180011833132e-07,
+          "source_noise": 2.2440587127752737e-07,
+          "status": "pass",
+          "target_noise": 5.760478944247625e-07,
+          "unstable": true
+        },
+        {
+          "floor_applied": false,
+          "name": "fnet.layer3.0.conv1",
+          "noise_floor": 0.0,
+          "position": 1,
+          "ratio": 0.0,
+          "relative_error": 0.0,
+          "source_noise": 4.218094817665103e-07,
+          "status": "pass",
+          "target_noise": 0.0,
+          "unstable": false
+        },
+        {
+          "floor_applied": false,
+          "name": "fnet.layer3.0.conv2",
+          "noise_floor": 0.0,
+          "position": 2,
+          "ratio": 2.1853270428832494,
+          "relative_error": 4.1844471213209704e-07,
+          "source_noise": 1.9147921749049273e-07,
+          "status": "pass",
+          "target_noise": 0.0,
+          "unstable": false
+        },
+        {
+          "floor_applied": false,
+          "name": "fnet.layer3.0.downsample.0",
+          "noise_floor": 0.0,
+          "position": 3,
+          "ratio": 0.0,
+          "relative_error": 0.0,
+          "source_noise": 1.4039484353337714e-07,
+          "status": "pass",
+          "target_noise": 0.0,
+          "unstable": false
+        }
+      ],
+      "uncalibrated": []
+    },
+    "extra_in_candidate": [],
+    "first_divergence": {
+      "name": "fnet.layer2.1",
+      "position": 0,
+      "reason": "数值超出容差"
+    },
+    "first_gating_divergence": {
+      "name": "fnet.layer2.1",
+      "position": 0,
+      "reason": "数值超出容差"
+    },
+    "metrics": {
+      "compared_elements": 9437184,
+      "compared_tensors": 4,
+      "extra_tensors": 0,
+      "max_absolute_error": 2.86102294921875e-05,
+      "mismatch_ratio": 0.0020084381103515625,
+      "mismatched_elements": 18954,
+      "mismatched_tensors": 2,
+      "missing_tensors": 0,
+      "skipped_sketched_tensors": 0
+    },
+    "missing_in_candidate": [],
+    "passed": false,
+    "profile": "operator-strict",
+    "reference": "/root/autodl-tmp/RAFT-Benchmark-v1/trace-probe-r5/evidence/runs/reference-30-window-r5-trace-source/source-20261104-205316-a6ee9471/module_outputs.npz",
+    "repeatability": {
+      "atol": 1e-06,
+      "candidate": "/root/autodl-tmp/RAFT-Benchmark-v1/trace-probe-r5/evidence/runs/reference-30-window-r5-trace-target/target-20261104-205320-1ed87b07/isolated_repeat.npz",
+      "extra_in_candidate": [],
+      "first_divergence": {
+        "name": "fnet.layer2.1",
+        "position": 0,
+        "reason": "数值超出容差"
+      },
+      "first_gating_divergence": {
+        "name": "fnet.layer2.1",
+        "position": 0,
+        "reason": "数值超出容差"
+      },
+      "metrics": {
+        "compared_elements": 9437184,
+        "compared_tensors": 4,
+        "extra_tensors": 0,
+        "max_absolute_error": 1.1444091796875e-05,
+        "mismatch_ratio": 0.0017325083414713542,
+        "mismatched_elements": 16350,
+        "mismatched_tensors": 1,
+        "missing_tensors": 0,
+        "skipped_sketched_tensors": 0
+      },
+      "missing_in_candidate": [],
+      "passed": false,
+      "profile": "operator-strict",
+      "reference": "/root/autodl-tmp/RAFT-Benchmark-v1/trace-probe-r5/evidence/runs/reference-30-window-r5-trace-target/target-20261104-205320-1ed87b07/isolated.npz",
+      "require_all": true,
+      "rtol": 1e-05,
+      "schema_version": 1,
+      "skipped_sketched": [],
+      "tensors": [
+        {
+          "candidate_dtype": "float32",
+          "candidate_shape": [
+            4,
+            96,
+            96,
+            128
+          ],
+          "cosine_similarity": 0.9999999999998356,
+          "elements": 4718592,
+          "gating": true,
+          "max_absolute_error": 1.1444091796875e-05,
+          "max_relative_error": 0.22500021403456472,
+          "mean_absolute_error": 4.2745238285102776e-07,
+          "mismatch_ratio": 0.0034650166829427085,
+          "mismatched_elements": 16350,
+          "name": "fnet.layer2.1",
+          "original_shape": [
+            4,
+            96,
+            96,
+            128
+          ],
+          "p99_absolute_error": 3.606081008911133e-06,
+          "passed": false,
+          "position": 0,
+          "reference_dtype": "float32",
+          "reference_shape": [
+            4,
+            96,
+            96,
+            128
+          ],
+          "storage": "exact"
+        },
+        {
+          "candidate_dtype": "float32",
+          "candidate_shape": [
+            4,
+            128,
+            48,
+            64
+          ],
+          "cosine_similarity": 1.0000000000000002,
+          "elements": 1572864,
+          "gating": true,
+          "max_absolute_error": 0.0,
+          "max_relative_error": 0.0,
+          "mean_absolute_error": 0.0,
+          "mismatch_ratio": 0.0,
+          "mismatched_elements": 0,
+          "name": "fnet.layer3.0.conv1",
+          "original_shape": [
+            4,
+            128,
+            48,
+            64
+          ],
+          "p99_absolute_error": 0.0,
+          "passed": true,
+          "position": 1,
+          "reference_dtype": "float32",
+          "reference_shape": [
+            4,
+            128,
+            48,
+            64
+          ],
+          "storage": "exact"
+        },
+        {
+          "candidate_dtype": "float32",
+          "candidate_shape": [
+            4,
+            128,
+            48,
+            64
+          ],
+          "cosine_similarity": 1.0,
+          "elements": 1572864,
+          "gating": true,
+          "max_absolute_error": 0.0,
+          "max_relative_error": 0.0,
+          "mean_absolute_error": 0.0,
+          "mismatch_ratio": 0.0,
+          "mismatched_elements": 0,
+          "name": "fnet.layer3.0.conv2",
+          "original_shape": [
+            4,
+            128,
+            48,
+            64
+          ],
+          "p99_absolute_error": 0.0,
+          "passed": true,
+          "position": 2,
+          "reference_dtype": "float32",
+          "reference_shape": [
+            4,
+            128,
+            48,
+            64
+          ],
+          "storage": "exact"
+        },
+        {
+          "candidate_dtype": "float32",
+          "candidate_shape": [
+            4,
+            128,
+            48,
+            64
+          ],
+          "cosine_similarity": 1.0000000000000002,
+          "elements": 1572864,
+          "gating": true,
+          "max_absolute_error": 0.0,
+          "max_relative_error": 0.0,
+          "mean_absolute_error": 0.0,
+          "mismatch_ratio": 0.0,
+          "mismatched_elements": 0,
+          "name": "fnet.layer3.0.downsample.0",
+          "original_shape": [
+            4,
+            128,
+            48,
+            64
+          ],
+          "p99_absolute_error": 0.0,
+          "passed": true,
+          "position": 3,
+          "reference_dtype": "float32",
+          "reference_shape": [
+            4,
+            128,
+            48,
+            64
+          ],
+          "storage": "exact"
+        }
+      ]
+    },
+    "repeatability_at_verification_tolerance": {
+      "atol": 0.0001,
+      "candidate": "/root/autodl-tmp/RAFT-Benchmark-v1/trace-probe-r5/evidence/runs/reference-30-window-r5-trace-target/target-20261104-205320-1ed87b07/isolated_repeat.npz",
+      "extra_in_candidate": [],
+      "first_divergence": null,
+      "first_gating_divergence": null,
+      "metrics": {
+        "compared_elements": 9437184,
+        "compared_tensors": 4,
+        "extra_tensors": 0,
+        "max_absolute_error": 1.1444091796875e-05,
+        "mismatch_ratio": 0.0,
+        "mismatched_elements": 0,
+        "mismatched_tensors": 0,
+        "missing_tensors": 0,
+        "skipped_sketched_tensors": 0
+      },
+      "missing_in_candidate": [],
+      "passed": true,
+      "profile": "operator-strict",
+      "reference": "/root/autodl-tmp/RAFT-Benchmark-v1/trace-probe-r5/evidence/runs/reference-30-window-r5-trace-target/target-20261104-205320-1ed87b07/isolated.npz",
+      "require_all": true,
+      "rtol": 0.0001,
+      "schema_version": 1,
+      "skipped_sketched": [],
+      "tensors": [
+        {
+          "candidate_dtype": "float32",
+          "candidate_shape": [
+            4,
+            96,
+            96,
+            128
+          ],
+          "cosine_similarity": 0.9999999999998356,
+          "elements": 4718592,
+          "gating": true,
+          "max_absolute_error": 1.1444091796875e-05,
+          "max_relative_error": 0.22500021403456472,
+          "mean_absolute_error": 4.2745238285102776e-07,
+          "mismatch_ratio": 0.0,
+          "mismatched_elements": 0,
+          "name": "fnet.layer2.1",
+          "original_shape": [
+            4,
+            96,
+            96,
+            128
+          ],
+          "p99_absolute_error": 3.606081008911133e-06,
+          "passed": true,
+          "position": 0,
+          "reference_dtype": "float32",
+          "reference_shape": [
+            4,
+            96,
+            96,
+            128
+          ],
+          "storage": "exact"
+        },
+        {
+          "candidate_dtype": "float32",
+          "candidate_shape": [
+            4,
+            128,
+            48,
+            64
+          ],
+          "cosine_similarity": 1.0000000000000002,
+          "elements": 1572864,
+          "gating": true,
+          "max_absolute_error": 0.0,
+          "max_relative_error": 0.0,
+          "mean_absolute_error": 0.0,
+          "mismatch_ratio": 0.0,
+          "mismatched_elements": 0,
+          "name": "fnet.layer3.0.conv1",
+          "original_shape": [
+            4,
+            128,
+            48,
+            64
+          ],
+          "p99_absolute_error": 0.0,
+          "passed": true,
+          "position": 1,
+          "reference_dtype": "float32",
+          "reference_shape": [
+            4,
+            128,
+            48,
+            64
+          ],
+          "storage": "exact"
+        },
+        {
+          "candidate_dtype": "float32",
+          "candidate_shape": [
+            4,
+            128,
+            48,
+            64
+          ],
+          "cosine_similarity": 1.0,
+          "elements": 1572864,
+          "gating": true,
+          "max_absolute_error": 0.0,
+          "max_relative_error": 0.0,
+          "mean_absolute_error": 0.0,
+          "mismatch_ratio": 0.0,
+          "mismatched_elements": 0,
+          "name": "fnet.layer3.0.conv2",
+          "original_shape": [
+            4,
+            128,
+            48,
+            64
+          ],
+          "p99_absolute_error": 0.0,
+          "passed": true,
+          "position": 2,
+          "reference_dtype": "float32",
+          "reference_shape": [
+            4,
+            128,
+            48,
+            64
+          ],
+          "storage": "exact"
+        },
+        {
+          "candidate_dtype": "float32",
+          "candidate_shape": [
+            4,
+            128,
+            48,
+            64
+          ],
+          "cosine_similarity": 1.0000000000000002,
+          "elements": 1572864,
+          "gating": true,
+          "max_absolute_error": 0.0,
+          "max_relative_error": 0.0,
+          "mean_absolute_error": 0.0,
+          "mismatch_ratio": 0.0,
+          "mismatched_elements": 0,
+          "name": "fnet.layer3.0.downsample.0",
+          "original_shape": [
+            4,
+            128,
+            48,
+            64
+          ],
+          "p99_absolute_error": 0.0,
+          "passed": true,
+          "position": 3,
+          "reference_dtype": "float32",
+          "reference_shape": [
+            4,
+            128,
+            48,
+            64
+          ],
+          "storage": "exact"
+        }
+      ],
+      "tolerance_basis": "fp32-inference"
+    },
+    "require_all": false,
+    "rtol": 1e-05,
+    "schema_version": 1,
+    "skipped_sketched": [],
+    "source_repeatability": {
+      "atol": 1e-06,
+      "candidate": "/root/autodl-tmp/RAFT-Benchmark-v1/trace-probe-r5/evidence/runs/reference-30-window-r5-trace-source/source-20261104-205316-a6ee9471/module_repeat.npz",
+      "extra_in_candidate": [],
+      "first_divergence": null,
+      "first_gating_divergence": null,
+      "metrics": {
+        "compared_elements": 9437184,
+        "compared_tensors": 4,
+        "extra_tensors": 0,
+        "max_absolute_error": 0.0,
+        "mismatch_ratio": 0.0,
+        "mismatched_elements": 0,
+        "mismatched_tensors": 0,
+        "missing_tensors": 0,
+        "skipped_sketched_tensors": 0
+      },
+      "missing_in_candidate": [],
+      "passed": true,
+      "profile": "operator-strict",
+      "reference": "/root/autodl-tmp/RAFT-Benchmark-v1/trace-probe-r5/evidence/runs/reference-30-window-r5-trace-source/source-20261104-205316-a6ee9471/module_outputs.npz",
+      "require_all": false,
+      "rtol": 1e-05,
+      "schema_version": 1,
+      "skipped_sketched": [],
+      "tensors": [
+        {
+          "candidate_dtype": "float32",
+          "candidate_shape": [
+            4,
+            96,
+            96,
+            128
+          ],
+          "cosine_similarity": 1.0,
+          "elements": 4718592,
+          "gating": true,
+          "max_absolute_error": 0.0,
+          "max_relative_error": 0.0,
+          "mean_absolute_error": 0.0,
+          "mismatch_ratio": 0.0,
+          "mismatched_elements": 0,
+          "name": "fnet.layer2.1",
+          "original_shape": [
+            4,
+            96,
+            96,
+            128
+          ],
+          "p99_absolute_error": 0.0,
+          "passed": true,
+          "position": 0,
+          "reference_dtype": "float32",
+          "reference_shape": [
+            4,
+            96,
+            96,
+            128
+          ],
+          "storage": "exact"
+        },
+        {
+          "candidate_dtype": "float32",
+          "candidate_shape": [
+            4,
+            128,
+            48,
+            64
+          ],
+          "cosine_similarity": 1.0000000000000002,
+          "elements": 1572864,
+          "gating": true,
+          "max_absolute_error": 0.0,
+          "max_relative_error": 0.0,
+          "mean_absolute_error": 0.0,
+          "mismatch_ratio": 0.0,
+          "mismatched_elements": 0,
+          "name": "fnet.layer3.0.conv1",
+          "original_shape": [
+            4,
+            128,
+            48,
+            64
+          ],
+          "p99_absolute_error": 0.0,
+          "passed": true,
+          "position": 1,
+          "reference_dtype": "float32",
+          "reference_shape": [
+            4,
+            128,
+            48,
+            64
+          ],
+          "storage": "exact"
+        },
+        {
+          "candidate_dtype": "float32",
+          "candidate_shape": [
+            4,
+            128,
+            48,
+            64
+          ],
+          "cosine_similarity": 0.9999999999999999,
+          "elements": 1572864,
+          "gating": true,
+          "max_absolute_error": 0.0,
+          "max_relative_error": 0.0,
+          "mean_absolute_error": 0.0,
+          "mismatch_ratio": 0.0,
+          "mismatched_elements": 0,
+          "name": "fnet.layer3.0.conv2",
+          "original_shape": [
+            4,
+            128,
+            48,
+            64
+          ],
+          "p99_absolute_error": 0.0,
+          "passed": true,
+          "position": 2,
+          "reference_dtype": "float32",
+          "reference_shape": [
+            4,
+            128,
+            48,
+            64
+          ],
+          "storage": "exact"
+        },
+        {
+          "candidate_dtype": "float32",
+          "candidate_shape": [
+            4,
+            128,
+            48,
+            64
+          ],
+          "cosine_similarity": 1.0000000000000002,
+          "elements": 1572864,
+          "gating": true,
+          "max_absolute_error": 0.0,
+          "max_relative_error": 0.0,
+          "mean_absolute_error": 0.0,
+          "mismatch_ratio": 0.0,
+          "mismatched_elements": 0,
+          "name": "fnet.layer3.0.downsample.0",
+          "original_shape": [
+            4,
+            128,
+            48,
+            64
+          ],
+          "p99_absolute_error": 0.0,
+          "passed": true,
+          "position": 3,
+          "reference_dtype": "float32",
+          "reference_shape": [
+            4,
+            128,
+            48,
+            64
+          ],
+          "storage": "exact"
+        }
+      ]
+    },
+    "tensors": [
+      {
+        "candidate_dtype": "float32",
+        "candidate_shape": [
+          4,
+          96,
+          96,
+          128
+        ],
+        "cosine_similarity": 0.9999999999998326,
+        "elements": 4718592,
+        "gating": true,
+        "max_absolute_error": 1.71661376953125e-05,
+        "max_relative_error": 0.5961550428287506,
+        "mean_absolute_error": 4.355676460053061e-07,
+        "mismatch_ratio": 0.0033815171983506945,
+        "mismatched_elements": 15956,
+        "name": "fnet.layer2.1",
+        "original_shape": [
+          4,
+          96,
+          96,
+          128
+        ],
+        "p99_absolute_error": 3.337860107421875e-06,
+        "passed": false,
+        "position": 0,
+        "reference_dtype": "float32",
+        "reference_shape": [
+          4,
+          96,
+          96,
+          128
+        ],
+        "storage": "exact"
+      },
+      {
+        "candidate_dtype": "float32",
+        "candidate_shape": [
+          4,
+          128,
+          48,
+          64
+        ],
+        "cosine_similarity": 1.0000000000000002,
+        "elements": 1572864,
+        "gating": true,
+        "max_absolute_error": 0.0,
+        "max_relative_error": 0.0,
+        "mean_absolute_error": 0.0,
+        "mismatch_ratio": 0.0,
+        "mismatched_elements": 0,
+        "name": "fnet.layer3.0.conv1",
+        "original_shape": [
+          4,
+          128,
+          48,
+          64
+        ],
+        "p99_absolute_error": 0.0,
+        "passed": true,
+        "position": 1,
+        "reference_dtype": "float32",
+        "reference_shape": [
+          4,
+          128,
+          48,
+          64
+        ],
+        "storage": "exact"
+      },
+      {
+        "candidate_dtype": "float32",
+        "candidate_shape": [
+          4,
+          128,
+          48,
+          64
+        ],
+        "cosine_similarity": 0.9999999999999135,
+        "elements": 1572864,
+        "gating": true,
+        "max_absolute_error": 2.86102294921875e-05,
+        "max_relative_error": 0.12279411764705882,
+        "mean_absolute_error": 1.6913407922351336e-06,
+        "mismatch_ratio": 0.0019060770670572917,
+        "mismatched_elements": 2998,
+        "name": "fnet.layer3.0.conv2",
+        "original_shape": [
+          4,
+          128,
+          48,
+          64
+        ],
+        "p99_absolute_error": 7.62939453125e-06,
+        "passed": false,
+        "position": 2,
+        "reference_dtype": "float32",
+        "reference_shape": [
+          4,
+          128,
+          48,
+          64
+        ],
+        "storage": "exact"
+      },
+      {
+        "candidate_dtype": "float32",
+        "candidate_shape": [
+          4,
+          128,
+          48,
+          64
+        ],
+        "cosine_similarity": 1.0000000000000002,
+        "elements": 1572864,
+        "gating": true,
+        "max_absolute_error": 0.0,
+        "max_relative_error": 0.0,
+        "mean_absolute_error": 0.0,
+        "mismatch_ratio": 0.0,
+        "mismatched_elements": 0,
+        "name": "fnet.layer3.0.downsample.0",
+        "original_shape": [
+          4,
+          128,
+          48,
+          64
+        ],
+        "p99_absolute_error": 0.0,
+        "passed": true,
+        "position": 3,
+        "reference_dtype": "float32",
+        "reference_shape": [
+          4,
+          128,
+          48,
+          64
+        ],
+        "storage": "exact"
+      }
+    ]
+  },
+  "kind": "torchport.trace",
+  "module_config": {
+    "common_modules": 107,
+    "compared_keys": 374,
+    "kind": "torchport.module_config",
+    "mismatches": [],
+    "schema_version": 1,
+    "source_only_modules": 15,
+    "used_mismatches": 0
+  },
+  "output": {
+    "atol": 0.0001,
+    "candidate": "/root/autodl-tmp/RAFT-Benchmark-v1/trace-probe-r5/evidence/runs/reference-30-window-r5-trace-target/target-20261104-205320-1ed87b07/outputs.npz",
+    "extra_in_candidate": [],
+    "first_divergence": {
+      "name": "output.0",
+      "position": 2,
+      "reason": "数值超出容差"
+    },
+    "first_gating_divergence": {
+      "name": "output.0",
+      "position": 2,
+      "reason": "数值超出容差"
+    },
+    "metrics": {
+      "compared_elements": 3158016,
+      "compared_tensors": 4,
+      "extra_tensors": 0,
+      "max_absolute_error": 0.0009095668792724609,
+      "mismatch_ratio": 0.0003863184987029831,
+      "mismatched_elements": 1220,
+      "mismatched_tensors": 2,
+      "missing_tensors": 0,
+      "skipped_sketched_tensors": 0
+    },
+    "missing_in_candidate": [],
+    "passed": false,
+    "profile": "fp32-inference",
+    "reference": "/root/autodl-tmp/RAFT-Benchmark-v1/trace-probe-r5/evidence/runs/reference-30-window-r5-trace-source/source-20261104-205316-a6ee9471/outputs.npz",
+    "require_all": true,
+    "rtol": 0.0001,
+    "schema_version": 1,
+    "skipped_sketched": [],
+    "tensors": [
+      {
+        "candidate_dtype": "float32",
+        "candidate_shape": [
+          2,
+          3,
+          384,
+          512
+        ],
+        "cosine_similarity": 1.0000000000000002,
+        "elements": 1179648,
+        "gating": true,
+        "max_absolute_error": 0.0,
+        "max_relative_error": 0.0,
+        "mean_absolute_error": 0.0,
+        "mismatch_ratio": 0.0,
+        "mismatched_elements": 0,
+        "name": "input",
+        "original_shape": [
+          2,
+          3,
+          384,
+          512
+        ],
+        "p99_absolute_error": 0.0,
+        "passed": true,
+        "position": 0,
+        "reference_dtype": "float32",
+        "reference_shape": [
+          2,
+          3,
+          384,
+          512
+        ],
+        "storage": "exact"
+      },
+      {
+        "candidate_dtype": "float32",
+        "candidate_shape": [
+          2,
+          3,
+          384,
+          512
+        ],
+        "cosine_similarity": 1.0,
+        "elements": 1179648,
+        "gating": true,
+        "max_absolute_error": 0.0,
+        "max_relative_error": 0.0,
+        "mean_absolute_error": 0.0,
+        "mismatch_ratio": 0.0,
+        "mismatched_elements": 0,
+        "name": "input.1",
+        "original_shape": [
+          2,
+          3,
+          384,
+          512
+        ],
+        "p99_absolute_error": 0.0,
+        "passed": true,
+        "position": 1,
+        "reference_dtype": "float32",
+        "reference_shape": [
+          2,
+          3,
+          384,
+          512
+        ],
+        "storage": "exact"
+      },
+      {
+        "candidate_dtype": "float32",
+        "candidate_shape": [
+          2,
+          2,
+          48,
+          64
+        ],
+        "cosine_similarity": 0.9999999997644557,
+        "elements": 12288,
+        "gating": true,
+        "max_absolute_error": 0.0001888275146484375,
+        "max_relative_error": 0.10752688172043011,
+        "mean_absolute_error": 4.478159982094591e-06,
+        "mismatch_ratio": 0.00016276041666666666,
+        "mismatched_elements": 2,
+        "name": "output.0",
+        "original_shape": [
+          2,
+          2,
+          48,
+          64
+        ],
+        "p99_absolute_error": 2.6702880859375e-05,
+        "passed": false,
+        "position": 2,
+        "reference_dtype": "float32",
+        "reference_shape": [
+          2,
+          2,
+          48,
+          64
+        ],
+        "storage": "exact"
+      },
+      {
+        "candidate_dtype": "float32",
+        "candidate_shape": [
+          2,
+          2,
+          384,
+          512
+        ],
+        "cosine_similarity": 0.9999999999599487,
+        "elements": 786432,
+        "gating": true,
+        "max_absolute_error": 0.0009095668792724609,
+        "max_relative_error": 0.23174383782538585,
+        "mean_absolute_error": 1.6426644657877947e-05,
+        "mismatch_ratio": 0.00154876708984375,
+        "mismatched_elements": 1218,
+        "name": "output.1",
+        "original_shape": [
+          2,
+          2,
+          384,
+          512
+        ],
+        "p99_absolute_error": 8.952617645263672e-05,
+        "passed": false,
+        "position": 3,
+        "reference_dtype": "float32",
+        "reference_shape": [
+          2,
+          2,
+          384,
+          512
+        ],
+        "storage": "exact"
+      }
+    ]
+  },
+  "passed": false,
+  "physical_cost": {
+    "cuda_execution_seconds": 18.66481113433838,
+    "execution_wall_seconds": 18.66481113433838,
+    "executions": 2
+  },
+  "source_run": {
+    "artifacts": {
+      "module_alt": "/root/autodl-tmp/RAFT-Benchmark-v1/trace-probe-r5/evidence/runs/reference-30-window-r5-trace-source/source-20261104-205316-a6ee9471/module_alt.npz",
+      "module_calls": "/root/autodl-tmp/RAFT-Benchmark-v1/trace-probe-r5/evidence/runs/reference-30-window-r5-trace-source/source-20261104-205316-a6ee9471/module_calls.json",
+      "module_config": "/root/autodl-tmp/RAFT-Benchmark-v1/trace-probe-r5/evidence/runs/reference-30-window-r5-trace-source/source-20261104-205316-a6ee9471/module_config.json",
+      "module_fp64": "/root/autodl-tmp/RAFT-Benchmark-v1/trace-probe-r5/evidence/runs/reference-30-window-r5-trace-source/source-20261104-205316-a6ee9471/module_fp64.npz",
+      "module_inputs": "/root/autodl-tmp/RAFT-Benchmark-v1/trace-probe-r5/evidence/runs/reference-30-window-r5-trace-source/source-20261104-205316-a6ee9471/module_inputs.npz",
+      "module_outputs": "/root/autodl-tmp/RAFT-Benchmark-v1/trace-probe-r5/evidence/runs/reference-30-window-r5-trace-source/source-20261104-205316-a6ee9471/module_outputs.npz",
+      "module_repeat": "/root/autodl-tmp/RAFT-Benchmark-v1/trace-probe-r5/evidence/runs/reference-30-window-r5-trace-source/source-20261104-205316-a6ee9471/module_repeat.npz",
+      "outputs": "/root/autodl-tmp/RAFT-Benchmark-v1/trace-probe-r5/evidence/runs/reference-30-window-r5-trace-source/source-20261104-205316-a6ee9471/outputs.npz",
+      "trace": "/root/autodl-tmp/RAFT-Benchmark-v1/trace-probe-r5/evidence/runs/reference-30-window-r5-trace-source/source-20261104-205316-a6ee9471/trace.npz"
+    },
+    "capture": {
+      "checkpoint": {
+        "complete": true,
+        "ignored": [],
+        "loaded": 162,
+        "missing": [],
+        "path": "/root/autodl-tmp/RAFT-Benchmark-v1/oracle-packages-r6/weights-cache/e3bba7f10f867d15905cd896c8d39ee227e2c1617b222e75eaedec679a96a111/weights-fp32.npz",
+        "requested": true,
+        "sha256": "e3bba7f10f867d15905cd896c8d39ee227e2c1617b222e75eaedec679a96a111",
+        "total": 162,
+        "unexpected": []
+      },
+      "framework": {
+        "cuda": "12.1",
+        "device": "cuda",
+        "device_name": "NVIDIA GeForce RTX 4090",
+        "name": "pytorch",
+        "version": "2.4.1+cu121"
+      },
+      "hashes": {
+        "input": "861689e57f272c8ce13e4139b800e3f5ffa8dfa401f191f3a14cb98e567e8092",
+        "output": "eb0f16f2894644e86f2083c2083a67abd9390222db899810d905305b3e0d27d1",
+        "state": "981a44c7ee708eb30177374b21654f1f157cba9e1d46b44de1bd68d713086392"
+      },
+      "kind": "source",
+      "loaded": 154,
+      "mode": "trace",
+      "module_probe": {
+        "calibration": {
+          "alt_tensors": 4,
+          "failed": [],
+          "fp64_tensors": 4,
+          "repeat_tensors": 4
+        },
+        "calls": 4,
+        "input_tensors": 4,
+        "output_tensors": 4
+      },
+      "numpy": "1.26.4",
+      "outputs": [
+        "output.0",
+        "output.1"
+      ],
+      "state": {
+        "aliases": {
+          "cnet.layer2.0.downsample.1.bias": "cnet.layer2.0.norm3.bias",
+          "cnet.layer2.0.downsample.1.running_mean": "cnet.layer2.0.norm3.running_mean",
+          "cnet.layer2.0.downsample.1.running_var": "cnet.layer2.0.norm3.running_var",
+          "cnet.layer2.0.downsample.1.weight": "cnet.layer2.0.norm3.weight",
+          "cnet.layer3.0.downsample.1.bias": "cnet.layer3.0.norm3.bias",
+          "cnet.layer3.0.downsample.1.running_mean": "cnet.layer3.0.norm3.running_mean",
+          "cnet.layer3.0.downsample.1.running_var": "cnet.layer3.0.norm3.running_var",
+          "cnet.layer3.0.downsample.1.weight": "cnet.layer3.0.norm3.weight"
+        },
+        "extra": [],
+        "loaded": 154,
+        "missing": [],
+        "target_total": 154,
+        "total": 154,
+        "value_mismatch": []
+      },
+      "weights": 154
+    },
+    "contract": null,
+    "dir": "/root/autodl-tmp/RAFT-Benchmark-v1/trace-probe-r5/evidence/runs/reference-30-window-r5-trace-source/source-20261104-205316-a6ee9471",
+    "execution": {
+      "cache": "/root/autodl-tmp/RAFT-Benchmark-v1/trace-probe-r5/evidence/cache/reference-30-window-r5-trace-source/source-_root_autodl-tmp_envs_source_bin_python",
+      "command": [
+        "/root/autodl-tmp/envs/source/bin/python",
+        "-m",
+        "torchport",
+        "_capture",
+        "/root/autodl-tmp/RAFT-Benchmark-v1/trace-probe-r5/evidence/runs/reference-30-window-r5-trace-source/source-20261104-205316-a6ee9471/job.json"
+      ],
+      "cwd": "/root/autodl-tmp/RAFT-Benchmark-v1/oracle-bundle-inference-r1-r6/source",
+      "exit_code": 0,
+      "finished": 1793796800.7618892,
+      "ok": true,
+      "seconds": 4.526005029678345,
+      "started": 1793796796.2358842,
+      "timeout": false
+    },
+    "kind": "torchport.run",
+    "mode": "trace",
+    "ok": true,
+    "oracle": "/root/autodl-tmp/RAFT-Benchmark-v1/trace-probe-r5/evidence/oracle/efc4d43155b728b5",
+    "run_id": "source-20261104-205316-a6ee9471",
+    "side": "source",
+    "side_identity": "b987aaaae6ffe3b0421b45216dc0514b49a7d1165e3dd82c7c4a090d46f0386f",
+    "task_digest": "efc4d43155b728b584c59b9bc37e8cb57502b2520bbd238eea4ab502d9fe1ef1",
+    "task_id": "raft-inference-r1-4090-pilot-r1",
+    "trial_id": "reference-30-window-r5-trace-source"
+  },
+  "status": "diverged",
+  "strict": {
+    "atol": 1e-06,
+    "candidate": "/root/autodl-tmp/RAFT-Benchmark-v1/trace-probe-r5/evidence/runs/reference-30-window-r5-trace-target/target-20261104-205320-1ed87b07/trace.npz",
+    "extra_in_candidate": [],
+    "first_divergence": null,
+    "first_gating_divergence": null,
+    "metrics": {
+      "compared_elements": 0,
+      "compared_tensors": 0,
+      "extra_tensors": 0,
+      "max_absolute_error": null,
+      "mismatch_ratio": null,
+      "mismatched_elements": 0,
+      "mismatched_tensors": 0,
+      "missing_tensors": 0,
+      "skipped_sketched_tensors": 8
+    },
+    "missing_in_candidate": [],
+    "passed": true,
+    "profile": "operator-strict",
+    "reference": "/root/autodl-tmp/RAFT-Benchmark-v1/trace-probe-r5/evidence/runs/reference-30-window-r5-trace-source/source-20261104-205316-a6ee9471/trace.npz",
+    "require_all": true,
+    "rtol": 1e-05,
+    "schema_version": 1,
+    "skipped_sketched": [
+      "fnet.layer2.1",
+      "fnet.layer2",
+      "fnet.layer3.0.conv1",
+      "fnet.layer3.0.norm1",
+      "fnet.layer3.0.conv2",
+      "fnet.layer3.0.norm2",
+      "fnet.layer3.0.downsample.0",
+      "fnet.layer3.0.downsample"
+    ],
+    "tensors": [
+      {
+        "candidate_shape": [
+          4,
+          96,
+          96,
+          128
+        ],
+        "gating": false,
+        "name": "fnet.layer2.1",
+        "passed": true,
+        "position": 0,
+        "reason": "CountSketch 不参与逐元素严格比较",
+        "reference_shape": [
+          4,
+          96,
+          96,
+          128
+        ],
+        "skipped": true,
+        "storage": "countsketch",
+        "stored_elements": 65536
+      },
+      {
+        "candidate_shape": [
+          4,
+          96,
+          96,
+          128
+        ],
+        "gating": false,
+        "name": "fnet.layer2",
+        "passed": true,
+        "position": 1,
+        "reason": "CountSketch 不参与逐元素严格比较",
+        "reference_shape": [
+          4,
+          96,
+          96,
+          128
+        ],
+        "skipped": true,
+        "storage": "countsketch",
+        "stored_elements": 65536
+      },
+      {
+        "candidate_shape": [
+          4,
+          128,
+          48,
+          64
+        ],
+        "gating": false,
+        "name": "fnet.layer3.0.conv1",
+        "passed": true,
+        "position": 2,
+        "reason": "CountSketch 不参与逐元素严格比较",
+        "reference_shape": [
+          4,
+          128,
+          48,
+          64
+        ],
+        "skipped": true,
+        "storage": "countsketch",
+        "stored_elements": 65536
+      },
+      {
+        "candidate_shape": [
+          4,
+          128,
+          48,
+          64
+        ],
+        "gating": false,
+        "name": "fnet.layer3.0.norm1",
+        "passed": true,
+        "position": 3,
+        "reason": "CountSketch 不参与逐元素严格比较",
+        "reference_shape": [
+          4,
+          128,
+          48,
+          64
+        ],
+        "skipped": true,
+        "storage": "countsketch",
+        "stored_elements": 65536
+      },
+      {
+        "candidate_shape": [
+          4,
+          128,
+          48,
+          64
+        ],
+        "gating": false,
+        "name": "fnet.layer3.0.conv2",
+        "passed": true,
+        "position": 4,
+        "reason": "CountSketch 不参与逐元素严格比较",
+        "reference_shape": [
+          4,
+          128,
+          48,
+          64
+        ],
+        "skipped": true,
+        "storage": "countsketch",
+        "stored_elements": 65536
+      },
+      {
+        "candidate_shape": [
+          4,
+          128,
+          48,
+          64
+        ],
+        "gating": false,
+        "name": "fnet.layer3.0.norm2",
+        "passed": true,
+        "position": 5,
+        "reason": "CountSketch 不参与逐元素严格比较",
+        "reference_shape": [
+          4,
+          128,
+          48,
+          64
+        ],
+        "skipped": true,
+        "storage": "countsketch",
+        "stored_elements": 65536
+      },
+      {
+        "candidate_shape": [
+          4,
+          128,
+          48,
+          64
+        ],
+        "gating": false,
+        "name": "fnet.layer3.0.downsample.0",
+        "passed": true,
+        "position": 6,
+        "reason": "CountSketch 不参与逐元素严格比较",
+        "reference_shape": [
+          4,
+          128,
+          48,
+          64
+        ],
+        "skipped": true,
+        "storage": "countsketch",
+        "stored_elements": 65536
+      },
+      {
+        "candidate_shape": [
+          4,
+          128,
+          48,
+          64
+        ],
+        "gating": false,
+        "name": "fnet.layer3.0.downsample",
+        "passed": true,
+        "position": 7,
+        "reason": "CountSketch 不参与逐元素严格比较",
+        "reference_shape": [
+          4,
+          128,
+          48,
+          64
+        ],
+        "skipped": true,
+        "storage": "countsketch",
+        "stored_elements": 65536
+      }
+    ]
+  },
+  "target_run": {
+    "artifacts": {
+      "isolated": "/root/autodl-tmp/RAFT-Benchmark-v1/trace-probe-r5/evidence/runs/reference-30-window-r5-trace-target/target-20261104-205320-1ed87b07/isolated.npz",
+      "isolated_repeat": "/root/autodl-tmp/RAFT-Benchmark-v1/trace-probe-r5/evidence/runs/reference-30-window-r5-trace-target/target-20261104-205320-1ed87b07/isolated_repeat.npz",
+      "module_config": "/root/autodl-tmp/RAFT-Benchmark-v1/trace-probe-r5/evidence/runs/reference-30-window-r5-trace-target/target-20261104-205320-1ed87b07/module_config.json",
+      "outputs": "/root/autodl-tmp/RAFT-Benchmark-v1/trace-probe-r5/evidence/runs/reference-30-window-r5-trace-target/target-20261104-205320-1ed87b07/outputs.npz",
+      "trace": "/root/autodl-tmp/RAFT-Benchmark-v1/trace-probe-r5/evidence/runs/reference-30-window-r5-trace-target/target-20261104-205320-1ed87b07/trace.npz"
+    },
+    "capture": {
+      "checkpoint": null,
+      "framework": {
+        "cache_path": "/root/autodl-tmp/RAFT-Benchmark-v1/jittor-cache-control-r1/.cache/jittor/jt1.3.11/g++11.4.0/py3.9.25/Linux-5.15.0-9x00/IntelRXeonRGolx95/ab54/default/cu12.8.93_sm_89",
+        "device": "cuda",
+        "name": "jittor",
+        "version": "1.3.11.0"
+      },
+      "hashes": {
+        "input": "861689e57f272c8ce13e4139b800e3f5ffa8dfa401f191f3a14cb98e567e8092",
+        "output": "754b88a5f61efeed9ae97eb23552bb97e7df67740809baba51aa362731b21053",
+        "state": null
+      },
+      "isolated": {
+        "available": true,
+        "failed_modules": [],
+        "missing_modules": [],
+        "recorded": 4,
+        "succeeded": 4,
+        "unsupported_inputs": []
+      },
+      "kind": "target",
+      "loaded": 154,
+      "mode": "trace",
+      "numpy": "1.26.4",
+      "outputs": [
+        "output.0",
+        "output.1"
+      ],
+      "state": {
+        "aliases": {},
+        "extra": [],
+        "loaded": 154,
+        "missing": [],
+        "target_total": 154,
+        "total": 154,
+        "value_mismatch": []
+      },
+      "weights": 154
+    },
+    "contract": null,
+    "dir": "/root/autodl-tmp/RAFT-Benchmark-v1/trace-probe-r5/evidence/runs/reference-30-window-r5-trace-target/target-20261104-205320-1ed87b07",
+    "execution": {
+      "cache": "/root/autodl-tmp/RAFT-Benchmark-v1/trace-probe-r5/evidence/cache/reference-30-window-r5-trace-target/target-_root_autodl-tmp_envs_target_bin_python",
+      "command": [
+        "/root/autodl-tmp/envs/target/bin/python",
+        "-m",
+        "torchport",
+        "_capture",
+        "/root/autodl-tmp/RAFT-Benchmark-v1/trace-probe-r5/evidence/runs/reference-30-window-r5-trace-target/target-20261104-205320-1ed87b07/job.json"
+      ],
+      "cwd": "/root/autodl-tmp/RAFT-Benchmark-v1/controller-reference-r1",
+      "exit_code": 0,
+      "finished": 1793796814.9022262,
+      "ok": true,
+      "seconds": 14.138806104660034,
+      "started": 1793796800.76342,
+      "timeout": false
+    },
+    "kind": "torchport.run",
+    "mode": "trace",
+    "ok": true,
+    "oracle": "/root/autodl-tmp/RAFT-Benchmark-v1/trace-probe-r5/evidence/oracle/efc4d43155b728b5",
+    "run_id": "target-20261104-205320-1ed87b07",
+    "side": "target",
+    "side_identity": "88041ca01d34cb319a91301a9488734edb89fbfdb0d053c42ab393c5434a80b0",
+    "task_digest": "efc4d43155b728b584c59b9bc37e8cb57502b2520bbd238eea4ab502d9fe1ef1",
+    "task_id": "raft-inference-r1-4090-pilot-r1",
+    "trial_id": "reference-30-window-r5-trace-target"
+  },
+  "task_digest": "efc4d43155b728b584c59b9bc37e8cb57502b2520bbd238eea4ab502d9fe1ef1",
+  "task_id": "raft-inference-r1-4090-pilot-r1",
+  "trial_id": "reference-30-window-r5"
+}
