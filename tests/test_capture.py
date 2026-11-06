@@ -23,6 +23,7 @@ from torchport.capture import (
     make_data,
     save_state,
 )
+from torchport.capture.runner import TraceSizeError, check_trace_size
 from torchport.contracts import file_hash, normalize
 from torchport.verification import judge
 
@@ -436,6 +437,14 @@ class ToNumpyCopyTests(unittest.TestCase):
         recorded = _to_numpy(SimpleNamespace(numpy=lambda: shared), "target")
         shared += 1
         np.testing.assert_array_equal(recorded, np.zeros(3, dtype=np.float32))
+
+
+class TraceSizeTests(unittest.TestCase):
+    def test_rejects_estimated_npz_before_write(self) -> None:
+        values = {"large": np.zeros(1024, dtype=np.float32)}
+        with self.assertRaises(TraceSizeError):
+            check_trace_size([values, values], 4096)
+        self.assertGreater(check_trace_size([values], 1 << 30), values["large"].nbytes)
 
 
 if __name__ == "__main__":

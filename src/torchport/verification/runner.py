@@ -31,6 +31,7 @@ def run_side(
     focus: list[str] | None = None,
     module_oracle: Path | None = None,
     calibrate: bool = False,
+    trace_max_bytes: int | None = None,
 ) -> dict[str, Any]:
     """执行一端，返回 RunManifest；manifest 在全部产物写完后原子提交。
 
@@ -44,6 +45,7 @@ def run_side(
         "train": train,
         "calibrate": bool(train) and calibrate and kind == "source",
         "focus": focus,
+        "trace_max_bytes": trace_max_bytes if mode == "trace" else None,
         # v3：layers 证据中的 output.* 不压缩，供逐元素比较
         "exact_outputs": task["protocol"]["profile"] == ENVELOPE_V3,
         "kind": kind,

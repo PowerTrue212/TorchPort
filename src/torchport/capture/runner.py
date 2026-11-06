@@ -44,6 +44,22 @@ from .variants import _unbatch, _variant_inputs, apply_variant
 MODES = ("normal", "trace", "layers")
 
 
+class TraceSizeError(ValueError):
+    def __init__(self, estimated: int, limit: int) -> None:
+        self.estimated = estimated
+        self.limit = limit
+        super().__init__(f"trace 预计写入 {estimated} bytes，超过上限 {limit} bytes")
+
+
+def check_trace_size(archives: list[dict[str, np.ndarray]], limit: int) -> int:
+    """在任何 trace NPZ 写入前估算未压缩 ZIP 体积。"""
+    estimated = sum(np.asarray(value).nbytes + 1024 for archive in archives for value in archive.values())
+    estimated += 16 * 1024 * 1024
+    if estimated > limit:
+        raise TraceSizeError(estimated, limit)
+    return estimated
+
+
 def _digest(values: dict[str, np.ndarray]) -> str:
     import hashlib
 
@@ -334,13 +350,28 @@ def capture(job: dict[str, Any]) -> dict[str, Any]:
     outputs = to_arrays(result, kind, "output")
     if not outputs:
         raise ValueError("模型输出中没有张量")
+    calibration = None
+    fp64_values: dict[str, np.ndarray] = {}
+    alt_values: dict[str, np.ndarray] = {}
+    repeat_values: dict[str, np.ndarray] = {}
+    if kind == "source" and mode == "trace":
+        _mark_leaves(module_calls)
+        fp64_values, alt_values, repeat_values, calibration = calibrate_source_modules(
+            model, module_calls, module_inputs, device
+        )
+    stored_trace = sketch_layers(trace_values) if mode == "trace" and focus is not None else trace_values
+    if mode == "trace" and job.get("trace_max_bytes") is not None:
+        # np.savez stores arrays without compression. Allow generous ZIP headers and metadata.
+        archives = [arrays, outputs, stored_trace, isolated_values, isolated_repeats]
+        if kind == "source":
+            archives.extend((fp64_values, alt_values, repeat_values, module_values, module_inputs))
+        check_trace_size(archives, int(job["trace_max_bytes"]))
     if kind == "source" and oracle is None:
         np.savez(out / "inputs.npz", **arrays)
     np.savez(out / "outputs.npz", **arrays, **outputs)
     if trace_values:
         # 聚焦 trace 中的容器模块仍可输出数千万元素；大张量只保留
         # CountSketch 供 L2 证据使用，小张量仍逐元素保留。全量 trace 不改。
-        stored_trace = sketch_layers(trace_values) if focus is not None else trace_values
         np.savez(out / "trace.npz", **stored_trace)
     if mode == "layers":
         # 最终输出也进入 E1：中间层可以因命名不同而只报告，output.* 必须参与判定。
@@ -350,12 +381,7 @@ def capture(job: dict[str, Any]) -> dict[str, Any]:
         # v3 的输出逐元素比较：output.* 不压缩
         exact = {name for name in layers if job.get("exact_outputs") and _is_output_name(name)}
         np.savez(out / "layers.npz", **sketch_layers(layers, keep=exact))
-    calibration = None
     if kind == "source" and mode == "trace":
-        _mark_leaves(module_calls)
-        fp64_values, alt_values, repeat_values, calibration = calibrate_source_modules(
-            model, module_calls, module_inputs, device
-        )
         np.savez(out / "module_fp64.npz", **fp64_values)
         np.savez(out / "module_alt.npz", **alt_values)
         np.savez(out / "module_repeat.npz", **repeat_values)
@@ -417,6 +443,12 @@ def main(job_path: str) -> int:
     job = read_json(Path(job_path))
     try:
         capture(job)
+    except TraceSizeError as exc:
+        write_json(Path(job["out_dir"]) / "contract.json", {
+            "code": "TRACE_TOO_LARGE", "message": str(exc),
+            "estimated_bytes": exc.estimated, "limit_bytes": exc.limit,
+        })
+        raise
     except ContractError as exc:
         # 接口契约错误单独落盘：它是 Harness 读取任务契约时的失败，Agent 本地无法复现，
         # 由 run manifest 带回，供 diagnostic 返回冻结的枚举文本
