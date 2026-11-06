@@ -40,9 +40,15 @@ class DiagnosisTests(unittest.TestCase):
         self.assertEqual(report["inputs"], [{"shape": [1]}])
 
     def test_trace_and_localize_first_divergence(self) -> None:
+        from torchport.runtime import write_json
+
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             task = _task(root / "repos")
+            write_json(root / "evidence" / "verify" / "trace-0.json", {
+                "e1": {"first_divergence": {"position": 0},
+                       "tensors": [{"name": "layer", "position": 0}]},
+            })
             source_dir, target_dir = root / "source-run", root / "target-run"
             source_dir.mkdir()
             target_dir.mkdir()
@@ -90,7 +96,9 @@ class DiagnosisTests(unittest.TestCase):
                     "capture": {"isolated": {"succeeded": 1}} if kind == "target" else {},
                 }
 
-            with patch.object(diagnosis_tracing, "run_side", fake_run):
+            with (patch.object(diagnosis_tracing, "run_side", fake_run),
+                  patch.object(diagnosis_tracing, "build_oracle",
+                               return_value={"ok": True, "dir": str(root / "oracle")})):
                 report = diagnosis.trace(task, root / "evidence", trial="trace-0")
 
             location = diagnosis.localize(report)
@@ -118,16 +126,24 @@ class DiagnosisTests(unittest.TestCase):
 
 
     def test_failed_source_trace_reports_reason_and_run(self) -> None:
+        from torchport.runtime import write_json
+
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             task = _task(root / "repos")
+            write_json(root / "evidence" / "verify" / "trace-0.json", {
+                "e1": {"first_divergence": {"position": 0},
+                       "tensors": [{"name": "layer", "position": 0}]},
+            })
             failed = {
                 "ok": False,
                 "dir": str(root / "source-run"),
                 "artifacts": {},
                 "execution": {"stderr_tail": "warning: noise\ntorchport: [Errno 28] No space left on device"},
             }
-            with patch.object(diagnosis_tracing, "run_side", lambda *_a, **_k: failed):
+            with (patch.object(diagnosis_tracing, "run_side", lambda *_a, **_k: failed),
+                  patch.object(diagnosis_tracing, "build_oracle",
+                               return_value={"ok": True, "dir": str(root / "oracle")})):
                 report = diagnosis.trace(task, root / "evidence", trial="trace-0")
             location = diagnosis.localize(report)
 
@@ -229,6 +245,14 @@ class DiagnosisTests(unittest.TestCase):
         self.assertEqual(report["failure_code"], "DISK_LOW")
         self.assertIn("可用空间", location["reason"])
 
+    def test_trace_requires_focus_without_starting_processes(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            task = _task(root / "repos")
+            with patch.object(diagnosis_tracing, "run_side", side_effect=AssertionError("started")):
+                report = diagnosis.trace(task, root / "evidence", trial="t0")
+        self.assertEqual(report["failure_code"], "TRACE_NO_FOCUS")
+        self.assertEqual(report["physical_cost"]["executions"], 0)
 
 if __name__ == "__main__":
     unittest.main()

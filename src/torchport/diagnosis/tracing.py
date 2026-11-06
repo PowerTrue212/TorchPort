@@ -43,6 +43,24 @@ def _tolerance_profile(task: dict[str, Any]) -> str:
 # trace 聚焦：首次分歧及其之前 FOCUS_WINDOW 个张量所属模块；磁盘余量低于下限时不启动。
 FOCUS_WINDOW = 8
 MIN_FREE_BYTES = 2 * 1024**3
+# 每端聚焦 trace 写入上限；capture 在写 NPZ 前按数组大小估算。
+MAX_TRACE_BYTES = 4 * 1024**3
+
+
+def _refused(task: dict[str, Any], trial: str, code: str, stage: str, reason: str) -> dict[str, Any]:
+    return {
+        "kind": "torchport.trace",
+        "task_id": task["task_id"],
+        "task_digest": task["digest"],
+        "trial_id": trial,
+        "passed": False,
+        "status": "run_failed",
+        "failure_code": code,
+        "stage": stage,
+        "reason": reason,
+        "source_run": None,
+        "target_run": None,
+    }
 
 
 def focus_modules(root: Path, trial: str, window: int = FOCUS_WINDOW) -> list[str] | None:
@@ -72,7 +90,8 @@ def focus_modules(root: Path, trial: str, window: int = FOCUS_WINDOW) -> list[st
 def trace(task: dict[str, Any], root: Path, *, trial: str = "t0") -> dict[str, Any]:
     """以同一输入和状态运行双端 trace，保存完整比较报告。
 
-    有同 trial 的 verify 报告时只记录首次分歧附近的模块（产物从 GB 级降到 MB 级）；否则全量记录。
+    只做聚焦采集：必须有同 trial 的 verify 报告且其中有首次分歧或临界位置，只记录其附近的模块。
+    没有可聚焦的位置时不启动任何进程（全量逐层记录在 RAFT 上单次超过 20 GB）。
     """
     root = Path(root).resolve()
     root.mkdir(parents=True, exist_ok=True)
@@ -97,7 +116,17 @@ def trace(task: dict[str, Any], root: Path, *, trial: str = "t0") -> dict[str, A
         report["artifacts"] = {"report": str(out)}
         return report
     focus = focus_modules(root, trial)
-    frozen = build_oracle(task, root) if focus else None
+    if not focus:
+        report = _refused(
+            task, trial, "TRACE_NO_FOCUS", "preflight",
+            "同一 trial 没有含首次分歧位置的 verify 报告；先运行 verify，且 verify 未通过时 trace 才有意义",
+        )
+        report["physical_cost"] = add_physical_cost()
+        out = root / "trace" / f"{trial}.json"
+        write_json(out, report)
+        report["artifacts"] = {"report": str(out)}
+        return report
+    frozen = build_oracle(task, root)
     if frozen is not None and not frozen.get("ok"):
         report = {
             "kind": "torchport.trace",
@@ -126,6 +155,7 @@ def trace(task: dict[str, Any], root: Path, *, trial: str = "t0") -> dict[str, A
         mode="trace",
         oracle=frozen_dir,
         focus=focus,
+        trace_max_bytes=MAX_TRACE_BYTES,
     )
     if not source["ok"]:
         report = _failed_trace(task, trial, "source", source)
@@ -139,6 +169,7 @@ def trace(task: dict[str, Any], root: Path, *, trial: str = "t0") -> dict[str, A
             oracle=frozen_dir or Path(source["dir"]),
             module_oracle=Path(source["dir"]),
             focus=focus,
+            trace_max_bytes=MAX_TRACE_BYTES,
         )
         if not target["ok"]:
             report = _failed_trace(task, trial, "target", target, source)
@@ -285,6 +316,12 @@ def _failed_trace(
     # 失败的那一端必须进入报告，并给出 stderr 最后一行；否则 Agent 只能看到 RUN_FAILED。
     execution = run.get("execution") or {}
     tail = (execution.get("stderr_tail") or "").strip()
+    contract = run.get("contract") or {}
+    if contract.get("code") == "TRACE_TOO_LARGE":
+        report = _refused(task, trial, "TRACE_TOO_LARGE", stage, contract.get("message", "trace 估算体积超限"))
+        report["source_run"] = run if stage == "source" else source
+        report["target_run"] = run if stage == "target" else None
+        return report
     reason = "子进程超时" if execution.get("timeout") else (tail.splitlines() or ["无 stderr"])[-1]
     return {
         "kind": "torchport.trace",

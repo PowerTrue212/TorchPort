@@ -42,7 +42,15 @@ Agent 使用成熟代码环境自带的文件浏览、搜索、编辑、Shell、
 Harness 不重写这些能力，只增加 `inspect`、`run`、`evaluate`、`verify`、`trace`、`localize`
 六个 TorchPort 工具。`trace` 和 `localize` 只在 localized 条件出现；trace 目前只支持推理任务，
 trial 的任务全是 `train-step` 时这两个工具不向 Agent 暴露（2026-11-02 起，此前 trial 原样保留）。
-此时 localized 与 diagnostic 的差别只剩 evaluate/verify 反馈中的首次分歧等定位字段。最终认证入口不注册为
+此时 localized 与 diagnostic 的差别只剩 evaluate/verify 反馈中的首次分歧等定位字段。
+trace 只做聚焦采集（2026-11-04 起）：必须先有同一 trial 的 verify 报告且其中有首次分歧或临界位置，
+trace 才只记录该位置之前 8 个张量所属的模块。此前没有 verify 报告时会退回全量逐层记录，RAFT 20 次
+迭代的全量 trace 单次写出 20 GB 以上，两次把 50 GB 数据盘写满（raft-wf-full-r3/r4，记为基础设施
+失败，原记录保留）。现在：trial 内从未调用 verify 时，Gateway 在派发前拒绝 trace（不计 query）；
+已 verify 但报告里没有可聚焦的位置（例如已通过）时，trace 不启动任何进程，返回 `TRACE_NO_FOCUS`
+（到达验证服务，按下条规则计 query，物理成本为 0）。聚焦采集在写入 NPZ 前按数组原始字节数及容器开销
+估算本端 trace 产物；估算超过 4 GiB 时拒绝写入，返回 `TRACE_TOO_LARGE`，不继续运行另一端。
+这个上限约束单次采集写入量，不包含已经冻结的 oracle。最终认证入口不注册为
 Agent tool，隐藏 TaskSpec、oracle 和 evaluator 也不在 candidate 工作区内。
 
 Agent 在迁移前自行检查依赖、运行设备、显存、内存、磁盘、数据和 checkpoint，并决定是否安装、

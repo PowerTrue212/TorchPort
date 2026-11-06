@@ -65,6 +65,7 @@ class HarnessGateway:
         self._runs: dict[str, tuple[str, dict[str, Any]]] = {}
         self._last_run_id: str | None = None
         self._last_trace: dict[str, Any] | None = None
+        self._verified_tasks: set[str] = set()
 
         task_value = self._task()
         self.workspace = Path(task_value["target"]["repo"]).resolve()
@@ -129,6 +130,9 @@ class HarnessGateway:
             if tool == "evaluate":
                 # 执行前即可判定失败的调用不计 query
                 self._evaluable_run(arguments)
+            if tool == "trace" and self._trace_task_name() not in self._verified_tasks:
+                # trace 只做聚焦采集，聚焦位置来自同一 trial 的 verify 报告；没有就不计 query
+                raise ValueError("工具 trace：请先运行 verify")
             if tool in ORACLE_TOOLS:
                 self._spend_oracle_query(tool)
             response = {"ok": True, "data": self._dispatch(tool, arguments)}
@@ -328,6 +332,9 @@ class HarnessGateway:
             reports = {}
             for name, path in self.task_paths.items():
                 report = self._verify_task(name, self._task(name), path)
+                if report.get("kind") == "torchport.verify":
+                    self._verified_tasks.add(name)
+                    self._save_state()
                 self._add_physical(report.get("physical_cost"))
                 reports[name] = self._feedback(report)
             if len(reports) == 1:
@@ -337,7 +344,8 @@ class HarnessGateway:
         if tool == "trace":
             name = self._trace_task_name()
             self._last_trace = (
-                trace(self._task(name), self.evidence_root / name, trial=self.trial_id)
+                # 与本地 verify 同一证据根，trace 才能读到同 trial 的 verify 报告
+                trace(self._task(name), self.evidence_root / name / name, trial=self.trial_id)
                 if self.executor is None else
                 self.executor.call("trace", self.task_paths[name], trial=self.trial_id)
             )
@@ -451,6 +459,7 @@ class HarnessGateway:
                      for name, (task, manifest) in self._runs.items()},
             "last_run_id": self._last_run_id,
             "last_trace": self._last_trace,
+            "verified_tasks": sorted(self._verified_tasks),
         })
 
     def _load_state(self) -> None:
@@ -465,3 +474,4 @@ class HarnessGateway:
                       for name, item in state["runs"].items()}
         self._last_run_id = state["last_run_id"]
         self._last_trace = state["last_trace"]
+        self._verified_tasks = set(state.get("verified_tasks", []))

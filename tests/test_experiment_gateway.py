@@ -230,6 +230,25 @@ class GatewayTests(unittest.TestCase):
         self.assertFalse(response["ok"])
         self.assertEqual(response["budget"]["oracle_queries"], 0)
 
+    def test_trace_before_verify_is_contract_error_without_query(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            gateway, _ = _fixture(Path(temporary), FeedbackLevel.LOCALIZED)
+            response = gateway.call("trace")
+        self.assertFalse(response["ok"])
+        self.assertIn("请先运行 verify", response["error"]["message"])
+        self.assertEqual(response["budget"]["oracle_queries"], 0)
+
+    def test_failed_verify_dispatch_does_not_unlock_trace(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            gateway, _ = _fixture(Path(temporary), FeedbackLevel.LOCALIZED)
+            with patch("experiments.harness.gateway.verify", side_effect=RuntimeError("service failed")):
+                verified = gateway.call("verify")
+            traced = gateway.call("trace")
+        self.assertFalse(verified["ok"])
+        self.assertFalse(traced["ok"])
+        self.assertIn("请先运行 verify", traced["error"]["message"])
+        self.assertEqual(traced["budget"]["logical_query_cost"]["by_tool"]["trace"], 0)
+
     def test_trace_hidden_and_not_charged_without_inference_task(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             gateway, _ = _fixture(Path(temporary), FeedbackLevel.LOCALIZED)
